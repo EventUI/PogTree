@@ -1,26 +1,33 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+/**Copyright (c) 2023 Richard H Stannard
+
+This source code is licensed under the MIT license found in the
+LICENSE file in the root directory of this source tree.*/
+
+
 using System.Linq;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using YoggTree.Core;
+using YoggTree.Core.Interfaces;
 using YoggTree.Tokens.Basic;
 
 namespace YoggTree.Tokens
 {
     public class TokenListBuilder
     {
-        protected List<TokenDefinitionBase> _tokens = new List<TokenDefinitionBase>();
+        protected List<ITokenDefinition> _tokens = new List<ITokenDefinition>();
         private HashSet<string> _tokenPatterns = new HashSet<string>();
 
         public TokenListBuilder() 
         {
         }
 
-        public TokenListBuilder(IEnumerable<TokenDefinitionBase> tokens)
+        public TokenListBuilder(IEnumerable<ITokenDefinition> tokens)
         {
             if (tokens != null)
             {
@@ -31,12 +38,12 @@ namespace YoggTree.Tokens
             }
         }
 
-        public List<TokenDefinitionBase> GetTokens()
+        public List<ITokenDefinition> GetTokens()
         {
-            return new List<TokenDefinitionBase>(_tokens);
+            return new List<ITokenDefinition>(_tokens);
         }
 
-        public TokenListBuilder AddToken(TokenDefinitionBase token)
+        public TokenListBuilder AddToken(ITokenDefinition token)
         {
             if (token == null) throw new ArgumentNullException(nameof(token));
 
@@ -72,7 +79,7 @@ namespace YoggTree.Tokens
             return AddToken(new BasicStartAndEndToken(regex, name, contextKey));    
         }
 
-        public TokenDefinitionBase GetTokenFromRegex(string pattern)
+        public ITokenDefinition GetTokenFromRegex(string pattern)
         {
             if (pattern == null || _tokenPatterns.Contains(pattern) == false) return null;
 
@@ -84,7 +91,7 @@ namespace YoggTree.Tokens
             return null;
         }
 
-        public TokenDefinitionBase GetTokenFromRegex(Regex regex)
+        public ITokenDefinition GetTokenFromRegex(Regex regex)
         {
             return GetTokenFromRegex(regex?.ToString());
         }

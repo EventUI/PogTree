@@ -10,6 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using YoggTree.Core.Interfaces;
 
 namespace YoggTree.Core
 {
@@ -18,11 +19,11 @@ namespace YoggTree.Core
     /// </summary>
     public class TokenParseSession
     {
-        private IReadOnlyList<TokenDefinitionBase> _roDefinitions;
+        private IReadOnlyList<ITokenDefinition> _roDefinitions;
         private ReadOnlyMemory<char> _contents = ReadOnlyMemory<char>.Empty;
         private ReadOnlyDictionary<Guid, IReadOnlyList<TokenInstance>> _allTokenInstances;
 
-        protected List<TokenDefinitionBase> _tokenDefinitions = new List<TokenDefinitionBase>();
+        protected List<ITokenDefinition> _tokenDefinitions = new List<ITokenDefinition>();
         protected TokenParseContextBase _rootContext = null;
 
         /// <summary>
@@ -39,7 +40,7 @@ namespace YoggTree.Core
         /// <summary>
         /// All of the possible tokens that can be found in the string being parsed.
         /// </summary>
-        public IReadOnlyList<TokenDefinitionBase> DefinedTokens { get { return _roDefinitions; } }
+        public IReadOnlyList<ITokenDefinition> DefinedTokens { get { return _roDefinitions; } }
 
         /// <summary>
         /// All of the tokens contained within the
@@ -61,7 +62,7 @@ namespace YoggTree.Core
         /// <param name="tokens">All of the tokens that can be found in the content.</param>
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="Exception"></exception>
-        public TokenParseSession(IEnumerable<TokenDefinitionBase> tokens) 
+        public TokenParseSession(IEnumerable<ITokenDefinition> tokens) 
         { 
             if (tokens == null) throw new ArgumentNullException(nameof(tokens));
 
@@ -134,27 +135,6 @@ namespace YoggTree.Core
             }
 
             _allTokenInstances = intermediary.AsReadOnly();
-        }
-    }
-
-    /// <summary>
-    /// A default implementation of TokenParseContextBase.
-    /// </summary>
-    public class DefaultTokenParseContext : TokenParseContextBase
-    {
-        public DefaultTokenParseContext(TokenParseSession session) 
-            : base(session)
-        {
-        }
-
-        public DefaultTokenParseContext(TokenParseContextBase parent, TokenInstance start) 
-            : base(parent, start, "default")
-        {
-        }
-
-        protected override TokenParseContextBase CreateNewContext(TokenInstance startToken)
-        {
-            return new DefaultTokenParseContext(this, startToken);    
         }
     }
 }

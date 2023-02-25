@@ -10,13 +10,14 @@ using System.Reflection.Metadata;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using YoggTree.Core.Interfaces;
 
 namespace YoggTree.Core
 {
     /// <summary>
     /// Represents the definition of a token found in a string.
     /// </summary>
-    public abstract class TokenDefinitionBase
+    public abstract class TokenDefinitionBase : ITokenDefinition
     {
         private Guid _id = Guid.NewGuid();
 
@@ -74,8 +75,8 @@ namespace YoggTree.Core
         {
             if (context.ParseSession.AllTokenInstances.TryGetValue(ID, out IReadOnlyList<TokenInstance> tokens) == false) return (null, -1);
 
-            for (int x = startingIndex; x < tokens.Count; x++) 
-            { 
+            for (int x = startingIndex; x < tokens.Count; x++)
+            {
                 TokenInstance tokenInstance = tokens[x];
                 if (tokenInstance.TokenStartIndex >= currentPosition) return (tokenInstance, x);
             }

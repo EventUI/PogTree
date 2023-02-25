@@ -3,6 +3,7 @@
 This source code is licensed under the MIT license found in the
 LICENSE file in the root directory of this source tree.*/
 
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,12 +12,12 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using YoggTree.Core;
 
-namespace YoggTree.Tokens.Basic
+namespace YoggTree.Tokens.Whitespace
 {
-    public class BasicToken : TokenDefinitionBase, IBasicToken
+    public class WhitespaceHorizontal : TokenDefinitionBase, IWhitespaceToken
     {
-        public BasicToken(Regex token, string name)
-            : base(token, name)
+        public WhitespaceHorizontal() 
+            : base(TokenRegexStore.Whitespace_Horizontal, "<horizontal whitespace>")
         {
         }
     }

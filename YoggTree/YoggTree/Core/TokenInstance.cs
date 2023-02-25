@@ -21,7 +21,7 @@ namespace YoggTree.Core
         /// <summary>
         /// The definition of the rules for the token.
         /// </summary>
-        public TokenDefinitionBase TokenDefinition { get; } = null;
+        public ITokenDefinition TokenDefinition { get; } = null;
 
         /// <summary>
         /// The targetContext in which the token was found.
@@ -43,7 +43,7 @@ namespace YoggTree.Core
         /// </summary>
         public int TokenEndIndex { get; internal init; } = -1;
 
-        internal TokenInstance(TokenDefinitionBase tokenDefinition, TokenParseContextBase context, int tokenStartIndex, ReadOnlyMemory<char> value)
+        internal TokenInstance(ITokenDefinition tokenDefinition, TokenParseContextBase context, int tokenStartIndex, ReadOnlyMemory<char> value)
         {
             if (tokenDefinition == null) throw new ArgumentNullException("token");
             if (context == null) throw new ArgumentNullException("targetContext");

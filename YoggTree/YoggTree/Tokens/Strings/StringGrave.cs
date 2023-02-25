@@ -10,14 +10,19 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using YoggTree.Core;
+using YoggTree.Core.Interfaces;
 
-namespace YoggTree.Tokens.Basic
+namespace YoggTree.Tokens.Strings
 {
-    public class BasicToken : TokenDefinitionBase, IBasicToken
+    public class StringGrave : TokenDefinitionBase, IContextStarter, IContextEnder, IStringToken
     {
-        public BasicToken(Regex token, string name)
-            : base(token, name)
+        public StringGrave()
+            : base(TokenRegexStore.Grave, "`")
         {
         }
+
+        public string ContextStartKey { get; } = "StringGrave";
+
+        public string ContextEndKey { get; } = "StringGrave";
     }
 }

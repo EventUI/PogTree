@@ -7,7 +7,7 @@ namespace YoggTree.Core.Interfaces
     /// <summary>
     /// Interface that marks TokenDefinitionBase as being a token that ends a TokenParseContextBase.
     /// </summary>
-    public interface IContextEnder
+    public interface IContextEnder : ITokenDefinition
     {
         /// <summary>
         /// A string value that matches the ContextStartKey on TokenDefinitionBase that starts the intended TokenParseContextBase.

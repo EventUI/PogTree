@@ -9,11 +9,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using YoggTree.Core.Interfaces;
 
-namespace YoggTree.Tokens
+namespace YoggTree.Tokens.Basic
 {
-    public static class StandardTokens
+    internal interface IBasicToken : ITokenDefinition
     {
-
     }
 }
