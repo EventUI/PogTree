@@ -6,4 +6,10 @@
     <Nullable>disable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Folder Include="Tokens\Comments\" />
+    <Folder Include="Tokens\Whitespace\" />
+    <Folder Include="Tokens\Strings\" />
+  </ItemGroup>
+
 </Project>

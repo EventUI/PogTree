@@ -16,7 +16,7 @@ namespace YoggTree.Core
     /// <summary>
     /// Represents an instance of a TokenDefinitionBase that was found in a TokenParseContextBase's Content.
     /// </summary>
-    public sealed record TokenInstance : IEquatable<TokenInstance>, IContextIndexable, IComparable<TokenInstance>
+    public sealed record TokenInstance : IEquatable<TokenInstance>, IComparable<TokenInstance>
     {
         /// <summary>
         /// The definition of the rules for the token.
@@ -24,7 +24,7 @@ namespace YoggTree.Core
         public TokenDefinitionBase TokenDefinition { get; } = null;
 
         /// <summary>
-        /// The context in which the token was found.
+        /// The targetContext in which the token was found.
         /// </summary>
         public TokenParseContextBase Context { get; internal init; } = null;
 
@@ -46,7 +46,7 @@ namespace YoggTree.Core
         internal TokenInstance(TokenDefinitionBase tokenDefinition, TokenParseContextBase context, int tokenStartIndex, ReadOnlyMemory<char> value)
         {
             if (tokenDefinition == null) throw new ArgumentNullException("token");
-            if (context == null) throw new ArgumentNullException("context");
+            if (context == null) throw new ArgumentNullException("targetContext");
             if (tokenStartIndex < 0) throw new ArgumentOutOfRangeException(nameof(tokenStartIndex));
             if (value.IsEmpty == true) throw new ArgumentException("value cannot be empty.");
 
@@ -66,7 +66,7 @@ namespace YoggTree.Core
         {
             if (other == null) return false; 
             if (other.TokenDefinition.ID != TokenDefinition.ID) return false;
-            if (other.TokenStartIndex!= TokenStartIndex) return false;
+            if (other.TokenStartIndex != TokenStartIndex) return false;
             if (other.Value.Span.SequenceEqual(Value.Span) == false) return false;
             if (other.TokenEndIndex != TokenEndIndex) return false;
 
@@ -78,54 +78,49 @@ namespace YoggTree.Core
             return base.GetHashCode();
         }
 
-        public int GetContextIndex(int localIndex, TokenParseContextBase targetParent)
+        public int GetContextualIndex(TokenParseContextBase targetContext)
         {
-            List<TokenParseContextBase> parentStack = new List<TokenParseContextBase>();
-            var parent = Context;
+            if (targetContext == null) throw new ArgumentNullException(nameof(targetContext));
+            if (TokenStartIndex < 0) throw new Exception("TokenStartIndex must be a positive number.");
+
+            bool parentFound = false;
+
+            TokenParseContextBase parent = Context.Parent;
 
             while (parent != null)
             {
-                if (parent == targetParent) break;
+                if (parent == targetContext)
+                {
+                    parentFound = true;
+                    break;
+                }
 
-                parentStack.Add(parent);
-                parent= parent.Parent;
+                parent = parent.Parent;               
             }
 
-            if (parentStack.Contains(targetParent) == false) throw new Exception($"{targetParent.ToString()} was not a parent of this {GetType().Name}");
-            parentStack.Reverse();
+            if (parentFound != true) throw new Exception("TokenInstance is not contained by the target targetContext.");
 
-            int index = targetParent.StartIndex;
-
-            foreach (var higherParent in parentStack)
-            {
-                index += higherParent.StartIndex;
-            }
-
-            return index + localIndex;
+            return TokenStartIndex + targetContext.AbsoluteOffset;
         }
 
-        public int GetAbsoluteIndex(int localIndex, TokenParseSession session)
+        public int GetAbsoluteIndex()
         {
-            if (Context.ParseSession != session) throw new Exception($"This {GetType().Name} is not contained by the provided {nameof(session)}");
+            if (Context?.ParseSession == null) throw new Exception("Token does not belong to a parse session, cannot calculate absolute index.");
+            return GetContextualIndex(Context.ParseSession.RootContext);
+        }
 
-            List<TokenParseContextBase> parentStack = new List<TokenParseContextBase>();
-            var parent = Context;
+        public TokenInstance GetContextualInstance(TokenParseContextBase targetContext)
+        {
+            int contextualStartIndex = GetContextualIndex(targetContext);
+            int delta = contextualStartIndex - TokenStartIndex;
 
-            while (parent != null)
-            {
-                parentStack.Add(parent);
-                parent = parent.Parent;
-            }
+            return this with { Context = targetContext, TokenEndIndex = TokenEndIndex + delta, TokenStartIndex = TokenStartIndex + delta };
+        }
 
-            parentStack.Reverse();
-
-            int index = 0;
-            foreach (var higherParent in parentStack)
-            {
-                index += higherParent.StartIndex;
-            }
-
-            return index + localIndex;
+        public TokenInstance GetAbsoluteInstance()
+        {
+            if (Context?.ParseSession == null) throw new Exception("Token does not belong to a parse session, cannot get absolute instance.");
+            return GetContextualInstance(Context?.ParseSession?.RootContext);
         }
 
         public int CompareTo(TokenInstance other)

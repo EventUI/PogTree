@@ -63,7 +63,7 @@ namespace YoggTree.Core
         /// <summary>
         /// The current index in the parse operation of this context.
         /// </summary>
-        public int CurrentIndex { get { return _currentIndex; } }
+        internal int CurrentIndex { get { return _currentIndex; } }
 
         /// <summary>
         /// The offset from the root ParseSession's Context to the beginning of this one in the source Content.
@@ -178,7 +178,7 @@ namespace YoggTree.Core
         /// Walks the Content of this Context, identifying tokens contained within and recursively spawning child contexts when such a token is encountered.
         /// </summary>
         /// <exception cref="Exception"></exception>
-        public void WalkContent()
+        internal void WalkContent()
         {
             TokenInstance _previousToken = null;
 

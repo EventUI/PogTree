@@ -22,8 +22,6 @@ namespace YoggTree.Core
 
         protected readonly string _name = null;
         protected readonly Regex _token = null;
-        protected bool _startsNewContext = false;
-        protected TokenDefinitionBase _contextEndToken = null;
 
         /// <summary>
         /// The unique ID of this token definition.
@@ -121,25 +119,6 @@ namespace YoggTree.Core
         public override string ToString()
         {
             return $"{GetType().Name}-{_name}-({_token.ToString()})";
-        }
-    }
-
-    public sealed class EmptyTokenDefinition : TokenDefinitionBase
-    {
-        internal EmptyTokenDefinition()
-            : base(new Regex("[^.]"), "Empty")
-        {
-        }
-    }
-
-    /// <summary>
-    /// Special TokenDefinitionBase for plain text that exists between other TokenInstances.
-    /// </summary>
-    public sealed class ContentToken : TokenDefinitionBase
-    {
-        internal ContentToken()
-            : base(new Regex(""), "<content>")
-        {
         }
     }
 }
