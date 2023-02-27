@@ -8,11 +8,17 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using YoggTree.Core.Interfaces;
 
-namespace YoggTree.Contexts
+namespace YoggTree.Tokens.Composed
 {
-    internal class DefaultTokenParseContext
+    public class ComposedToken : ComposedTokenBase
     {
+        public ComposedToken(Regex token, string name)
+            : base(token, name)
+        {
+        }
     }
 }

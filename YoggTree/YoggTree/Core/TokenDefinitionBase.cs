@@ -3,13 +3,7 @@
 This source code is licensed under the MIT license found in the
 LICENSE file in the root directory of this source tree.*/
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection.Metadata;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using YoggTree.Core.Interfaces;
 
 namespace YoggTree.Core
@@ -71,14 +65,14 @@ namespace YoggTree.Core
         /// <param name="context">The context to search for the next token in.</param>
         /// <param name="startingIndex">Optional. The starting index in the array of TokenInstances to begin searching at.</param>
         /// <returns></returns>
-        public (TokenInstance Instance, int Index) GetNextToken(int currentPosition, TokenParseContextBase context, int startingIndex = 0)
+        public (TokenInstance Instance, int Index) GetNextToken(int currentPosition, TokenParseContext context, int startingIndex = 0)
         {
             if (context.ParseSession.AllTokenInstances.TryGetValue(ID, out IReadOnlyList<TokenInstance> tokens) == false) return (null, -1);
 
             for (int x = startingIndex; x < tokens.Count; x++)
             {
                 TokenInstance tokenInstance = tokens[x];
-                if (tokenInstance.TokenStartIndex >= currentPosition) return (tokenInstance, x);
+                if (tokenInstance.StartIndex >= currentPosition) return (tokenInstance, x);
             }
 
             return (null, -1);
@@ -90,7 +84,7 @@ namespace YoggTree.Core
         /// <param name="previousToken">The token found immediately before this one.</param>
         /// <param name="context">The context in which the token was found.</param>
         /// <returns></returns>
-        public virtual bool CanComeAfter(TokenInstance previousToken, TokenParseContextBase context)
+        public virtual bool CanComeAfter(TokenInstance previousToken)
         {
             return true;
         }
@@ -101,7 +95,7 @@ namespace YoggTree.Core
         /// <param name="nextToken"></param>
         /// <param name="context"></param>
         /// <returns></returns>
-        public virtual bool CanComeBefore(TokenInstance nextToken, TokenParseContextBase context)
+        public virtual bool CanComeBefore(TokenInstance nextToken)
         {
             return true;
         }
@@ -112,7 +106,7 @@ namespace YoggTree.Core
         /// <param name="instance">The current token instance.</param>
         /// <param name="context">The context in which the token was found.</param>
         /// <returns></returns>
-        public virtual bool IsValidInstance(TokenInstance instance, TokenParseContextBase context)
+        public virtual bool IsValidInstance(TokenInstance instance)
         {
             return true;
         }

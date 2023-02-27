@@ -7,7 +7,15 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Tokens\Composed\" />
+    <EditorConfigFiles Remove="C:\Users\richa\source\repos\EventUI\YoggTree\YoggTree\YoggTree\.editorconfig" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="C:\Users\richa\source\repos\EventUI\YoggTree\YoggTree\YoggTree\.editorconfig" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="YoggTree.Core" />
   </ItemGroup>
 
 </Project>

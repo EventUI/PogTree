@@ -10,9 +10,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace YoggTree.Contexts
+namespace YoggTree.Tokens
 {
-    internal class DefaultTokenParseContext
+    public enum TokenCreateMode
     {
+        Default = 0,
+        ContextStarter = 1,
+        ContextEnder = 2,
+        ContextStarterAndEnder = 3
     }
 }

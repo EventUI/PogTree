@@ -10,9 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace YoggTree.Contexts
+namespace YoggTree.Core.DelegateSet
 {
-    internal class DefaultTokenParseContext
-    {
-    }
+
 }

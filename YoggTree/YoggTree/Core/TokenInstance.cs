@@ -14,9 +14,9 @@ using YoggTree.Core.Interfaces;
 namespace YoggTree.Core
 {
     /// <summary>
-    /// Represents an instance of a TokenDefinitionBase that was found in a TokenParseContextBase's Content.
+    /// Represents an instance of a TokenDefinitionBase that was found in a TokenParseContext's Content.
     /// </summary>
-    public sealed record TokenInstance : IEquatable<TokenInstance>, IComparable<TokenInstance>
+    public sealed record TokenInstance : IContentSpan, IEquatable<TokenInstance>, IComparable<TokenInstance>
     {
         /// <summary>
         /// The definition of the rules for the token.
@@ -26,24 +26,24 @@ namespace YoggTree.Core
         /// <summary>
         /// The targetContext in which the token was found.
         /// </summary>
-        public TokenParseContextBase Context { get; internal init; } = null;
+        public TokenParseContext Context { get; internal init; } = null;
 
         /// <summary>
         /// The index at which the token begins.
         /// </summary>
-        public int TokenStartIndex { get; internal init; } = -1;
+        public int StartIndex { get; internal init; } = -1;
 
         /// <summary>
         /// The value of the token that was found.
         /// </summary>
-        public ReadOnlyMemory<char> Value { get; } = null;
+        public ReadOnlyMemory<char> Contents { get; } = null;
 
         /// <summary>
         /// The ending index of the token.
         /// </summary>
-        public int TokenEndIndex { get; internal init; } = -1;
+        public int EndIndex { get; internal init; } = -1;
 
-        internal TokenInstance(ITokenDefinition tokenDefinition, TokenParseContextBase context, int tokenStartIndex, ReadOnlyMemory<char> value)
+        internal TokenInstance(ITokenDefinition tokenDefinition, TokenParseContext context, int tokenStartIndex, ReadOnlyMemory<char> value)
         {
             if (tokenDefinition == null) throw new ArgumentNullException("token");
             if (context == null) throw new ArgumentNullException("targetContext");
@@ -52,23 +52,23 @@ namespace YoggTree.Core
 
             TokenDefinition = tokenDefinition;
             Context = context;
-            TokenStartIndex = tokenStartIndex;
-            Value = value;
-            TokenEndIndex = TokenStartIndex + value.Length;
+            StartIndex = tokenStartIndex;
+            Contents = value;
+            EndIndex = StartIndex + value.Length;
         }   
 
         public override string ToString()
         {
-            return $"{TokenDefinition.ToString()}  @{TokenStartIndex}";
+            return $"{TokenDefinition.ToString()}  @{StartIndex}";
         }
 
         public bool Equals(TokenInstance other)
         {
             if (other == null) return false; 
             if (other.TokenDefinition.ID != TokenDefinition.ID) return false;
-            if (other.TokenStartIndex != TokenStartIndex) return false;
-            if (other.Value.Span.SequenceEqual(Value.Span) == false) return false;
-            if (other.TokenEndIndex != TokenEndIndex) return false;
+            if (other.StartIndex != StartIndex) return false;
+            if (other.Contents.Span.SequenceEqual(Contents.Span) == false) return false;
+            if (other.EndIndex != EndIndex) return false;
 
             return true;
         }
@@ -78,14 +78,14 @@ namespace YoggTree.Core
             return base.GetHashCode();
         }
 
-        public int GetContextualIndex(TokenParseContextBase targetContext)
+        public int GetContextualIndex(TokenParseContext targetContext)
         {
             if (targetContext == null) throw new ArgumentNullException(nameof(targetContext));
-            if (TokenStartIndex < 0) throw new Exception("TokenStartIndex must be a positive number.");
+            if (StartIndex < 0) throw new Exception("StartIndex must be a positive number.");
 
             bool parentFound = false;
 
-            TokenParseContextBase parent = Context.Parent;
+            TokenParseContext parent = Context.Parent;
 
             while (parent != null)
             {
@@ -100,7 +100,7 @@ namespace YoggTree.Core
 
             if (parentFound != true) throw new Exception("TokenInstance is not contained by the target targetContext.");
 
-            return TokenStartIndex + targetContext.AbsoluteOffset;
+            return StartIndex + targetContext.AbsoluteOffset;
         }
 
         public int GetAbsoluteIndex()
@@ -109,12 +109,12 @@ namespace YoggTree.Core
             return GetContextualIndex(Context.ParseSession.RootContext);
         }
 
-        public TokenInstance GetContextualInstance(TokenParseContextBase targetContext)
+        public TokenInstance GetContextualInstance(TokenParseContext targetContext)
         {
             int contextualStartIndex = GetContextualIndex(targetContext);
-            int delta = contextualStartIndex - TokenStartIndex;
+            int delta = contextualStartIndex - StartIndex;
 
-            return this with { Context = targetContext, TokenEndIndex = TokenEndIndex + delta, TokenStartIndex = TokenStartIndex + delta };
+            return this with { Context = targetContext, EndIndex = EndIndex + delta, StartIndex = StartIndex + delta };
         }
 
         public TokenInstance GetAbsoluteInstance()
@@ -125,7 +125,12 @@ namespace YoggTree.Core
 
         public int CompareTo(TokenInstance other)
         {
-            return (TokenStartIndex - other.TokenStartIndex);
+            return (StartIndex - other.StartIndex);
+        }
+
+        TokenParseContext IContentSpan.GetContext()
+        {
+            return Context;
         }
     }
 }

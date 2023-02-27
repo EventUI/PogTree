@@ -13,15 +13,11 @@ using YoggTree.Core.Interfaces;
 
 namespace YoggTree.Tokens
 {
-    public delegate bool CanComeAfterPredicate(TokenInstance previousToken, TokenParseContextBase context);
+    public delegate bool CanComeAfterPredicate<T>(TokenInstance previousToken, T definition) where T : ITokenDefinition;
 
-    public delegate bool CanComeBeforePredicate(TokenInstance nextToken, TokenParseContextBase context);
+    public delegate bool CanComeBeforePredicate<T>(TokenInstance nextToken, T definition) where T : ITokenDefinition;
 
-    public delegate bool IsValidInstancePredicate(TokenInstance instance, TokenParseContextBase context);
+    public delegate bool IsValidInstancePredicate<T>(TokenInstance instance, T definition) where T : ITokenDefinition;
 
-    public delegate bool CanComeAfterPredicate<T>(TokenInstance previousToken, T definition, TokenParseContextBase context) where T : ITokenDefinition;
-
-    public delegate bool CanComeBeforePredicate<T>(TokenInstance nextToken, T definition, TokenParseContextBase context) where T : ITokenDefinition;
-
-    public delegate bool IsValidInstancePredicate<T>(TokenInstance instance, T definition, TokenParseContextBase context) where T : ITokenDefinition;
+    public delegate bool ShouldApplyTokenPredicate<T>(T definition) where T : ITokenDefinition;
 }

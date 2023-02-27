@@ -13,9 +13,9 @@ namespace YoggTree.Core.Interfaces
         string Name { get; }
         Regex Token { get; }
 
-        bool CanComeAfter(TokenInstance previousToken, TokenParseContextBase context);
-        bool CanComeBefore(TokenInstance nextToken, TokenParseContextBase context);
-        (TokenInstance Instance, int Index) GetNextToken(int currentPosition, TokenParseContextBase context, int startingIndex = 0);
-        bool IsValidInstance(TokenInstance instance, TokenParseContextBase context);
+        bool CanComeAfter(TokenInstance previousToken);
+        bool CanComeBefore(TokenInstance nextToken);
+        (TokenInstance Instance, int Index) GetNextToken(int currentPosition, TokenParseContext context, int startingIndex = 0);
+        bool IsValidInstance(TokenInstance instance);
     }
 }

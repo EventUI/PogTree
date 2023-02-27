@@ -17,14 +17,14 @@ namespace YoggTree.Core
     /// <summary>
     /// Represents the containing unit for parsing a body of text.
     /// </summary>
-    public class TokenParseSession
+    public abstract class TokenParseSession
     {
         private IReadOnlyList<ITokenDefinition> _roDefinitions;
         private ReadOnlyMemory<char> _contents = ReadOnlyMemory<char>.Empty;
         private ReadOnlyDictionary<Guid, IReadOnlyList<TokenInstance>> _allTokenInstances;
 
         protected List<ITokenDefinition> _tokenDefinitions = new List<ITokenDefinition>();
-        protected TokenParseContextBase _rootContext = null;
+        protected TokenParseContext _rootContext = null;
 
         /// <summary>
         /// The full contents of the string being parsed.
@@ -53,7 +53,7 @@ namespace YoggTree.Core
         /// <summary>
         /// The root parsing content representing the parse results for the whole file.
         /// </summary>
-        public TokenParseContextBase RootContext { get { return _rootContext; } }
+        public TokenParseContext RootContext { get { return _rootContext; } }
 
         /// <summary>
         /// Makes a new ParseSession for the given string and token set.
@@ -74,7 +74,7 @@ namespace YoggTree.Core
         /// Triggers the parsing of the ParseSession's content.
         /// </summary>
         /// <returns></returns>
-        public TokenParseContextBase Parse(string contents)
+        public TokenParseContext Parse(string contents)
         {
             if (contents == null) throw new ArgumentNullException(nameof(contents));            
             _contents = new ReadOnlyMemory<char>(contents.ToCharArray());
@@ -92,10 +92,7 @@ namespace YoggTree.Core
         /// Overridable function for making the Root parse context.
         /// </summary>
         /// <returns></returns>
-        protected virtual TokenParseContextBase MakeRootContext()
-        {
-            return new DefaultTokenParseContext(this);
-        }
+        protected abstract TokenParseContext MakeRootContext();
 
         /// <summary>
         /// Gets all the token instances found in the Content by using the TokenDefinitions Regex's.
