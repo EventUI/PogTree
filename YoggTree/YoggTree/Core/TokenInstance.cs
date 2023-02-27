@@ -14,14 +14,14 @@ using YoggTree.Core.Interfaces;
 namespace YoggTree.Core
 {
     /// <summary>
-    /// Represents an instance of a TokenDefinitionBase that was found in a TokenParseContext's Content.
+    /// Represents an instance of a TokenDefinition that was found in a TokenParseContext's Content.
     /// </summary>
     public sealed record TokenInstance : IContentSpan, IEquatable<TokenInstance>, IComparable<TokenInstance>
     {
         /// <summary>
         /// The definition of the rules for the token.
         /// </summary>
-        public ITokenDefinition TokenDefinition { get; } = null;
+        public TokenDefinition TokenDefinition { get; } = null;
 
         /// <summary>
         /// The targetContext in which the token was found.
@@ -43,7 +43,7 @@ namespace YoggTree.Core
         /// </summary>
         public int EndIndex { get; internal init; } = -1;
 
-        internal TokenInstance(ITokenDefinition tokenDefinition, TokenParseContext context, int tokenStartIndex, ReadOnlyMemory<char> value)
+        internal TokenInstance(TokenDefinition tokenDefinition, TokenParseContext context, int tokenStartIndex, ReadOnlyMemory<char> value)
         {
             if (tokenDefinition == null) throw new ArgumentNullException("token");
             if (context == null) throw new ArgumentNullException("targetContext");

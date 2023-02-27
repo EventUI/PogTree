@@ -14,7 +14,7 @@ using YoggTree.Core.Interfaces;
 
 namespace YoggTree.Tokens.Strings
 {
-    public class StringSingleQuote : TokenDefinitionBase, IContextStarter, IContextEnder, IStringToken
+    public class StringSingleQuote : TokenDefinition, IContextStarter, IContextEnder, IStringToken
     {
         public StringSingleQuote()
             : base(TokenRegexStore.SingleQuote, "'")

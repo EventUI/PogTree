@@ -18,14 +18,14 @@ namespace YoggTree.Tokens
 {
     public class TokenListBuilder
     {
-        private List<ITokenDefinition> _tokens = new List<ITokenDefinition>();
+        private List<TokenDefinition> _tokens = new List<TokenDefinition>();
         private HashSet<string> _tokenPatterns = new HashSet<string>();
 
         public TokenListBuilder() 
         {
         }
 
-        public TokenListBuilder(IEnumerable<ITokenDefinition> tokens)
+        public TokenListBuilder(IEnumerable<TokenDefinition> tokens)
         {
             if (tokens != null)
             {
@@ -46,27 +46,27 @@ namespace YoggTree.Tokens
             return AddToken(tokenBuilder.GetToken());            
         }
 
-        public TokenListBuilder AddToken(Func<ITokenDefinition> factory)
+        public TokenListBuilder AddToken(Func<TokenDefinition> factory)
         {
             return AddToken(factory());
         }
 
-        public TokenListBuilder AddToken<TToken>(Func<TokenBuilder, TToken> factory) where TToken : IComposedToken, new()
+        public TokenListBuilder AddToken<TToken>(Func<TokenBuilder, TToken> factory) where TToken : ComposedTokenBase, new()
         {
             return AddToken(factory(TokenBuilder.Create<TToken>()));
         }
 
-        public TokenListBuilder AddToken(Regex regex, string name, Func<TokenBuilder, ITokenDefinition> factory)
+        public TokenListBuilder AddToken(Regex regex, string name, Func<TokenBuilder, TokenDefinition> factory)
         {
             return AddToken(factory(TokenBuilder.Create(regex, name)));
         }
 
-        public TokenListBuilder AddToken(Regex regex, string name, TokenCreateMode mode, string contextKey, Func<TokenBuilder, ITokenDefinition> factory)
+        public TokenListBuilder AddToken(Regex regex, string name, TokenCreateMode mode, string contextKey, Func<TokenBuilder, TokenDefinition> factory)
         {
             return AddToken(factory(TokenBuilder.Create(regex, name, mode, contextKey)));
         }
 
-        public TokenListBuilder AddToken(ITokenDefinition token)
+        public TokenListBuilder AddToken(TokenDefinition token)
         {
             if (token == null) throw new ArgumentNullException(nameof(token));
 
@@ -111,7 +111,7 @@ namespace YoggTree.Tokens
             }           
         }
 
-        public ITokenDefinition GetTokenFromRegex(string pattern)
+        public TokenDefinition GetTokenFromRegex(string pattern)
         {
             if (pattern == null || _tokenPatterns.Contains(pattern) == false) return null;
 
@@ -123,7 +123,7 @@ namespace YoggTree.Tokens
             return null;
         }
 
-        public ITokenDefinition GetTokenFromRegex(Regex regex)
+        public TokenDefinition GetTokenFromRegex(Regex regex)
         {
             return GetTokenFromRegex(regex?.ToString());
         }

@@ -12,12 +12,12 @@ using System.Threading.Tasks;
 namespace YoggTree.Core.Interfaces
 {
     /// <summary>
-    /// Interface meant to be applied to a TokenDefinitionBase indicating that it can start a new sub-context to the current context.
+    /// Interface meant to be applied to a TokenDefinition indicating that it can start a new sub-context to the current context.
     /// </summary>
     public interface IContextStarter : ITokenDefinition
     {
         /// <summary>
-        /// A string value that matches the ContextEndKey on TokenDefinitionBase that starts the intended TokenParseContext.
+        /// A string value that matches the ContextEndKey on TokenDefinition that starts the intended TokenParseContext.
         /// </summary>
         string ContextStartKey { get; }
     }

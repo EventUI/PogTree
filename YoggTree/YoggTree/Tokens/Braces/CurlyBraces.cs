@@ -14,7 +14,7 @@ using YoggTree.Core.Interfaces;
 
 namespace YoggTree.Tokens.Braces
 {
-    public class OpenCurlyBraceToken : TokenDefinitionBase, IBraceToken, IContextStarter
+    public class OpenCurlyBraceToken : TokenDefinition, IBraceToken, IContextStarter
     {
         public string ContextStartKey { get; } = "Brace_Curly";
 
@@ -24,7 +24,7 @@ namespace YoggTree.Tokens.Braces
         }
     }
 
-    public class CloseCurlyBraceToken : TokenDefinitionBase, IBraceToken, IContextEnder
+    public class CloseCurlyBraceToken : TokenDefinition, IBraceToken, IContextEnder
     {
         public string ContextEndKey { get; } = "Brace_Curly";
 

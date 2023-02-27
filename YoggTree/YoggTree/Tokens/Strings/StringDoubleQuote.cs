@@ -14,7 +14,7 @@ using YoggTree.Core.Interfaces;
 
 namespace YoggTree.Tokens.Strings
 {
-    public class StringDoubleQuote : TokenDefinitionBase, IContextStarter, IContextEnder, IStringToken
+    public class StringDoubleQuote : TokenDefinition, IContextStarter, IContextEnder, IStringToken
     {
         public StringDoubleQuote()
             : base(TokenRegexStore.DoubleQuote, "\"")

@@ -13,7 +13,7 @@ using YoggTree.Core;
 
 namespace YoggTree.Tokens.Basic
 {
-    public class BasicToken : TokenDefinitionBase, IBasicToken
+    public class BasicToken : TokenDefinition, IBasicToken
     {
         public BasicToken(Regex token, string name)
             : base(token, name)

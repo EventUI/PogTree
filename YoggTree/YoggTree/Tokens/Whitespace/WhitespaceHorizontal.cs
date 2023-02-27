@@ -14,7 +14,7 @@ using YoggTree.Core;
 
 namespace YoggTree.Tokens.Whitespace
 {
-    public class WhitespaceHorizontal : TokenDefinitionBase, IWhitespaceToken
+    public class WhitespaceHorizontal : TokenDefinition, IWhitespaceToken
     {
         public WhitespaceHorizontal() 
             : base(TokenRegexStore.Whitespace_Horizontal, "<horizontal whitespace>")

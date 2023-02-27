@@ -14,7 +14,7 @@ using YoggTree.Core.Interfaces;
 
 namespace YoggTree.Tokens.Strings
 {
-    public class StringGrave : TokenDefinitionBase, IContextStarter, IContextEnder, IStringToken
+    public class StringGrave : TokenDefinition, IContextStarter, IContextEnder, IStringToken
     {
         public StringGrave()
             : base(TokenRegexStore.Grave, "`")

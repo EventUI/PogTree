@@ -91,7 +91,7 @@ namespace YoggTree.Core
         public TokenInstance CurrentToken { get; protected set; } = null;
 
         /// <summary>
-        /// Every instance of every TokenDefinitionBase found in this context.
+        /// Every instance of every TokenDefinition found in this context.
         /// </summary>
         public IReadOnlyList<TokenInstance> Tokens { get { return _tokensRO; } }
 

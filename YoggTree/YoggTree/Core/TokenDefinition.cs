@@ -11,7 +11,7 @@ namespace YoggTree.Core
     /// <summary>
     /// Represents the definition of a token found in a string.
     /// </summary>
-    public abstract class TokenDefinitionBase : ITokenDefinition
+    public abstract class TokenDefinition : ITokenDefinition
     {
         private Guid _id = Guid.NewGuid();
 
@@ -43,13 +43,13 @@ namespace YoggTree.Core
         }
 
         /// <summary>
-        /// Creates a new TokenDefinitionBase.
+        /// Creates a new TokenDefinition.
         /// </summary>
         /// <param name="token">The regular expression used to identify the token/</param>
         /// <param name="name">The human readable name of the token.</param>
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="ArgumentException"></exception>
-        public TokenDefinitionBase(Regex token, string name)
+        public TokenDefinition(Regex token, string name)
         {
             if (token == null) throw new ArgumentNullException(nameof(token));
             if (String.IsNullOrWhiteSpace(name) == true) throw new ArgumentException(nameof(name));

@@ -18,12 +18,12 @@ using YoggTree.Tokens.Basic;
 
 namespace YoggTree.Tokens.Composed
 {
-    public class ComposedTokenBase : TokenDefinitionBase, IComposedToken
+    public class ComposedTokenBase : TokenDefinition, IComposedToken
     {
         private DelegateItemOridinalProvider _counterProvider = new DelegateItemOridinalProvider();
-        private DelegateSetCollection<CanComeAfterPredicate<ITokenDefinition>, ITokenDefinition> _canComeAfters = null;
-        private DelegateSetCollection<CanComeBeforePredicate<ITokenDefinition>, ITokenDefinition> _canComeBefores = null;
-        private DelegateSetCollection<IsValidInstancePredicate<ITokenDefinition>, ITokenDefinition> _isValidInstances = null;
+        private DelegateSetCollection<CanComeAfterPredicate<TokenDefinition>, TokenDefinition> _canComeAfters = null;
+        private DelegateSetCollection<CanComeBeforePredicate<TokenDefinition>, TokenDefinition> _canComeBefores = null;
+        private DelegateSetCollection<IsValidInstancePredicate<TokenDefinition>, TokenDefinition> _isValidInstances = null;
 
         internal ComposedTokenBase(Regex token, string name) 
             : base(token, name)
@@ -31,9 +31,9 @@ namespace YoggTree.Tokens.Composed
 
         }
 
-        IComposedToken IComposedToken.AddCheckCanComeAfter<TTokenDef>(Func<TokenInstance, TTokenDef, bool> comeAfterDele, Func<TTokenDef, bool> shouldHandle)
+        public IComposedToken AddCheckCanComeAfter<TTokenDef>(Func<TokenInstance, TTokenDef, bool> comeAfterDele, Func<TTokenDef, bool> shouldHandle = null) where TTokenDef: TokenDefinition
         {
-            if (_canComeAfters == null) _canComeAfters = new DelegateSetCollection<CanComeAfterPredicate<ITokenDefinition>, ITokenDefinition>(_counterProvider);
+            if (_canComeAfters == null) _canComeAfters = new DelegateSetCollection<CanComeAfterPredicate<TokenDefinition>, TokenDefinition>(_counterProvider);
 
             if (shouldHandle != null)
             {
@@ -47,9 +47,9 @@ namespace YoggTree.Tokens.Composed
             return this;
         }
 
-        IComposedToken IComposedToken.AddCheckCanComeBefore<TTokenDef>(Func<TokenInstance, TTokenDef, bool> comeBeforeDele, Func<TTokenDef, bool> shouldHandle)
+        public IComposedToken AddCheckCanComeBefore<TTokenDef>(Func<TokenInstance, TTokenDef, bool> comeBeforeDele, Func<TTokenDef, bool> shouldHandle = null) where TTokenDef : TokenDefinition
         {
-            if (_canComeBefores == null) _canComeBefores = new DelegateSetCollection<CanComeBeforePredicate<ITokenDefinition>, ITokenDefinition>(_counterProvider);
+            if (_canComeBefores == null) _canComeBefores = new DelegateSetCollection<CanComeBeforePredicate<TokenDefinition>, TokenDefinition>(_counterProvider);
 
             if (shouldHandle != null)
             {
@@ -63,9 +63,9 @@ namespace YoggTree.Tokens.Composed
             return this;
         }
 
-        IComposedToken IComposedToken.AddCheckIsValidTokenInstance<TTokenDef>(Func<TokenInstance, TTokenDef, bool> isValidDele, Func<TTokenDef, bool> shouldHandle)
+        public IComposedToken AddCheckIsValidTokenInstance<TTokenDef>(Func<TokenInstance, TTokenDef, bool> isValidDele, Func<TTokenDef, bool> shouldHandle = null) where TTokenDef : TokenDefinition
         {
-            if (_isValidInstances == null) _isValidInstances = new DelegateSetCollection<IsValidInstancePredicate<ITokenDefinition>, ITokenDefinition>(_counterProvider);
+            if (_isValidInstances == null) _isValidInstances = new DelegateSetCollection<IsValidInstancePredicate<TokenDefinition>, TokenDefinition>(_counterProvider);
 
             if (shouldHandle != null)
             {

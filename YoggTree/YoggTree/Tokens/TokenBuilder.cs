@@ -18,50 +18,50 @@ namespace YoggTree.Tokens
 {
     public class TokenBuilder
     {
-        private IComposedToken _token = null;
+        private ComposedTokenBase _token = null;
 
-        internal TokenBuilder(IComposedToken token)
+        internal TokenBuilder(ComposedTokenBase token)
         {
             if (token == null) throw new ArgumentNullException(nameof(token));    
             _token = token;
         }
 
-        public IComposedToken GetToken()
+        public ComposedTokenBase GetToken()
         {
-            return _token;
+            return (ComposedTokenBase)_token;
         }
 
-        public TokenBuilder AddCanComeBeforeCheck<TToken>(Func<TokenInstance, TToken, bool> canComeBefore) where TToken: ITokenDefinition
+        public TokenBuilder AddCanComeBeforeCheck<TToken>(Func<TokenInstance, TToken, bool> canComeBefore) where TToken: TokenDefinition
         {
             _token.AddCheckCanComeBefore(canComeBefore);
             return this;
         }
 
-        public TokenBuilder AddCanComeAfterCheck<TToken>(Func<TokenInstance, TToken, bool> canComeAfter) where TToken : ITokenDefinition
+        public TokenBuilder AddCanComeAfterCheck<TToken>(Func<TokenInstance, TToken, bool> canComeAfter) where TToken : TokenDefinition
         {
             _token.AddCheckCanComeAfter(canComeAfter);
             return this;
         }
 
-        public TokenBuilder AddIsValidCheck<TToken>(Func<TokenInstance, TToken, bool> isValid) where TToken : ITokenDefinition
+        public TokenBuilder AddIsValidCheck<TToken>(Func<TokenInstance, TToken, bool> isValid) where TToken : TokenDefinition
         {
             _token.AddCheckIsValidTokenInstance(isValid);
             return this;
         }
 
-        public TokenBuilder AddCanComeBeforeCheck<TToken>(Func<TokenInstance, TToken, bool> canComeBefore, Func<TToken, bool> shouldHandle) where TToken : ITokenDefinition
+        public TokenBuilder AddCanComeBeforeCheck<TToken>(Func<TokenInstance, TToken, bool> canComeBefore, Func<TToken, bool> shouldHandle) where TToken : TokenDefinition
         {
             _token.AddCheckCanComeBefore(canComeBefore, shouldHandle);
             return this;
         }
 
-        public TokenBuilder AddCanComeAfterCheck<TToken>(Func<TokenInstance, TToken, bool> canComeAfter, Func<TToken, bool> shouldHandle) where TToken : ITokenDefinition
+        public TokenBuilder AddCanComeAfterCheck<TToken>(Func<TokenInstance, TToken, bool> canComeAfter, Func<TToken, bool> shouldHandle) where TToken : TokenDefinition
         {
             _token.AddCheckCanComeAfter(canComeAfter, shouldHandle);
             return this;
         }
 
-        public TokenBuilder AddIsValidCheck<TToken>(Func<TokenInstance, TToken, bool> isValid, Func<TToken, bool> shouldHandle) where TToken : ITokenDefinition
+        public TokenBuilder AddIsValidCheck<TToken>(Func<TokenInstance, TToken, bool> isValid, Func<TToken, bool> shouldHandle) where TToken : TokenDefinition
         {
             _token.AddCheckIsValidTokenInstance(isValid, shouldHandle);
             return this;
@@ -74,7 +74,7 @@ namespace YoggTree.Tokens
 
         public static TokenBuilder Create(Regex regex, string name, TokenCreateMode mode, string contextKey = null)
         {
-            IComposedToken token = null;
+            ComposedTokenBase token = null;
 
             if (mode == TokenCreateMode.Default)
             {
@@ -100,7 +100,7 @@ namespace YoggTree.Tokens
             return new TokenBuilder(token);
         }
 
-        public static TokenBuilder Create<TToken>() where TToken : IComposedToken, new()
+        public static TokenBuilder Create<TToken>() where TToken : ComposedTokenBase, new()
         {
             return new TokenBuilder(new TToken());
         }

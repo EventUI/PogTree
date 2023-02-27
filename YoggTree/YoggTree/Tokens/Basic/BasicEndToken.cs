@@ -14,7 +14,7 @@ using YoggTree.Core.Interfaces;
 
 namespace YoggTree.Tokens.Basic
 {
-    public class BasicEndToken : TokenDefinitionBase, IContextEnder, IBasicToken
+    public class BasicEndToken : TokenDefinition, IContextEnder, IBasicToken
     {
         private string _contextEndKey = null;
         public string ContextEndKey

@@ -13,7 +13,7 @@ using YoggTree.Core;
 
 namespace YoggTree.Tokens.Braces
 {
-    public class OpenBracketToken : TokenDefinitionBase, IBraceToken, IContextStarter
+    public class OpenBracketToken : TokenDefinition, IBraceToken, IContextStarter
     {
         public string ContextStartKey { get; } = "Brace_Bracket";
 
@@ -23,7 +23,7 @@ namespace YoggTree.Tokens.Braces
         }
     }
 
-    public class CloseBracketToken : TokenDefinitionBase, IBraceToken, IContextEnder
+    public class CloseBracketToken : TokenDefinition, IBraceToken, IContextEnder
     {
         public string ContextEndKey { get; } = "Brace_Bracket";
 

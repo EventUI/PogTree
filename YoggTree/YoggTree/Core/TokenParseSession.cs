@@ -19,11 +19,11 @@ namespace YoggTree.Core
     /// </summary>
     public abstract class TokenParseSession
     {
-        private IReadOnlyList<ITokenDefinition> _roDefinitions;
+        private IReadOnlyList<TokenDefinition> _roDefinitions;
         private ReadOnlyMemory<char> _contents = ReadOnlyMemory<char>.Empty;
         private ReadOnlyDictionary<Guid, IReadOnlyList<TokenInstance>> _allTokenInstances;
 
-        protected List<ITokenDefinition> _tokenDefinitions = new List<ITokenDefinition>();
+        protected List<TokenDefinition> _tokenDefinitions = new List<TokenDefinition>();
         protected TokenParseContext _rootContext = null;
 
         /// <summary>
@@ -40,7 +40,7 @@ namespace YoggTree.Core
         /// <summary>
         /// All of the possible tokens that can be found in the string being parsed.
         /// </summary>
-        public IReadOnlyList<ITokenDefinition> DefinedTokens { get { return _roDefinitions; } }
+        public IReadOnlyList<TokenDefinition> DefinedTokens { get { return _roDefinitions; } }
 
         /// <summary>
         /// All of the tokens contained within the
@@ -62,7 +62,7 @@ namespace YoggTree.Core
         /// <param name="tokens">All of the tokens that can be found in the content.</param>
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="Exception"></exception>
-        public TokenParseSession(IEnumerable<ITokenDefinition> tokens) 
+        public TokenParseSession(IEnumerable<TokenDefinition> tokens) 
         { 
             if (tokens == null) throw new ArgumentNullException(nameof(tokens));
 
