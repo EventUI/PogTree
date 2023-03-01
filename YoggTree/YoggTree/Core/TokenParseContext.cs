@@ -12,7 +12,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using YoggTree.Core.Interfaces;
-using YoggTree.Tokens.Composed;
+using YoggTree.Core.Tokens.Composed;
 
 namespace YoggTree.Core
 {

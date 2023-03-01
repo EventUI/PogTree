@@ -9,7 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using YoggTree.Tokens;
+using YoggTree.Core.Tokens;
 
 namespace YoggTree.Core.DelegateSet
 {
