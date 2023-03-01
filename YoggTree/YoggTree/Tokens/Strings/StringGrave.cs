@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using YoggTree.Contexts;
 using YoggTree.Core;
 using YoggTree.Core.Interfaces;
 
@@ -24,5 +25,10 @@ namespace YoggTree.Tokens.Strings
         public string ContextStartKey { get; } = "StringGrave";
 
         public string ContextEndKey { get; } = "StringGrave";
+
+        public override TokenParseContext CreateContext(TokenParseContext parent, TokenInstance start)
+        {
+            return new LiteralContentContext(parent, start, LiteralContentEscapeCharacterFlags.Backslash);
+        }
     }
 }

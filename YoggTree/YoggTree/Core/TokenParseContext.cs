@@ -12,13 +12,14 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using YoggTree.Core.Interfaces;
+using YoggTree.Tokens.Composed;
 
 namespace YoggTree.Core
 {
     /// <summary>
     /// Represents a section or sub-section of a file being parsed for tokens.
     /// </summary>
-    public abstract class TokenParseContext : IContentSpan
+    public class TokenParseContext : IContentSpan, ITokenParseContext
     {
         private Guid _id = Guid.NewGuid();
         private int _absoluteOffset = 0; //the offset that this context starts at relative to the ParseSession
@@ -114,7 +115,7 @@ namespace YoggTree.Core
             EndIndex = session.Contents.Length;
             Contents = session.Contents;
             Parent = null;
-            Name = name;
+            Name = (string.IsNullOrEmpty(name) == true) ? "<anonymous>" : name;
 
             _childContextsRO = _childContexts.AsReadOnly();
             _lastTokenIndexes = new Dictionary<Guid, int>();
@@ -125,7 +126,6 @@ namespace YoggTree.Core
         /// </summary>
         /// <param name="parent">The context that is the parent of this one.</param>
         /// <param name="start">The token instance that signaled the beginning of this context.</param>
-        /// <param name="end">The token instance that signaled the end of this context.</param>
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="ArgumentException"></exception>
         public TokenParseContext(TokenParseContext parent, TokenInstance start, string name = null)
@@ -139,40 +139,13 @@ namespace YoggTree.Core
             StartToken = start;
             Contents = parent.Contents.Slice(StartIndex);
             Depth = parent.Depth + 1;
-            Name = name;
+            Name = (string.IsNullOrEmpty(name) == true) ? "<anonymous>" : name;
 
             _lastTokenIndexes = parent._lastTokenIndexes;
             _childContextsRO = _childContexts.AsReadOnly();
             _absoluteOffset = StartIndex + parent._absoluteOffset;
         }
 
-        /// <summary>
-        /// Creates a new sub-context that is the child of another context.
-        /// </summary>
-        /// <param name="parent">The context that is the parent of this one.</param>
-        /// <param name="start">The token instance that signaled the beginning of this context.</param>
-        /// <param name="end">The token instance that signaled the end of this context.</param>
-        /// <exception cref="ArgumentNullException"></exception>
-        /// <exception cref="ArgumentException"></exception>
-        public TokenParseContext(TokenParseContext parent, TokenInstance start, TokenInstance end, string name = null)
-        {
-            if (parent == null) throw new ArgumentNullException(nameof(parent));
-            if (start == null) throw new ArgumentException(nameof(start));
-            if (end == null) throw new ArgumentException(nameof(end));
-
-            ParseSession = parent.ParseSession;
-            Parent = parent;
-            StartIndex = start.StartIndex;
-            StartToken = start;
-            EndIndex = end.EndIndex;
-            Contents = parent.Contents.Slice(StartIndex, EndIndex - StartIndex);
-            Depth = parent.Depth + 1;
-            Name = name;
-
-            _lastTokenIndexes = new Dictionary<Guid, int>(parent._lastTokenIndexes);
-            _childContextsRO = _childContexts.AsReadOnly();
-            _absoluteOffset = StartIndex + parent._absoluteOffset;
-        }        
 
         /// <summary>
         /// Walks the Content of this Context, identifying tokens contained within and recursively spawning child contexts when such a token is encountered.
@@ -213,16 +186,16 @@ namespace YoggTree.Core
                 if (StartsNewContext(nextToken) == true)
                 {
                     TokenParseContext childContext = CreateNewContext(nextToken);
-                    if (childContext != null) 
+                    if (childContext != null)
                     {
                         _childContexts.Add(childContext);
-                        childContext.WalkContent();                      
+                        childContext.WalkContent();
 
                         _currentIndex = _currentIndex + childContext.Contents.Length;
                         if (childContext.EndToken != null) _tokens.Add(childContext.EndToken);
                         SeekForward(_currentIndex + _absoluteOffset);
                         continue;
-                    }                    
+                    }
                 }
 
                 //if this token ends this context, snip the contents down to only what was inside the context and return to the parent context.
@@ -288,11 +261,11 @@ namespace YoggTree.Core
             }
 
             //make a new token relative to this context.
-            return lowestIndex.Item1 with 
-            { 
-                Context = this, 
-                StartIndex = lowestIndex.Item1.StartIndex - _absoluteOffset, 
-                EndIndex = lowestIndex.Item1.EndIndex - _absoluteOffset 
+            return lowestIndex.Item1 with
+            {
+                Context = this,
+                StartIndex = lowestIndex.Item1.StartIndex - _absoluteOffset,
+                EndIndex = lowestIndex.Item1.EndIndex - _absoluteOffset
             };
         }
 
@@ -345,8 +318,15 @@ namespace YoggTree.Core
         protected virtual bool EndsCurrentContext(TokenInstance tokenInstance)
         {
             if (StartToken == null || tokenInstance.TokenDefinition is IContextEnder ender == false) return false;
-            return (StartToken.TokenDefinition as IContextStarter)?.ContextStartKey == ender.ContextEndKey;
+            if ((StartToken.TokenDefinition as IContextStarter)?.ContextStartKey == ender.ContextEndKey && string.IsNullOrEmpty(ender.ContextEndKey) == false)
+            {
+                if (tokenInstance.TokenDefinition is IContextStarter && tokenInstance.TokenDefinition is IContextEnder && tokenInstance.StartIndex == 0) return false;
+                return true;
+            }
+
+            return false;
         }
+
         public int GetContextualIndex(TokenParseContext targetContext)
         {
             if (targetContext == null) throw new ArgumentNullException(nameof(targetContext));
@@ -383,11 +363,17 @@ namespace YoggTree.Core
         /// </summary>
         /// <param name="startToken">The token that will be the StartToken of the new </param>
         /// <returns></returns>
-        protected abstract TokenParseContext CreateNewContext(TokenInstance startToken);
+        protected virtual TokenParseContext CreateNewContext(TokenInstance startToken)
+        {
+            var context = startToken.TokenDefinition.CreateContext(this, startToken);
+            if (context == null) return new TokenParseContext(this, startToken);
+
+            return context;
+        }
 
         public ReadOnlyMemory<char> GetContents(IContentSpan start, IContentSpan end = null)
         {
-            if (start == null) throw new ArgumentNullException(nameof(start));  
+            if (start == null) throw new ArgumentNullException(nameof(start));
             return GetContents(start.GetAbsoluteIndex(), end?.GetAbsoluteIndex() + (end?.Contents.Length));
         }
 
@@ -418,7 +404,7 @@ namespace YoggTree.Core
         /// <returns></returns>
         public override string ToString()
         {
-           
+
             string contextName = (String.IsNullOrWhiteSpace(Name) == true) ? GetType().Name : Name;
             string name = contextName;
 

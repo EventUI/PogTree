@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace YoggTree.Tokens
 {
-    public static class TokenRegexStore
+    public static partial class TokenRegexStore
     {
         public static Regex Whitespace_Horizontal { get; } = new Regex("[^\\S\\n\\r]+", RegexOptions.NonBacktracking | RegexOptions.Compiled);
 
@@ -20,7 +20,7 @@ namespace YoggTree.Tokens
 
         public static Regex DoubleQuote { get; } = new Regex("\\\"", RegexOptions.NonBacktracking | RegexOptions.Compiled);
 
-        public static Regex SingleQuote { get; } = new Regex("\'", RegexOptions.NonBacktracking | RegexOptions.Compiled);
+        public static Regex SingleQuote { get; } = new Regex("'", RegexOptions.NonBacktracking | RegexOptions.Compiled);
 
         public static Regex Grave { get; } = new Regex("`", RegexOptions.NonBacktracking | RegexOptions.Compiled);
 

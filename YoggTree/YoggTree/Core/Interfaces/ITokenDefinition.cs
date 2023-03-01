@@ -15,6 +15,7 @@ namespace YoggTree.Core.Interfaces
 
         bool CanComeAfter(TokenInstance previousToken);
         bool CanComeBefore(TokenInstance nextToken);
+        TokenParseContext CreateContext(TokenParseContext parent, TokenInstance start);
         (TokenInstance Instance, int Index) GetNextToken(int currentPosition, TokenParseContext context, int startingIndex = 0);
         bool IsValidInstance(TokenInstance instance);
     }

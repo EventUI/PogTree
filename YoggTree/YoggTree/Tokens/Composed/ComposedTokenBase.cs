@@ -24,6 +24,7 @@ namespace YoggTree.Tokens.Composed
         private DelegateSetCollection<CanComeAfterPredicate<TokenDefinition>, TokenDefinition> _canComeAfters = null;
         private DelegateSetCollection<CanComeBeforePredicate<TokenDefinition>, TokenDefinition> _canComeBefores = null;
         private DelegateSetCollection<IsValidInstancePredicate<TokenDefinition>, TokenDefinition> _isValidInstances = null;
+        private DelegateSetCollection<CreateTokenParseContext<TokenDefinition>, TokenDefinition> _tokenParseContextFactories = null;
 
         internal ComposedTokenBase(Regex token, string name) 
             : base(token, name)
@@ -79,6 +80,22 @@ namespace YoggTree.Tokens.Composed
             return this;
         }
 
+        public IComposedToken AddTokenParseContextFactory<TTokenDef>(Func<TokenParseContext, TokenInstance, TTokenDef, TokenParseContext> contextFactory, Func<TTokenDef, bool> shouldHandle = null) where TTokenDef : TokenDefinition
+        {
+            if (_tokenParseContextFactories == null) _tokenParseContextFactories = new DelegateSetCollection<CreateTokenParseContext<TokenDefinition>, TokenDefinition>(_counterProvider);
+
+            if (shouldHandle != null)
+            {
+                _tokenParseContextFactories.AddHandler<TTokenDef>(contextFactory, tokenDef => shouldHandle((TTokenDef)tokenDef));
+            }
+            else
+            {
+                _tokenParseContextFactories.AddHandler<TTokenDef>(contextFactory);
+            }
+
+            return this;
+        }
+
         public override bool CanComeAfter(TokenInstance previousToken)
         {
             if (_canComeAfters != null)
@@ -110,6 +127,17 @@ namespace YoggTree.Tokens.Composed
             }
 
             return base.IsValidInstance(instance);
+        }
+
+        public override TokenParseContext CreateContext(TokenParseContext parent, TokenInstance start)
+        {
+            if (_tokenParseContextFactories!= null)
+            {
+                var dele = _tokenParseContextFactories.GetFirstDelegate(start.TokenDefinition);
+                if (dele == null) return dele(parent, start, start.TokenDefinition);
+            }
+
+            return base.CreateContext(parent, start);
         }
     }
 }

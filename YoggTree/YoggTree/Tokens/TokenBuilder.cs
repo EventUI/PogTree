@@ -28,7 +28,7 @@ namespace YoggTree.Tokens
 
         public ComposedTokenBase GetToken()
         {
-            return (ComposedTokenBase)_token;
+            return _token;
         }
 
         public TokenBuilder AddCanComeBeforeCheck<TToken>(Func<TokenInstance, TToken, bool> canComeBefore) where TToken: TokenDefinition
@@ -49,6 +49,12 @@ namespace YoggTree.Tokens
             return this;
         }
 
+        public TokenBuilder AddTokenParseContextFactory<TToken>(Func<TokenParseContext, TokenInstance, TToken, TokenParseContext> factory) where TToken : TokenDefinition
+        {
+            _token.AddTokenParseContextFactory(factory);
+            return this;
+        }
+
         public TokenBuilder AddCanComeBeforeCheck<TToken>(Func<TokenInstance, TToken, bool> canComeBefore, Func<TToken, bool> shouldHandle) where TToken : TokenDefinition
         {
             _token.AddCheckCanComeBefore(canComeBefore, shouldHandle);
@@ -64,6 +70,12 @@ namespace YoggTree.Tokens
         public TokenBuilder AddIsValidCheck<TToken>(Func<TokenInstance, TToken, bool> isValid, Func<TToken, bool> shouldHandle) where TToken : TokenDefinition
         {
             _token.AddCheckIsValidTokenInstance(isValid, shouldHandle);
+            return this;
+        }
+
+        public TokenBuilder AddTokenParseContextFactory<TToken>(Func<TokenParseContext, TokenInstance, TToken, TokenParseContext> factory, Func<TToken, bool> shouldHandle) where TToken : TokenDefinition
+        {
+            _token.AddTokenParseContextFactory(factory, shouldHandle);
             return this;
         }
 

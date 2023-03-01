@@ -11,7 +11,7 @@ namespace YoggTree.Core
     /// <summary>
     /// Represents the definition of a token found in a string.
     /// </summary>
-    public abstract class TokenDefinition : ITokenDefinition
+    public class TokenDefinition : ITokenDefinition
     {
         private Guid _id = Guid.NewGuid();
 
@@ -109,6 +109,17 @@ namespace YoggTree.Core
         public virtual bool IsValidInstance(TokenInstance instance)
         {
             return true;
+        }
+
+        /// <summary>
+        /// Creates a new TokenParseContext that corresponds to the TokenDefinition.
+        /// </summary>
+        /// <param name="parent">The parent context that is spawning this one.</param>
+        /// <param name="start">The token instance that triggered the creation of the new context.</param>
+        /// <returns></returns>
+        public virtual TokenParseContext CreateContext(TokenParseContext parent, TokenInstance start)
+        {
+            return new TokenParseContext(parent, start);
         }
 
         public override string ToString()

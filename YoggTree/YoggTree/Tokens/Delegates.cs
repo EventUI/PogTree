@@ -20,4 +20,6 @@ namespace YoggTree.Tokens
     public delegate bool IsValidInstancePredicate<T>(TokenInstance instance, T definition) where T : TokenDefinition;
 
     public delegate bool ShouldApplyTokenPredicate<T>(T definition) where T : TokenDefinition;
+
+    public delegate TokenParseContext CreateTokenParseContext<T>(TokenParseContext parentContext, TokenInstance instance, T definition) where T : TokenDefinition;
 }
