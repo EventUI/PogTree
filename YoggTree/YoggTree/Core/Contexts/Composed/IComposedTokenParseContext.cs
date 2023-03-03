@@ -12,7 +12,7 @@ using YoggTree.Core.Interfaces;
 
 namespace YoggTree.Core.Contexts.Composed
 {
-    public interface IComposedTokenParseContext : ITokenParseContext
+    public interface IComposedTokenParseContext : ITokenContextDefinition
     {
         IComposedTokenParseContext AddCanStartContext<TToken>(Func<TokenInstance, TToken, bool> canStart, Func<TToken, bool> shouldHandle = null) where TToken : TokenDefinition;
 
@@ -20,6 +20,6 @@ namespace YoggTree.Core.Contexts.Composed
 
         IComposedTokenParseContext AddIsValidInContext<TToken>(Func<TokenInstance, TToken, bool> isValid, Func<TToken, bool> shouldHandle = null) where TToken : TokenDefinition;
 
-        IComposedTokenParseContext AddCreateParseContextFactory<TToken>(Func<TokenInstance, TToken, TokenParseContext> contextFactory, Func<TToken, bool> shouldHandle = null) where TToken : TokenDefinition;
+        IComposedTokenParseContext AddCreateParseContextFactory<TToken>(Func<TokenInstance, TToken, TokenContextInstance> contextFactory, Func<TToken, bool> shouldHandle = null) where TToken : TokenDefinition;
     }
 }

@@ -17,5 +17,5 @@ namespace YoggTree.Core.Contexts
 
     public delegate bool IsValidInContextPredicate<T>(TokenInstance instance, T definition) where T : TokenDefinition;
 
-    public delegate TokenParseContext CreateParseContextFactory<T>(TokenInstance instance, T definition) where T : TokenDefinition;
+    public delegate TokenContextInstance CreateParseContextFactory<T>(TokenInstance instance, T definition) where T : TokenDefinition;
 }

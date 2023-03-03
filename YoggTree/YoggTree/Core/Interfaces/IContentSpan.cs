@@ -20,9 +20,9 @@ namespace YoggTree.Core.Interfaces
 
         public ReadOnlyMemory<char> Contents { get; }
 
-        public TokenParseContext GetContext();
+        public TokenContextInstance GetContext();
 
-        int GetContextualIndex(TokenParseContext targetContext);
+        int GetContextualIndex(TokenContextInstance targetContext);
 
         public int GetAbsoluteIndex();
     }

@@ -17,6 +17,7 @@ namespace YoggTree.Core
 
         protected readonly string _name = null;
         protected readonly Regex _token = null;
+        protected HashSet<string> _tags = new HashSet<string>();
 
         /// <summary>
         /// The unique ID of this token definition.
@@ -43,6 +44,17 @@ namespace YoggTree.Core
         }
 
         /// <summary>
+        /// Tags that mark a token as belonging to a category of tokens.
+        /// </summary>
+        public HashSet<string> Tags
+        { 
+            get 
+            { 
+                return _tags; 
+            }
+        }   
+
+        /// <summary>
         /// Creates a new TokenDefinition.
         /// </summary>
         /// <param name="token">The regular expression used to identify the token/</param>
@@ -65,7 +77,7 @@ namespace YoggTree.Core
         /// <param name="context">The context to search for the next token in.</param>
         /// <param name="startingIndex">Optional. The starting index in the array of TokenInstances to begin searching at.</param>
         /// <returns></returns>
-        public (TokenInstance Instance, int Index) GetNextToken(int currentPosition, TokenParseContext context, int startingIndex = 0)
+        public (TokenInstance Instance, int Index) GetNextToken(int currentPosition, TokenContextInstance context, int startingIndex = 0)
         {
             if (context.ParseSession.AllTokenInstances.TryGetValue(ID, out IReadOnlyList<TokenInstance> tokens) == false) return (null, -1);
 
@@ -112,14 +124,14 @@ namespace YoggTree.Core
         }
 
         /// <summary>
-        /// Creates a new TokenParseContext that corresponds to the TokenDefinition.
+        /// Creates a new TokenContextInstance that corresponds to the TokenDefinition.
         /// </summary>
         /// <param name="parent">The parent context that is spawning this one.</param>
         /// <param name="start">The token instance that triggered the creation of the new context.</param>
         /// <returns></returns>
-        public virtual TokenParseContext CreateContext(TokenParseContext parent, TokenInstance start)
+        public virtual TokenContextInstance CreateContext(TokenContextInstance parent, TokenInstance start)
         {
-            return new TokenParseContext(parent, start);
+            return new TokenContextInstance(parent.TokenContextDefinition, parent, start);
         }
 
         public override string ToString()

@@ -21,5 +21,5 @@ namespace YoggTree.Core.Tokens
 
     public delegate bool ShouldApplyTokenPredicate<T>(T definition) where T : TokenDefinition;
 
-    public delegate TokenParseContext CreateTokenParseContext<T>(TokenParseContext parentContext, TokenInstance instance, T definition) where T : TokenDefinition;
+    public delegate TokenContextInstance CreateTokenParseContext<T>(TokenContextInstance parentContext, TokenInstance instance, T definition) where T : TokenDefinition;
 }

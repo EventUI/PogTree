@@ -80,7 +80,7 @@ namespace YoggTree.Core.Tokens.Composed
             return this;
         }
 
-        public IComposedToken AddTokenParseContextFactory<TTokenDef>(Func<TokenParseContext, TokenInstance, TTokenDef, TokenParseContext> contextFactory, Func<TTokenDef, bool> shouldHandle = null) where TTokenDef : TokenDefinition
+        public IComposedToken AddTokenParseContextFactory<TTokenDef>(Func<TokenContextInstance, TokenInstance, TTokenDef, TokenContextInstance> contextFactory, Func<TTokenDef, bool> shouldHandle = null) where TTokenDef : TokenDefinition
         {
             if (_tokenParseContextFactories == null) _tokenParseContextFactories = new DelegateSetCollection<CreateTokenParseContext<TokenDefinition>, TokenDefinition>(_counterProvider);
 
@@ -129,7 +129,7 @@ namespace YoggTree.Core.Tokens.Composed
             return base.IsValidInstance(instance);
         }
 
-        public override TokenParseContext CreateContext(TokenParseContext parent, TokenInstance start)
+        public override TokenContextInstance CreateContext(TokenContextInstance parent, TokenInstance start)
         {
             if (_tokenParseContextFactories!= null)
             {
@@ -138,6 +138,28 @@ namespace YoggTree.Core.Tokens.Composed
             }
 
             return base.CreateContext(parent, start);
+        }
+
+        public IComposedToken AddTag(string tag)
+        {
+            if (tag == null) return this;
+            if (_tags.Contains(tag) == false)
+            { 
+                _tags.Add(tag); 
+            }
+
+            return this;
+        }
+
+        public IComposedToken AddTags(IEnumerable<string> tags)
+        {
+            if (tags == null) return this;
+            foreach (var tag in tags)
+            {
+                AddTag(tag);
+            }
+
+            return this;
         }
     }
 }

@@ -10,11 +10,12 @@ using System.Reflection.Metadata;
 using System.Text;
 using System.Threading.Tasks;
 using YoggTree.Core.DelegateSet;
+using YoggTree.Core.Tokens;
 using YoggTree.Core.Tokens.Strings;
 
 namespace YoggTree.Core.Contexts.Composed
 {
-    public class ComposedTokenParseContext : TokenParseContext, IComposedTokenParseContext
+    public class ComposedTokenContext : TokenContextDefinition
     {
         private DelegateItemOridinalProvider _provider = new DelegateItemOridinalProvider();
         private DelegateSetCollection<CanStartNewContextPredicate<TokenDefinition>, TokenDefinition> _canStartNewContexts = null;
@@ -22,19 +23,17 @@ namespace YoggTree.Core.Contexts.Composed
         private DelegateSetCollection<IsValidInContextPredicate<TokenDefinition>, TokenDefinition> _isValidInContexts = null;
         private DelegateSetCollection<CreateParseContextFactory<TokenDefinition>, TokenDefinition> _parseContextFactories = null;
 
-        public ComposedTokenParseContext(TokenParseSession session, string name = null)
-            : base(session, name)
+        public ComposedTokenContext(string name, IEnumerable<TokenDefinition> validTokens) 
+            : base(name, validTokens)
         {
-
         }
 
-        public ComposedTokenParseContext(TokenParseContext parent, TokenInstance start, string name = null)
-            : base(parent, start, name)
+        public ComposedTokenContext(string name, TokenListBuilder validTokenBuilder) 
+            : base(name, validTokenBuilder)
         {
-
         }
 
-        public IComposedTokenParseContext AddCanStartContext<TToken>(Func<TokenInstance, TToken, bool> canStart, Func<TToken, bool> shouldHandle = null) where TToken : TokenDefinition
+        protected internal void AddCanStartContext<TToken>(Func<TokenInstance, TToken, bool> canStart, Func<TToken, bool> shouldHandle = null) where TToken : TokenDefinition
         {
             if (_canStartNewContexts == null) _canStartNewContexts = new DelegateSetCollection<CanStartNewContextPredicate<TokenDefinition>, TokenDefinition>(_provider);
 
@@ -46,11 +45,9 @@ namespace YoggTree.Core.Contexts.Composed
             {
                 _canStartNewContexts.AddHandler<TToken>(canStart);
             }
-
-            return this;
         }
 
-        public IComposedTokenParseContext AddCreateParseContextFactory<TToken>(Func<TokenInstance, TToken, TokenParseContext> contextFactory, Func<TToken, bool> shouldHandle = null) where TToken : TokenDefinition
+        protected internal void AddCreateParseContextFactory<TToken>(Func<TokenInstance, TToken, TokenContextInstance> contextFactory, Func<TToken, bool> shouldHandle = null) where TToken : TokenDefinition
         {
             if (_parseContextFactories == null) _parseContextFactories = new DelegateSetCollection<CreateParseContextFactory<TokenDefinition>, TokenDefinition>(_provider);
 
@@ -62,11 +59,9 @@ namespace YoggTree.Core.Contexts.Composed
             {
                 _parseContextFactories.AddHandler<TToken>(contextFactory);
             }
-
-            return this;
         }
 
-        public IComposedTokenParseContext AddEndsCurrentContext<TToken>(Func<TokenInstance, TToken, bool> canEnd, Func<TToken, bool> shouldHandle = null) where TToken : TokenDefinition
+        protected internal void AddEndsCurrentContext<TToken>(Func<TokenInstance, TToken, bool> canEnd, Func<TToken, bool> shouldHandle = null) where TToken : TokenDefinition
         {
             if (_endsCurrentContexts == null) _endsCurrentContexts = new DelegateSetCollection<EndsCurrentContextPredicate<TokenDefinition>, TokenDefinition>(_provider);
 
@@ -78,11 +73,9 @@ namespace YoggTree.Core.Contexts.Composed
             {
                 _endsCurrentContexts.AddHandler<TToken>(canEnd);
             }
-
-            return this;
         }
 
-        public IComposedTokenParseContext AddIsValidInContext<TToken>(Func<TokenInstance, TToken, bool> isValid, Func<TToken, bool> shouldHandle = null) where TToken : TokenDefinition
+        protected internal void AddIsValidInContext<TToken>(Func<TokenInstance, TToken, bool> isValid, Func<TToken, bool> shouldHandle = null) where TToken : TokenDefinition
         {
             if (_isValidInContexts == null) _isValidInContexts = new DelegateSetCollection<IsValidInContextPredicate<TokenDefinition>, TokenDefinition>(_provider);
 
@@ -94,11 +87,9 @@ namespace YoggTree.Core.Contexts.Composed
             {
                 _isValidInContexts.AddHandler<TToken>(isValid);
             }
-
-            return this;
         }
 
-        protected override TokenParseContext CreateNewContext(TokenInstance startToken)
+        public override TokenContextInstance CreateNewContext(TokenInstance startToken)
         {
             if (_parseContextFactories != null)
             {
@@ -109,7 +100,7 @@ namespace YoggTree.Core.Contexts.Composed
             return base.CreateNewContext(startToken);
         }
 
-        protected override bool EndsCurrentContext(TokenInstance tokenInstance)
+        public override bool EndsCurrentContext(TokenInstance tokenInstance)
         {
             if (_endsCurrentContexts != null)
             {
@@ -120,7 +111,7 @@ namespace YoggTree.Core.Contexts.Composed
             return base.EndsCurrentContext(tokenInstance);
         }
 
-        protected override bool IsValidInContext(TokenInstance token)
+        public override bool IsValidInContext(TokenInstance token)
         {
             if (_isValidInContexts != null)
             {
@@ -131,7 +122,7 @@ namespace YoggTree.Core.Contexts.Composed
             return base.IsValidInContext(token);
         }
 
-        protected override bool StartsNewContext(TokenInstance tokenInstance)
+        public override bool StartsNewContext(TokenInstance tokenInstance)
         {
             if (_canStartNewContexts != null)
             {

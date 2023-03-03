@@ -25,10 +25,5 @@ namespace YoggTree.Core.Tokens.Strings
         public string ContextStartKey { get; } = "StringDoubleQuote";
 
         public string ContextEndKey { get; } = "StringDoubleQuote";
-
-        public override TokenParseContext CreateContext(TokenParseContext parent, TokenInstance start)
-        {
-            return new LiteralContentContext(parent, start, LiteralContentEscapeCharacterFlags.Backslash);
-        }
     }
 }

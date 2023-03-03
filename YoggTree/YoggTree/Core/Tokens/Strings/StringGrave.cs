@@ -26,9 +26,5 @@ namespace YoggTree.Core.Tokens.Strings
 
         public string ContextEndKey { get; } = "StringGrave";
 
-        public override TokenParseContext CreateContext(TokenParseContext parent, TokenInstance start)
-        {
-            return new LiteralContentContext(parent, start, LiteralContentEscapeCharacterFlags.Backslash);
-        }
     }
 }

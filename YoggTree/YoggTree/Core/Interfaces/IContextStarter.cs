@@ -17,7 +17,7 @@ namespace YoggTree.Core.Interfaces
     public interface IContextStarter : ITokenDefinition
     {
         /// <summary>
-        /// A string value that matches the ContextEndKey on TokenDefinition that starts the intended TokenParseContext.
+        /// A string value that matches the ContextEndKey on TokenDefinition that starts the intended TokenContextInstance.
         /// </summary>
         string ContextStartKey { get; }
     }

@@ -36,9 +36,9 @@ namespace YoggTree.Core.Tokens
             }
         }
 
-        public List<ITokenDefinition> GetTokens()
+        public List<TokenDefinition> GetTokens()
         {
-            return new List<ITokenDefinition>(_tokens);
+            return new List<TokenDefinition>(_tokens);
         }
 
         public TokenListBuilder AddToken(TokenBuilder tokenBuilder)

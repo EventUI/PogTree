@@ -24,7 +24,7 @@ namespace YoggTree.Core
         private ReadOnlyDictionary<Guid, IReadOnlyList<TokenInstance>> _allTokenInstances;
 
         protected List<TokenDefinition> _tokenDefinitions = new List<TokenDefinition>();
-        protected TokenParseContext _rootContext = null;
+        protected TokenContextInstance _rootContext = null;
 
         /// <summary>
         /// The full contents of the string being parsed.
@@ -53,7 +53,7 @@ namespace YoggTree.Core
         /// <summary>
         /// The root parsing content representing the parse results for the whole file.
         /// </summary>
-        public TokenParseContext RootContext { get { return _rootContext; } }
+        public TokenContextInstance RootContext { get { return _rootContext; } }
 
         /// <summary>
         /// Makes a new ParseSession for the given string and token set.
@@ -74,7 +74,7 @@ namespace YoggTree.Core
         /// Triggers the parsing of the ParseSession's content.
         /// </summary>
         /// <returns></returns>
-        public TokenParseContext Parse(string contents)
+        public TokenContextInstance Parse(string contents)
         {
             if (contents == null) throw new ArgumentNullException(nameof(contents));            
             _contents = new ReadOnlyMemory<char>(contents.ToCharArray());
@@ -92,7 +92,7 @@ namespace YoggTree.Core
         /// Overridable function for making the Root parse context.
         /// </summary>
         /// <returns></returns>
-        protected abstract TokenParseContext MakeRootContext();
+        protected abstract TokenContextInstance MakeRootContext();
 
         /// <summary>
         /// Gets all the token instances found in the Content by using the TokenDefinitions Regex's.

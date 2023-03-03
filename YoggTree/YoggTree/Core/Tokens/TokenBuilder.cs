@@ -49,7 +49,7 @@ namespace YoggTree.Core.Tokens
             return this;
         }
 
-        public TokenBuilder AddTokenParseContextFactory<TToken>(Func<TokenParseContext, TokenInstance, TToken, TokenParseContext> factory) where TToken : TokenDefinition
+        public TokenBuilder AddTokenParseContextFactory<TToken>(Func<TokenContextInstance, TokenInstance, TToken, TokenContextInstance> factory) where TToken : TokenDefinition
         {
             _token.AddTokenParseContextFactory(factory);
             return this;
@@ -73,10 +73,22 @@ namespace YoggTree.Core.Tokens
             return this;
         }
 
-        public TokenBuilder AddTokenParseContextFactory<TToken>(Func<TokenParseContext, TokenInstance, TToken, TokenParseContext> factory, Func<TToken, bool> shouldHandle) where TToken : TokenDefinition
+        public TokenBuilder AddTokenParseContextFactory<TToken>(Func<TokenContextInstance, TokenInstance, TToken, TokenContextInstance> factory, Func<TToken, bool> shouldHandle) where TToken : TokenDefinition
         {
             _token.AddTokenParseContextFactory(factory, shouldHandle);
             return this;
+        }
+
+        public TokenBuilder AddTag(string tag)
+        {
+            _token.AddTag(tag);
+            return this;
+        }
+
+        public TokenBuilder AddTags(IEnumerable<string> tags)
+        {
+            _token.AddTags(tags);
+            return this;    
         }
 
         public static TokenBuilder Create(Regex regex, string name)
