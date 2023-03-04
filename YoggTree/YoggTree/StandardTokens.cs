@@ -9,11 +9,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using YoggTree.Core.Tokens.Braces;
-using YoggTree.Core.Tokens.Strings;
-using YoggTree.Core.Tokens.Whitespace;
+using YoggTree.Core.Tokens;
 
-namespace YoggTree.Core.Tokens
+namespace YoggTree
 {
     public static class StandardTokens
     {

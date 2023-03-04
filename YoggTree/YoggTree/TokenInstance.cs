@@ -11,7 +11,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using YoggTree.Core.Interfaces;
 
-namespace YoggTree.Core
+namespace YoggTree
 {
     /// <summary>
     /// Represents an instance of a TokenDefinition that was found in a TokenContextInstance's Content.
@@ -55,7 +55,7 @@ namespace YoggTree.Core
             StartIndex = tokenStartIndex;
             Contents = value;
             EndIndex = StartIndex + value.Length;
-        }   
+        }
 
         public override string ToString()
         {
@@ -64,7 +64,7 @@ namespace YoggTree.Core
 
         public bool Equals(TokenInstance other)
         {
-            if (other == null) return false; 
+            if (other == null) return false;
             if (other.TokenDefinition.ID != TokenDefinition.ID) return false;
             if (other.StartIndex != StartIndex) return false;
             if (other.Contents.Span.SequenceEqual(Contents.Span) == false) return false;
@@ -95,7 +95,7 @@ namespace YoggTree.Core
                     break;
                 }
 
-                parent = parent.Parent;               
+                parent = parent.Parent;
             }
 
             if (parentFound != true) throw new Exception("TokenInstance is not contained by the target targetContext.");
@@ -125,10 +125,10 @@ namespace YoggTree.Core
 
         public int CompareTo(TokenInstance other)
         {
-            return (StartIndex - other.StartIndex);
+            return StartIndex - other.StartIndex;
         }
 
-        TokenContextInstance IContentSpan.GetContext()
+        public TokenContextInstance GetContext()
         {
             return Context;
         }

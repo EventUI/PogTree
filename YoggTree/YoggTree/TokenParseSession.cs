@@ -13,16 +13,17 @@ using System.Threading.Tasks;
 using YoggTree.Core.Interfaces;
 using YoggTree.Core.Spools;
 
-namespace YoggTree.Core
+namespace YoggTree
 {
     /// <summary>
     /// Represents the containing unit for parsing a body of text.
     /// </summary>
-    internal class TokenParseSession
+    public class TokenParseSession
     {
         private ReadOnlyMemory<char> _contents = ReadOnlyMemory<char>.Empty;
         private Dictionary<Guid, TokenSpool> _tokenSpools = new Dictionary<Guid, TokenSpool>();
         private TokenContextInstance _rootContext = null;
+        private TokenContextRegistry _contextRegistry = null;
 
         /// <summary>
         /// The full contents of the string being parsed.
@@ -38,23 +39,31 @@ namespace YoggTree.Core
         /// <summary>
         /// All of the tokens contained within the
         /// </summary>
-        public Dictionary<Guid, TokenSpool> TokenSpools
+        internal Dictionary<Guid, TokenSpool> TokenSpools
         {
-            get 
-            { 
-                return _tokenSpools; 
+            get
+            {
+                return _tokenSpools;
             }
         }
 
         /// <summary>
         /// The root parsing content representing the parse results for the whole file.
         /// </summary>
-        public TokenContextInstance RootContext 
-        { 
-            get 
-            { 
-                return _rootContext; 
-            } 
+        public TokenContextInstance RootContext
+        {
+            get
+            {
+                return _rootContext;
+            }
+        }
+
+        public TokenContextRegistry ContextRegistry
+        {
+            get
+            {
+                return _contextRegistry;
+            }
         }
 
         /// <summary>
@@ -64,10 +73,12 @@ namespace YoggTree.Core
         /// <param name="tokens">All of the tokens that can be found in the content.</param>
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="Exception"></exception>
-        public TokenParseSession(TokenContextInstance rootContext) 
-        { 
+        internal TokenParseSession(TokenContextInstance rootContext, TokenContextRegistry contextRegistry)
+        {
             if (rootContext == null) throw new ArgumentNullException(nameof(rootContext));
+            if (contextRegistry == null) throw new ArgumentNullException(nameof(contextRegistry));
 
+            _contextRegistry = contextRegistry;
             _rootContext = rootContext;
             _rootContext.ParseSession = this;
         }

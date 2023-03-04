@@ -9,22 +9,20 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using YoggTree.Core;
 using YoggTree.Core.Contexts;
 using YoggTree.Core.Interfaces;
 
-namespace YoggTree.Core.Tokens.Strings
+namespace YoggTree.Core.Tokens
 {
-    public class StringGrave : TokenDefinition, IContextStarter, IContextEnder, IStringToken
+    public class StringSingleQuote : TokenDefinition, IStringToken
     {
-        public StringGrave()
-            : base(TokenRegexStore.Grave, "`")
+        public StringSingleQuote()
+            : base(TokenRegexStore.SingleQuote, "'", TokenTypeFlags.ContextEnder | TokenTypeFlags.ContextStarter)
         {
         }
 
-        public string ContextStartKey { get; } = "StringGrave";
+        public string ContextStartKey { get; } = "StringSingleQuote";
 
-        public string ContextEndKey { get; } = "StringGrave";
-
+        public string ContextEndKey { get; } = "StringSingleQuote";
     }
 }

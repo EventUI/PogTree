@@ -8,12 +8,16 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using YoggTree.Core.Interfaces;
 
-namespace YoggTree.Core.Tokens.Basic
+namespace YoggTree.Core.Tokens
 {
-    internal interface IBasicToken : ITokenDefinition
+    public class WhitespaceHorizontal : TokenDefinition, IWhitespaceToken
     {
+        public WhitespaceHorizontal() 
+            : base(TokenRegexStore.Whitespace_Horizontal, "<horizontal whitespace>")
+        {
+        }
     }
 }

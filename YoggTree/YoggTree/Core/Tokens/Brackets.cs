@@ -9,26 +9,25 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using YoggTree.Core.Interfaces;
-using YoggTree.Core;
 
-namespace YoggTree.Core.Tokens.Braces
+namespace YoggTree.Core.Tokens
 {
-    public class OpenBracketToken : TokenDefinition, IBraceToken, IContextStarter
+    public class OpenBracketToken : TokenDefinition, IBraceToken
     {
         public string ContextStartKey { get; } = "Brace_Bracket";
 
         public OpenBracketToken()
-            : base(TokenRegexStore.Brace_OpenBracket, "[")
+            : base(TokenRegexStore.Brace_OpenBracket, "[", TokenTypeFlags.ContextStarter)
         {
         }
     }
 
-    public class CloseBracketToken : TokenDefinition, IBraceToken, IContextEnder
+    public class CloseBracketToken : TokenDefinition, IBraceToken
     {
         public string ContextEndKey { get; } = "Brace_Bracket";
 
         public CloseBracketToken()
-            : base(TokenRegexStore.Brace_CloseBracket, "]")
+            : base(TokenRegexStore.Brace_CloseBracket, "]", TokenTypeFlags.ContextEnder)
         {
         }
     }

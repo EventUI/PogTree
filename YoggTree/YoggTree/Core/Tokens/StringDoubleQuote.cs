@@ -13,12 +13,12 @@ using System.Threading.Tasks;
 using YoggTree.Core.Contexts;
 using YoggTree.Core.Interfaces;
 
-namespace YoggTree.Core.Tokens.Strings
+namespace YoggTree.Core.Tokens
 {
-    public class StringDoubleQuote : TokenDefinition, IContextStarter, IContextEnder, IStringToken
+    public class StringDoubleQuote : TokenDefinition, IStringToken
     {
         public StringDoubleQuote()
-            : base(TokenRegexStore.DoubleQuote, "\"")
+            : base(TokenRegexStore.DoubleQuote, "\"", TokenTypeFlags.ContextEnder | TokenTypeFlags.ContextStarter)
         {
         }
 

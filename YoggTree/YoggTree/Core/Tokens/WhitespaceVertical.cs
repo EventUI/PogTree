@@ -3,16 +3,21 @@
 This source code is licensed under the MIT license found in the
 LICENSE file in the root directory of this source tree.*/
 
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using YoggTree.Core.Interfaces;
 
-namespace YoggTree.Core.Tokens.Braces
+namespace YoggTree.Core.Tokens
 {
-    public interface IBraceToken : ITokenDefinition
+    public class WhitespaceVertical : TokenDefinition, IWhitespaceToken
     {
+        public WhitespaceVertical() 
+            : base(TokenRegexStore.Whitespace_Vertical, "<vertical whitespace>")
+        {
+        }
     }
 }

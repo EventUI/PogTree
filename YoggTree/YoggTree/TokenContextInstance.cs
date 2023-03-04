@@ -13,10 +13,9 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using YoggTree.Core.Interfaces;
 using YoggTree.Core.Spools;
-using YoggTree.Core.Tokens.Composed;
 using static System.Collections.Specialized.BitVector32;
 
-namespace YoggTree.Core
+namespace YoggTree
 {
     /// <summary>
     /// Represents a section or sub-section of a file being parsed for tokens.
@@ -28,7 +27,6 @@ namespace YoggTree.Core
         private IReadOnlyList<TokenContextInstance> _childContextsRO = null; //read-only wrapper to expose as the child contexts list.
         private Dictionary<Guid, int> _lastTokenIndexes = null; //internal dictionary of the last index in the ParseSession's global token list that each type of token was accessed at.
         private IReadOnlyList<TokenInstance> _tokensRO = null; //read-only wrapper to expose as the tokens list.
-
         private int _currentIndex = 0;
         private List<TokenInstance> _tokens = new List<TokenInstance>();
         private List<TokenContextInstance> _childContexts = new List<TokenContextInstance>();
@@ -41,7 +39,7 @@ namespace YoggTree.Core
         /// <summary>
         /// The ParseSession this context is a child of.
         /// </summary>
-        internal TokenParseSession ParseSession { get; set; } = null;
+        public TokenParseSession ParseSession { get; set; } = null;
 
         /// <summary>
         /// The immediate parent context of this context.
@@ -316,7 +314,7 @@ namespace YoggTree.Core
             while (parent != null)
             {
                 string parentName = parent.TokenContextDefinition.Name;
-                if (String.IsNullOrWhiteSpace(parentName) == true) parentName = GetType().Name;
+                if (string.IsNullOrWhiteSpace(parentName) == true) parentName = GetType().Name;
 
                 name = parentName + ">" + name;
                 parent = parent.Parent;

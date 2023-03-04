@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace YoggTree.Core.Tokens
 {
-    public static partial class TokenRegexStore
+    public static class TokenRegexStore
     {
         public static Regex Whitespace_Horizontal { get; } = new Regex("[^\\S\\n\\r]+", RegexOptions.NonBacktracking | RegexOptions.Compiled);
 
