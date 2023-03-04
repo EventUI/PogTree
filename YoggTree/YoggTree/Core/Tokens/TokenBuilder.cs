@@ -16,8 +16,9 @@ using YoggTree.Core.Tokens.Composed;
 
 namespace YoggTree.Core.Tokens
 {
-    public class TokenBuilder
+    public sealed class TokenBuilder : IDisposable
     {
+        private bool _disposed = false;
         private ComposedTokenBase _token = null;
 
         internal TokenBuilder(ComposedTokenBase token)
@@ -28,65 +29,86 @@ namespace YoggTree.Core.Tokens
 
         public ComposedTokenBase GetToken()
         {
+            Dispose();
             return _token;
         }
 
         public TokenBuilder AddCanComeBeforeCheck<TToken>(Func<TokenInstance, TToken, bool> canComeBefore) where TToken: TokenDefinition
         {
+            if (_disposed == true) throw new ObjectDisposedException(nameof(TokenBuilder));
+
             _token.AddCheckCanComeBefore(canComeBefore);
             return this;
         }
 
         public TokenBuilder AddCanComeAfterCheck<TToken>(Func<TokenInstance, TToken, bool> canComeAfter) where TToken : TokenDefinition
         {
+            if (_disposed == true) throw new ObjectDisposedException(nameof(TokenBuilder));
+
             _token.AddCheckCanComeAfter(canComeAfter);
             return this;
         }
 
         public TokenBuilder AddIsValidCheck<TToken>(Func<TokenInstance, TToken, bool> isValid) where TToken : TokenDefinition
         {
+            if (_disposed == true) throw new ObjectDisposedException(nameof(TokenBuilder));
+
             _token.AddCheckIsValidTokenInstance(isValid);
             return this;
         }
 
         public TokenBuilder AddTokenParseContextFactory<TToken>(Func<TokenContextInstance, TokenInstance, TToken, TokenContextInstance> factory) where TToken : TokenDefinition
         {
+            if (_disposed == true) throw new ObjectDisposedException(nameof(TokenBuilder));
+
             _token.AddTokenParseContextFactory(factory);
             return this;
         }
 
         public TokenBuilder AddCanComeBeforeCheck<TToken>(Func<TokenInstance, TToken, bool> canComeBefore, Func<TToken, bool> shouldHandle) where TToken : TokenDefinition
         {
+            if (_disposed == true) throw new ObjectDisposedException(nameof(TokenBuilder));
+
             _token.AddCheckCanComeBefore(canComeBefore, shouldHandle);
             return this;
         }
 
         public TokenBuilder AddCanComeAfterCheck<TToken>(Func<TokenInstance, TToken, bool> canComeAfter, Func<TToken, bool> shouldHandle) where TToken : TokenDefinition
         {
+            if (_disposed == true) throw new ObjectDisposedException(nameof(TokenBuilder));
+
             _token.AddCheckCanComeAfter(canComeAfter, shouldHandle);
             return this;
         }
 
         public TokenBuilder AddIsValidCheck<TToken>(Func<TokenInstance, TToken, bool> isValid, Func<TToken, bool> shouldHandle) where TToken : TokenDefinition
         {
+            if (_disposed == true) throw new ObjectDisposedException(nameof(TokenBuilder));
+
             _token.AddCheckIsValidTokenInstance(isValid, shouldHandle);
             return this;
         }
 
         public TokenBuilder AddTokenParseContextFactory<TToken>(Func<TokenContextInstance, TokenInstance, TToken, TokenContextInstance> factory, Func<TToken, bool> shouldHandle) where TToken : TokenDefinition
         {
+            if (_disposed == true) throw new ObjectDisposedException(nameof(TokenBuilder));
+
             _token.AddTokenParseContextFactory(factory, shouldHandle);
             return this;
         }
 
         public TokenBuilder AddTag(string tag)
         {
+            if (_disposed == true) throw new ObjectDisposedException(nameof(TokenBuilder));
+
             _token.AddTag(tag);
             return this;
         }
 
         public TokenBuilder AddTags(IEnumerable<string> tags)
         {
+            if (_disposed == true) throw new ObjectDisposedException(nameof(TokenBuilder));
+
             _token.AddTags(tags);
             return this;    
         }
@@ -127,6 +149,11 @@ namespace YoggTree.Core.Tokens
         public static TokenBuilder Create<TToken>() where TToken : ComposedTokenBase, new()
         {
             return new TokenBuilder(new TToken());
+        }
+
+        public void Dispose()
+        {
+            _disposed = true;
         }
     }
 }

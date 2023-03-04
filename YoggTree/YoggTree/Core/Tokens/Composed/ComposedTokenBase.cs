@@ -18,7 +18,7 @@ using YoggTree.Core.Tokens.Basic;
 
 namespace YoggTree.Core.Tokens.Composed
 {
-    public class ComposedTokenBase : TokenDefinition, IComposedToken
+    public class ComposedTokenBase : TokenDefinition
     {
         private DelegateItemOridinalProvider _counterProvider = new DelegateItemOridinalProvider();
         private DelegateSetCollection<CanComeAfterPredicate<TokenDefinition>, TokenDefinition> _canComeAfters = null;
@@ -32,7 +32,7 @@ namespace YoggTree.Core.Tokens.Composed
 
         }
 
-        public IComposedToken AddCheckCanComeAfter<TTokenDef>(Func<TokenInstance, TTokenDef, bool> comeAfterDele, Func<TTokenDef, bool> shouldHandle = null) where TTokenDef: TokenDefinition
+        protected internal void AddCheckCanComeAfter<TTokenDef>(Func<TokenInstance, TTokenDef, bool> comeAfterDele, Func<TTokenDef, bool> shouldHandle = null) where TTokenDef: TokenDefinition
         {
             if (_canComeAfters == null) _canComeAfters = new DelegateSetCollection<CanComeAfterPredicate<TokenDefinition>, TokenDefinition>(_counterProvider);
 
@@ -44,11 +44,9 @@ namespace YoggTree.Core.Tokens.Composed
             {
                 _canComeAfters.AddHandler<TTokenDef>(comeAfterDele);
             }
-
-            return this;
         }
 
-        public IComposedToken AddCheckCanComeBefore<TTokenDef>(Func<TokenInstance, TTokenDef, bool> comeBeforeDele, Func<TTokenDef, bool> shouldHandle = null) where TTokenDef : TokenDefinition
+        protected internal void AddCheckCanComeBefore<TTokenDef>(Func<TokenInstance, TTokenDef, bool> comeBeforeDele, Func<TTokenDef, bool> shouldHandle = null) where TTokenDef : TokenDefinition
         {
             if (_canComeBefores == null) _canComeBefores = new DelegateSetCollection<CanComeBeforePredicate<TokenDefinition>, TokenDefinition>(_counterProvider);
 
@@ -60,11 +58,9 @@ namespace YoggTree.Core.Tokens.Composed
             {
                 _canComeBefores.AddHandler<TTokenDef>(comeBeforeDele);
             }
-
-            return this;
         }
 
-        public IComposedToken AddCheckIsValidTokenInstance<TTokenDef>(Func<TokenInstance, TTokenDef, bool> isValidDele, Func<TTokenDef, bool> shouldHandle = null) where TTokenDef : TokenDefinition
+        protected internal void AddCheckIsValidTokenInstance<TTokenDef>(Func<TokenInstance, TTokenDef, bool> isValidDele, Func<TTokenDef, bool> shouldHandle = null) where TTokenDef : TokenDefinition
         {
             if (_isValidInstances == null) _isValidInstances = new DelegateSetCollection<IsValidInstancePredicate<TokenDefinition>, TokenDefinition>(_counterProvider);
 
@@ -76,11 +72,9 @@ namespace YoggTree.Core.Tokens.Composed
             {
                 _isValidInstances.AddHandler<TTokenDef>(isValidDele);
             }
-
-            return this;
         }
 
-        public IComposedToken AddTokenParseContextFactory<TTokenDef>(Func<TokenContextInstance, TokenInstance, TTokenDef, TokenContextInstance> contextFactory, Func<TTokenDef, bool> shouldHandle = null) where TTokenDef : TokenDefinition
+        protected internal void AddTokenParseContextFactory<TTokenDef>(Func<TokenContextInstance, TokenInstance, TTokenDef, TokenContextInstance> contextFactory, Func<TTokenDef, bool> shouldHandle = null) where TTokenDef : TokenDefinition
         {
             if (_tokenParseContextFactories == null) _tokenParseContextFactories = new DelegateSetCollection<CreateTokenParseContext<TokenDefinition>, TokenDefinition>(_counterProvider);
 
@@ -92,8 +86,6 @@ namespace YoggTree.Core.Tokens.Composed
             {
                 _tokenParseContextFactories.AddHandler<TTokenDef>(contextFactory);
             }
-
-            return this;
         }
 
         public override bool CanComeAfter(TokenInstance previousToken)
@@ -140,26 +132,22 @@ namespace YoggTree.Core.Tokens.Composed
             return base.CreateContext(parent, start);
         }
 
-        public IComposedToken AddTag(string tag)
+        protected internal void AddTag(string tag)
         {
-            if (tag == null) return this;
+            if (tag == null) return;
             if (_tags.Contains(tag) == false)
             { 
                 _tags.Add(tag); 
             }
-
-            return this;
         }
 
-        public IComposedToken AddTags(IEnumerable<string> tags)
+        protected internal void AddTags(IEnumerable<string> tags)
         {
-            if (tags == null) return this;
+            if (tags == null) return;
             foreach (var tag in tags)
             {
                 AddTag(tag);
             }
-
-            return this;
         }
     }
 }

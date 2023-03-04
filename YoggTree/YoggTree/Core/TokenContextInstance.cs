@@ -12,7 +12,9 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using YoggTree.Core.Interfaces;
+using YoggTree.Core.Spools;
 using YoggTree.Core.Tokens.Composed;
+using static System.Collections.Specialized.BitVector32;
 
 namespace YoggTree.Core
 {
@@ -39,7 +41,7 @@ namespace YoggTree.Core
         /// <summary>
         /// The ParseSession this context is a child of.
         /// </summary>
-        public TokenParseSession ParseSession { get; } = null;
+        internal TokenParseSession ParseSession { get; set; } = null;
 
         /// <summary>
         /// The immediate parent context of this context.
@@ -96,21 +98,11 @@ namespace YoggTree.Core
         /// </summary>
         public IReadOnlyList<TokenContextInstance> ChildContexts { get { return _childContextsRO; } }
 
-        /// <summary>
-        /// Creates a new "root" level TokenContextInstance that sits immediately beneath the ParseSession.
-        /// </summary>
-        /// <param name="session">The parent parse session of this context.</param>
-        /// <exception cref="ArgumentNullException"></exception>
-        public TokenContextInstance(TokenContextDefinition contextDefinition, TokenParseSession session)
+        internal TokenContextInstance(TokenContextDefinition contextDefinition, string contents)
         {
-            if (session == null) throw new ArgumentNullException(nameof(session));
-            if (contextDefinition == null) throw new ArgumentNullException(nameof(contextDefinition));
-
-            TokenContextDefinition = contextDefinition;
-            ParseSession = session;
+            Contents = new ReadOnlyMemory<char>(contents.ToCharArray());
             StartIndex = 0;
-            EndIndex = session.Contents.Length;
-            Contents = session.Contents;
+            EndIndex = Contents.Length;
             Parent = null;
 
             _childContextsRO = _childContexts.AsReadOnly();
@@ -142,7 +134,6 @@ namespace YoggTree.Core
             _childContextsRO = _childContexts.AsReadOnly();
             _absoluteOffset = StartIndex + parent._absoluteOffset;
         }
-
 
         /// <summary>
         /// Walks the Content of this Context, identifying tokens contained within and recursively spawning child contexts when such a token is encountered.
@@ -190,7 +181,6 @@ namespace YoggTree.Core
 
                         _currentIndex = _currentIndex + childContext.Contents.Length;
                         if (childContext.EndToken != null) _tokens.Add(childContext.EndToken);
-                        SeekForward(_currentIndex + _absoluteOffset);
                         continue;
                     }
                 }
@@ -215,75 +205,43 @@ namespace YoggTree.Core
         /// <returns></returns>
         private TokenInstance GetNextToken()
         {
-            (TokenInstance, int) lowestIndex = default;
+            SpooledResult firstResult = null;
+            TokenDefinition definition = null;
 
-            //we walk our list of defined tokens looking for the token instance (found in the Session's global token list) that comes next inside this context.
-            foreach (var tokenType in ParseSession.DefinedTokens)
+            foreach (var tokenDefinition in TokenContextDefinition.ValidTokens)
             {
-                //get the last index that was used to look up a token from the previous token lookup so we don't have to loop through the whole token list starting at 0 every time (which would be redundant)
-                _lastTokenIndexes.TryGetValue(tokenType.ID, out int startingIndex);
-                if (startingIndex < 0) startingIndex = 0;
-
-                //because our token list is the global list from the session, we need to search for the next token using the absolute index in the root context, not the index in this local context
-                var instance = tokenType.GetNextToken(_currentIndex + _absoluteOffset, this, startingIndex);
-                if (instance.Instance == null) continue;
-
-                if (lowestIndex.Item1 == null || instance.Instance.StartIndex < lowestIndex.Item1.StartIndex) //nothing there yet or this came before the earliest token, so this token becomes the next new token
+                if (ParseSession.TokenSpools.TryGetValue(tokenDefinition.ID, out TokenSpool spool) == false)
                 {
-                    lowestIndex = instance;
+                    spool = new TokenSpool(tokenDefinition, 10);
+                    ParseSession.TokenSpools.Add(tokenDefinition.ID, spool);
                 }
-                else if (instance.Instance.StartIndex == lowestIndex.Item1.StartIndex) //in the case we have a token index collision, we take the longer token as it is more "specific" than the shorter token and likely contains the shorter token.
+
+                var nextInstance = spool.GetNextResult(_currentIndex + _absoluteOffset, ParseSession.Contents);
+                if (nextInstance.IsEmpty() == true) continue;
+
+                if (firstResult == null)
                 {
-                    if (instance.Instance.Contents.Length > lowestIndex.Item1.Contents.Length)
+                    firstResult = nextInstance;
+                    definition = spool.Token;
+                }
+                else if (firstResult.StartIndex < nextInstance.StartIndex)
+                {
+                    firstResult = nextInstance;
+                    definition = spool.Token;
+                }
+                else if (firstResult.StartIndex == nextInstance.StartIndex)
+                {
+                    if (nextInstance.Length > firstResult.Length)
                     {
-                        lowestIndex = instance;
+                        firstResult = nextInstance;
+                        definition = spool.Token;
                     }
                 }
             }
 
-            //didn't find anything, return nothing.
-            if (lowestIndex.Item1 == null) return null;
+            if (firstResult.IsEmpty() == true) return null;
 
-            //set the last index we iterated to in the global tokens list for the token of the type that was found to serve as the starting point for the next token search.
-            if (_lastTokenIndexes.TryGetValue(lowestIndex.Item1.TokenDefinition.ID, out int index) == false)
-            {
-                _lastTokenIndexes[lowestIndex.Item1.TokenDefinition.ID] = lowestIndex.Item2;
-            }
-            else
-            {
-                if (index < lowestIndex.Item2)
-                {
-                    _lastTokenIndexes[lowestIndex.Item1.TokenDefinition.ID] = lowestIndex.Item2;
-                }
-            }
-
-            //make a new token relative to this context.
-            return lowestIndex.Item1 with
-            {
-                Context = this,
-                StartIndex = lowestIndex.Item1.StartIndex - _absoluteOffset,
-                EndIndex = lowestIndex.Item1.EndIndex - _absoluteOffset
-            };
-        }
-
-        /// <summary>
-        /// Fast-forwards through the token list without processing the tokens. Used to seek over child context contents once the parent context has completed its child.
-        /// </summary>
-        /// <param name="index">The absolute index (relative to the ParseSession) to seek to.</param>
-        private void SeekForward(int index)
-        {
-            foreach (var tokenType in ParseSession.DefinedTokens)
-            {
-                _lastTokenIndexes.TryGetValue(tokenType.ID, out int startingIndex);
-                if (startingIndex < 0) startingIndex = 0;
-
-                var nextToken = tokenType.GetNextToken(index, this, startingIndex);
-
-                if (nextToken.Instance == null)
-                {
-                    _lastTokenIndexes[tokenType.ID] = nextToken.Index;
-                }
-            }
+            return new TokenInstance(definition, this, firstResult.StartIndex, ParseSession.Contents.Slice(firstResult.StartIndex, firstResult.Length));
         }
 
         public int GetContextualIndex(TokenContextInstance targetContext)

@@ -73,7 +73,10 @@ namespace YoggTree.Core.Tokens
             if (_tokenPatterns.Contains(token.Token.ToString()) == true)
             {
                 var matchingToken = GetTokenFromRegex(token.Token.ToString());
-                throw new ArgumentException($"The pattern {token.Token.ToString()} already exists in token {matchingToken.Name}");
+                if (matchingToken.Token.Options == token.Token.Options)
+                {
+                    throw new ArgumentException($"The pattern {token.Token.ToString()} already exists in token {matchingToken.Name}");
+                }
             }
 
             _tokenPatterns.Add(token.Token.ToString());

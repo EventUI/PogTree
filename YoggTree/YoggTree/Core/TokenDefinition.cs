@@ -70,25 +70,6 @@ namespace YoggTree.Core
             _token = token;
         }
 
-        /// <summary>
-        /// Gets the next previousToken of this token in the context's Content.
-        /// </summary>
-        /// <param name="currentPosition">The position in the content to search from.</param>
-        /// <param name="context">The context to search for the next token in.</param>
-        /// <param name="startingIndex">Optional. The starting index in the array of TokenInstances to begin searching at.</param>
-        /// <returns></returns>
-        public (TokenInstance Instance, int Index) GetNextToken(int currentPosition, TokenContextInstance context, int startingIndex = 0)
-        {
-            if (context.ParseSession.AllTokenInstances.TryGetValue(ID, out IReadOnlyList<TokenInstance> tokens) == false) return (null, -1);
-
-            for (int x = startingIndex; x < tokens.Count; x++)
-            {
-                TokenInstance tokenInstance = tokens[x];
-                if (tokenInstance.StartIndex >= currentPosition) return (tokenInstance, x);
-            }
-
-            return (null, -1);
-        }
 
         /// <summary>
         /// Determines whether or not a token can come after the previous token found in the context's Content.
