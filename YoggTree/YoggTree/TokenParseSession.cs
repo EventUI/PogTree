@@ -78,6 +78,7 @@ namespace YoggTree
             if (rootContext == null) throw new ArgumentNullException(nameof(rootContext));
             if (contextRegistry == null) throw new ArgumentNullException(nameof(contextRegistry));
 
+            _contents = rootContext.Contents;
             _contextRegistry = contextRegistry;
             _rootContext = rootContext;
             _rootContext.ParseSession = this;

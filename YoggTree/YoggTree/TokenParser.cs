@@ -42,5 +42,10 @@ namespace YoggTree
 
             return parseSession.RootContext;
         }
+
+        public TokenContextInstance Parse<T>(string contents) where T : TokenContextDefinition, new()
+        {
+            return Parse(new T(), contents);
+        }
     }
 }

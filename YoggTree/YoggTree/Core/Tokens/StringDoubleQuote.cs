@@ -17,13 +17,9 @@ namespace YoggTree.Core.Tokens
 {
     public class StringDoubleQuote : TokenDefinition, IStringToken
     {
-        public StringDoubleQuote()
-            : base(TokenRegexStore.DoubleQuote, "\"", TokenTypeFlags.ContextEnder | TokenTypeFlags.ContextStarter)
-        {
+        public StringDoubleQuote() 
+            : base(TokenRegexStore.DoubleQuote, "\"", TokenTypeFlags.ContextEnder | TokenTypeFlags.ContextStarter, "StringDoubleQuote") 
+        { 
         }
-
-        public string ContextStartKey { get; } = "StringDoubleQuote";
-
-        public string ContextEndKey { get; } = "StringDoubleQuote";
     }
 }

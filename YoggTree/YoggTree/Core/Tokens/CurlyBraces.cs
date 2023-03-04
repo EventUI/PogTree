@@ -15,20 +15,16 @@ namespace YoggTree.Core.Tokens
 {
     public class OpenCurlyBraceToken : TokenDefinition, IBraceToken
     {
-        public string ContextStartKey { get; } = "Brace_Curly";
-
         public OpenCurlyBraceToken()
-            : base(TokenRegexStore.Brace_OpenCurly, "{", TokenTypeFlags.ContextStarter)
+            : base(TokenRegexStore.Brace_OpenCurly, "{", TokenTypeFlags.ContextStarter, "Brace_Curly")
         {
         }
     }
 
     public class CloseCurlyBraceToken : TokenDefinition, IBraceToken
     {
-        public string ContextEndKey { get; } = "Brace_Curly";
-
         public CloseCurlyBraceToken()
-            : base(TokenRegexStore.Brace_CloseCurly, "}", TokenTypeFlags.ContextEnder)
+            : base(TokenRegexStore.Brace_CloseCurly, "}", TokenTypeFlags.ContextEnder, "Brace_Curly")
         {
         }
     }

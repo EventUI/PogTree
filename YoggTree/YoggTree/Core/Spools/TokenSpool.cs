@@ -32,14 +32,7 @@ namespace YoggTree.Core.Spools
 
             Token = token;
             SpoolSize = spoolSize;
-
-            var spoolBacking = new SpooledResult[spoolSize];
-            for (var x = 0; x < spoolSize; x++)
-            {
-                spoolBacking[x] = new SpooledResult();
-            }
-
-            ResultSpool = spoolBacking;
+            ResultSpool = new SpooledResult[spoolSize];
         }
     }
 
@@ -48,16 +41,20 @@ namespace YoggTree.Core.Spools
         internal static SpooledResult GetNextResult(this TokenSpool spool, int startIndex, ReadOnlyMemory<char> content)
         {
             if (spool.EndOfContent == true) return spool.ResultSpool[0];
-
+            SpooledResult lastResult = (spool.CurrentIndex == 0) ? null : spool.ResultSpool[spool.CurrentIndex - 1];
             for (int x = spool.CurrentIndex; x < spool.SpoolSize; x++)
             {
                 var curSpool = spool.ResultSpool[x];
+                if (curSpool == null) break;
+
+                lastResult = curSpool;
                 if (curSpool.IsEmpty() == false && curSpool.IsAfter(startIndex) == true)
                 {
-                    spool.CurrentIndex = x;                  
                     return curSpool;
                 }
             }
+
+            startIndex = lastResult == null ? 0 : lastResult.StartIndex + lastResult.Length;
 
             spool.FillSpool(startIndex, content);
             spool.CurrentIndex = 0;
@@ -71,6 +68,13 @@ namespace YoggTree.Core.Spools
             foreach (var result in spool.Token.Token.EnumerateMatches(content.Span, startIndex))
             {
                 if (y == spool.SpoolSize) break;
+
+                var curResult = spool.ResultSpool[y];
+                if (curResult == null)
+                {
+                    curResult = new SpooledResult();
+                    spool.ResultSpool[y] = curResult;
+                }
 
                 spool.ResultSpool[y].Length = result.Length;
                 spool.ResultSpool[y].StartIndex = result.Index;
@@ -87,6 +91,9 @@ namespace YoggTree.Core.Spools
             {
                 for (int x = y; x < spool.SpoolSize; x++)
                 {
+                    var curResult = spool.ResultSpool[x];
+                    if (curResult == null) continue;
+
                     spool.ResultSpool[x].Length = -1;
                     spool.ResultSpool[x].StartIndex = -1;
                 }

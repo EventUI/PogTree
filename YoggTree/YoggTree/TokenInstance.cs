@@ -16,7 +16,7 @@ namespace YoggTree
     /// <summary>
     /// Represents an instance of a TokenDefinition that was found in a TokenContextInstance's Content.
     /// </summary>
-    public sealed record TokenInstance : IContentSpan, IEquatable<TokenInstance>, IComparable<TokenInstance>
+    public sealed record TokenInstance : IContentSpan
     {
         /// <summary>
         /// The definition of the rules for the token.
@@ -62,22 +62,6 @@ namespace YoggTree
             return $"{TokenDefinition.ToString()}  @{StartIndex}";
         }
 
-        public bool Equals(TokenInstance other)
-        {
-            if (other == null) return false;
-            if (other.TokenDefinition.ID != TokenDefinition.ID) return false;
-            if (other.StartIndex != StartIndex) return false;
-            if (other.Contents.Span.SequenceEqual(Contents.Span) == false) return false;
-            if (other.EndIndex != EndIndex) return false;
-
-            return true;
-        }
-
-        public override int GetHashCode()
-        {
-            return base.GetHashCode();
-        }
-
         public int GetContextualIndex(TokenContextInstance targetContext)
         {
             if (targetContext == null) throw new ArgumentNullException(nameof(targetContext));
@@ -121,11 +105,6 @@ namespace YoggTree
         {
             if (Context?.ParseSession == null) throw new Exception("Token does not belong to a parse session, cannot get absolute instance.");
             return GetContextualInstance(Context?.ParseSession?.RootContext);
-        }
-
-        public int CompareTo(TokenInstance other)
-        {
-            return StartIndex - other.StartIndex;
         }
 
         public TokenContextInstance GetContext()

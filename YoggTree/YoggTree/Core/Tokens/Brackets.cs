@@ -14,20 +14,16 @@ namespace YoggTree.Core.Tokens
 {
     public class OpenBracketToken : TokenDefinition, IBraceToken
     {
-        public string ContextStartKey { get; } = "Brace_Bracket";
-
         public OpenBracketToken()
-            : base(TokenRegexStore.Brace_OpenBracket, "[", TokenTypeFlags.ContextStarter)
+            : base(TokenRegexStore.Brace_OpenBracket, "[", TokenTypeFlags.ContextStarter, "Brace_Bracket")
         {
         }
     }
 
     public class CloseBracketToken : TokenDefinition, IBraceToken
     {
-        public string ContextEndKey { get; } = "Brace_Bracket";
-
         public CloseBracketToken()
-            : base(TokenRegexStore.Brace_CloseBracket, "]", TokenTypeFlags.ContextEnder)
+            : base(TokenRegexStore.Brace_CloseBracket, "]", TokenTypeFlags.ContextEnder, "Brace_Bracket")
         {
         }
     }

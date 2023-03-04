@@ -50,13 +50,16 @@ namespace YoggTree
         public TokenContextDefinition(string name, IEnumerable<TokenDefinition> validTokens)
         {
             if (string.IsNullOrWhiteSpace(name) == true) throw new ArgumentException(nameof(name) + " cannot be null or whitespace.");
+            Name = name;
+            
+            _validTokensRO = _validTokens.AsReadOnly();
+
             if (validTokens != null)
             {
                 AddTokens(validTokens);
             }
 
-            Name = name;
-            _validTokensRO = _validTokens.AsReadOnly();
+
         }
 
         public TokenContextDefinition(string name)
@@ -64,6 +67,7 @@ namespace YoggTree
             if (string.IsNullOrWhiteSpace(name) == true) throw new ArgumentException(nameof(name) + " cannot be null or whitespace.");
 
             Name = name;
+            _validTokensRO = _validTokens.AsReadOnly();
         }
 
         protected void AddToken(TokenDefinition token)
@@ -84,7 +88,7 @@ namespace YoggTree
         protected void AddTokens(IEnumerable<TokenDefinition> tokens)
         {
             Dictionary<string, TokenDefinition> allRegexes = new Dictionary<string, TokenDefinition>();
-            foreach (var token in tokens)
+            foreach (var token in ValidTokens)
             {
                 allRegexes.Add(token.Token.ToString(), token);
             }
@@ -101,6 +105,7 @@ namespace YoggTree
                 }
 
                 _validTokens.Add(token);
+                allRegexes.Add(token.Token.ToString(), token);
             }
         }
 
@@ -249,9 +254,11 @@ namespace YoggTree
         protected virtual bool HandleEndsCurrentContext(TokenInstance tokenInstance)
         {
             if (tokenInstance.StartIndex == 0) return false;
+            if (tokenInstance.Context.StartToken == null) return false;
+
             if (tokenInstance.TokenDefinition.Flags.HasFlag(TokenTypeFlags.ContextEnder) == true)
             {
-                if (tokenInstance.TokenDefinition.ContextKey == tokenInstance.Context.StartToken.TokenDefinition.ContextKey)
+                if (tokenInstance.TokenDefinition.ContextKey == tokenInstance.Context.StartToken?.TokenDefinition.ContextKey)
                 {
                     return true;
                 }

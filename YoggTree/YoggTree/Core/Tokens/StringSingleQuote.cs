@@ -16,13 +16,9 @@ namespace YoggTree.Core.Tokens
 {
     public class StringSingleQuote : TokenDefinition, IStringToken
     {
-        public StringSingleQuote()
-            : base(TokenRegexStore.SingleQuote, "'", TokenTypeFlags.ContextEnder | TokenTypeFlags.ContextStarter)
-        {
+        public StringSingleQuote() 
+            : base(TokenRegexStore.SingleQuote, "'", TokenTypeFlags.ContextEnder | TokenTypeFlags.ContextStarter, "StringSingleQuote") 
+        { 
         }
-
-        public string ContextStartKey { get; } = "StringSingleQuote";
-
-        public string ContextEndKey { get; } = "StringSingleQuote";
     }
 }

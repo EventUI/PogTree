@@ -24,12 +24,14 @@ namespace YoggTree
     {
         private Guid _id = Guid.NewGuid();
         private int _absoluteOffset = 0; //the offset that this context starts at relative to the ParseSession
-        private IReadOnlyList<TokenContextInstance> _childContextsRO = null; //read-only wrapper to expose as the child contexts list.
-        private Dictionary<Guid, int> _lastTokenIndexes = null; //internal dictionary of the last index in the ParseSession's global token list that each type of token was accessed at.
-        private IReadOnlyList<TokenInstance> _tokensRO = null; //read-only wrapper to expose as the tokens list.
         private int _currentIndex = 0;
-        private List<TokenInstance> _tokens = new List<TokenInstance>();
+
         private List<TokenContextInstance> _childContexts = new List<TokenContextInstance>();
+        private IReadOnlyList<TokenContextInstance> _childContextsRO = null; //read-only wrapper to expose as the child contexts list.
+
+        private List<TokenInstance> _tokens = new List<TokenInstance>();
+        private IReadOnlyList<TokenInstance> _tokensRO = null; //read-only wrapper to expose as the tokens list.
+
 
         /// <summary>
         /// The unique ID of this Context.
@@ -102,9 +104,10 @@ namespace YoggTree
             StartIndex = 0;
             EndIndex = Contents.Length;
             Parent = null;
+            TokenContextDefinition = contextDefinition;
 
             _childContextsRO = _childContexts.AsReadOnly();
-            _lastTokenIndexes = new Dictionary<Guid, int>();
+            _tokensRO = _tokens.AsReadOnly();
         }
 
         /// <summary>
@@ -128,9 +131,11 @@ namespace YoggTree
             Contents = parent.Contents.Slice(StartIndex);
             Depth = parent.Depth + 1;
 
-            _lastTokenIndexes = parent._lastTokenIndexes;
+            _absoluteOffset = parent._absoluteOffset + start.StartIndex;
             _childContextsRO = _childContexts.AsReadOnly();
-            _absoluteOffset = StartIndex + parent._absoluteOffset;
+            _tokensRO = _tokens.AsReadOnly();
+
+            _tokens.Add(start with { Context = this, StartIndex = start.StartIndex - _absoluteOffset, EndIndex = start.EndIndex - _absoluteOffset });
         }
 
         /// <summary>
@@ -139,7 +144,7 @@ namespace YoggTree
         /// <exception cref="Exception"></exception>
         internal void WalkContent()
         {
-            TokenInstance _previousToken = null;
+            TokenInstance _previousToken = (_tokens.Count > 0) ? _tokens[0] : null;
 
             while (_currentIndex < Contents.Length)
             {
@@ -165,7 +170,6 @@ namespace YoggTree
                 }
 
                 _tokens.Add(nextToken);
-                _currentIndex = nextToken.EndIndex;
 
                 //if this token meets the context's criteria for starting a new sub-context, make the context and walk its contents starting at the start token.
                 //The new sub-context will eventually hit the block below to end itself and then we return to this context.
@@ -177,7 +181,7 @@ namespace YoggTree
                         _childContexts.Add(childContext);
                         childContext.WalkContent();
 
-                        _currentIndex = _currentIndex + childContext.Contents.Length;
+                        _currentIndex = childContext.EndIndex;
                         if (childContext.EndToken != null) _tokens.Add(childContext.EndToken);
                         continue;
                     }
@@ -186,14 +190,16 @@ namespace YoggTree
                 //if this token ends this context, snip the contents down to only what was inside the context and return to the parent context.
                 if (TokenContextDefinition.EndsCurrentContext(nextToken) == true)
                 {
-                    _currentIndex = nextToken.EndIndex;
+                    Contents = Contents.Slice(0, nextToken.EndIndex);
 
-                    Contents = Contents.Slice(0, _currentIndex);
+                    _currentIndex = nextToken.EndIndex;
                     EndIndex = StartIndex + _currentIndex;
                     EndToken = nextToken;
 
                     break;
                 }
+                
+                _currentIndex = nextToken.EndIndex;
             }
         }
 
@@ -204,7 +210,7 @@ namespace YoggTree
         private TokenInstance GetNextToken()
         {
             SpooledResult firstResult = null;
-            TokenDefinition definition = null;
+            TokenSpool firstSpool = null;
 
             foreach (var tokenDefinition in TokenContextDefinition.ValidTokens)
             {
@@ -220,26 +226,27 @@ namespace YoggTree
                 if (firstResult == null)
                 {
                     firstResult = nextInstance;
-                    definition = spool.Token;
+                    firstSpool = spool;
                 }
-                else if (firstResult.StartIndex < nextInstance.StartIndex)
+                else if (nextInstance.StartIndex < firstResult.StartIndex)
                 {
                     firstResult = nextInstance;
-                    definition = spool.Token;
+                    firstSpool = spool;
                 }
                 else if (firstResult.StartIndex == nextInstance.StartIndex)
                 {
                     if (nextInstance.Length > firstResult.Length)
                     {
                         firstResult = nextInstance;
-                        definition = spool.Token;
+                        firstSpool = spool;
                     }
                 }
             }
 
             if (firstResult.IsEmpty() == true) return null;
+            firstSpool.CurrentIndex++;
 
-            return new TokenInstance(definition, this, firstResult.StartIndex, ParseSession.Contents.Slice(firstResult.StartIndex, firstResult.Length));
+            return new TokenInstance(firstSpool.Token, this, firstResult.StartIndex - _absoluteOffset, ParseSession.Contents.Slice(firstResult.StartIndex, firstResult.Length));
         }
 
         public int GetContextualIndex(TokenContextInstance targetContext)

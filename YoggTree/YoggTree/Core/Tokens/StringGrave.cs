@@ -17,13 +17,8 @@ namespace YoggTree.Core.Tokens
     public class StringGrave : TokenDefinition, IStringToken
     {
         public StringGrave()
-            : base(TokenRegexStore.Grave, "`", TokenTypeFlags.ContextEnder | TokenTypeFlags.ContextStarter)
+            : base(TokenRegexStore.Grave, "`", TokenTypeFlags.ContextEnder | TokenTypeFlags.ContextStarter, "StringGrave")
         {
         }
-
-        public string ContextStartKey { get; } = "StringGrave";
-
-        public string ContextEndKey { get; } = "StringGrave";
-
     }
 }
