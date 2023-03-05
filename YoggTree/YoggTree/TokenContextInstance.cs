@@ -201,6 +201,8 @@ namespace YoggTree
                 
                 _currentIndex = nextToken.EndIndex;
             }
+
+            if (EndToken == null && Depth > 0) throw new Exception("Failed to find an EndToken for context: " + ToString());
         }
 
         /// <summary>
