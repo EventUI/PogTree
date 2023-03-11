@@ -4,15 +4,13 @@ This source code is licensed under the MIT license found in the
 LICENSE file in the root directory of this source tree.*/
 
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using YoggTree.Core.Tokens;
 
 namespace YoggTree
 {
+    /// <summary>
+    /// Standard tokens that occur in most files that will be parsed.
+    /// </summary>
     public static class StandardTokens
     {
         public readonly static OpenBracketToken OpenBracket = new OpenBracketToken();
@@ -33,6 +31,14 @@ namespace YoggTree
 
         public readonly static WhitespaceVertical WhitespaceVertical = new WhitespaceVertical();
 
+        public readonly static Backslash Backslash = new Backslash();
+
+        public readonly static Forwardslash Forwardslash = new Forwardslash();
+
+        /// <summary>
+        /// Gets the horizontal and vertical whitespace tokens.
+        /// </summary>
+        /// <returns></returns>
         public static List<TokenDefinition> GetWhitespaceTokens()
         {
             return new List<TokenDefinition>()
@@ -42,6 +48,10 @@ namespace YoggTree
             };
         }
 
+        /// <summary>
+        /// Gets the grave, single, and double quote tokens.
+        /// </summary>
+        /// <returns></returns>
         public static List<TokenDefinition> GetStringTokens()
         {
             return new List<TokenDefinition>()
@@ -52,6 +62,10 @@ namespace YoggTree
             };
         }
 
+        /// <summary>
+        /// Gets the "[" and "]" tokens.
+        /// </summary>
+        /// <returns></returns>
         public static List<TokenDefinition> GetBracketTokens()
         {
             return new List<TokenDefinition>()
@@ -61,6 +75,10 @@ namespace YoggTree
             };
         }
 
+        /// <summary>
+        /// Gets the "{" and "}" tokens.
+        /// </summary>
+        /// <returns></returns>
         public static List<TokenDefinition> GetCurlyBraceTokens()
         {
             return new List<TokenDefinition>()
@@ -70,6 +88,23 @@ namespace YoggTree
             };
         }
 
+        /// <summary>
+        /// Gets the forward and backward slash characters.
+        /// </summary>
+        /// <returns></returns>
+        public static List<TokenDefinition> GetSlashTokens()
+        {
+            return new List<TokenDefinition>()
+            {
+                Backslash,
+                Forwardslash
+            };
+        }
+
+        /// <summary>
+        /// Gets all the tokens in this object.
+        /// </summary>
+        /// <returns></returns>
         public static List<TokenDefinition> GetAllStandardTokens()
         {
             var allTokens = new List<TokenDefinition>();
@@ -77,7 +112,7 @@ namespace YoggTree
             allTokens.AddRange(GetStringTokens());
             allTokens.AddRange(GetBracketTokens());
             allTokens.AddRange(GetCurlyBraceTokens());
-
+            allTokens.AddRange(GetSlashTokens());
             return allTokens;
         }
     }

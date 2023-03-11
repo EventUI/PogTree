@@ -3,24 +3,14 @@
 This source code is licensed under the MIT license found in the
 LICENSE file in the root directory of this source tree.*/
 
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using YoggTree.Core.Interfaces;
 using YoggTree.Core.Spools;
-using static System.Collections.Specialized.BitVector32;
 
 namespace YoggTree
 {
     /// <summary>
     /// Represents a section or sub-section of a file being parsed for tokens.
     /// </summary>
-    public sealed class TokenContextInstance : IContentSpan
+    public sealed class TokenContextInstance
     {
         private Guid _id = Guid.NewGuid();
         private int _absoluteOffset = 0; //the offset that this context starts at relative to the ParseSession
@@ -36,7 +26,7 @@ namespace YoggTree
         /// <summary>
         /// The unique ID of this Context.
         /// </summary>
-        public TokenContextDefinition TokenContextDefinition { get; } = null;
+        public TokenContextDefinition ContextDefinition { get; } = null;
 
         /// <summary>
         /// The ParseSession this context is a child of.
@@ -98,32 +88,37 @@ namespace YoggTree
         /// </summary>
         public IReadOnlyList<TokenContextInstance> ChildContexts { get { return _childContextsRO; } }
 
+        /// <summary>
+        /// Internal only constructor that creates the root level context for a ParseSession.
+        /// </summary>
+        /// <param name="contextDefinition">The definition used for the root context of the ParseSession.</param>
+        /// <param name="contents">The entire content string being parsed in the ParseSession.</param>
         internal TokenContextInstance(TokenContextDefinition contextDefinition, string contents)
         {
             Contents = new ReadOnlyMemory<char>(contents.ToCharArray());
             StartIndex = 0;
             EndIndex = Contents.Length;
             Parent = null;
-            TokenContextDefinition = contextDefinition;
+            ContextDefinition = contextDefinition;
 
             _childContextsRO = _childContexts.AsReadOnly();
             _tokensRO = _tokens.AsReadOnly();
         }
 
         /// <summary>
-        /// Creates a new sub-context that is the child of another context.
+        /// Internal only constructor that creates a new sub-context that is the child of another context.
         /// </summary>
         /// <param name="parent">The context that is the parent of this one.</param>
         /// <param name="start">The token instance that signaled the beginning of this context.</param>
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="ArgumentException"></exception>
-        public TokenContextInstance(TokenContextDefinition contextDefinition, TokenContextInstance parent, TokenInstance start)
+        internal TokenContextInstance(TokenContextDefinition contextDefinition, TokenContextInstance parent, TokenInstance start)
         {
             if (parent == null) throw new ArgumentNullException(nameof(parent));
             if (start == null) throw new ArgumentException(nameof(start));
             if (contextDefinition == null) throw new ArgumentNullException(nameof(contextDefinition));
 
-            TokenContextDefinition = contextDefinition;
+            ContextDefinition = contextDefinition;
             ParseSession = parent.ParseSession;
             Parent = parent;
             StartIndex = start.StartIndex;
@@ -163,7 +158,7 @@ namespace YoggTree
                 }
 
                 //check to see if both the context allows this token to be valid, and that the token detects itself to be valid in this context. Skip if either is false.
-                if (nextToken.TokenDefinition.IsValidInstance(nextToken) == false || TokenContextDefinition.IsValidInContext(nextToken) == false)
+                if (nextToken.TokenDefinition.IsValidInstance(nextToken) == false)
                 {
                     _currentIndex = nextToken.EndIndex;
                     continue;
@@ -173,9 +168,9 @@ namespace YoggTree
 
                 //if this token meets the context's criteria for starting a new sub-context, make the context and walk its contents starting at the start token.
                 //The new sub-context will eventually hit the block below to end itself and then we return to this context.
-                if (TokenContextDefinition.StartsNewContext(nextToken) == true)
+                if (ContextDefinition.StartsNewContext(nextToken) == true)
                 {
-                    TokenContextInstance childContext = TokenContextDefinition.CreateNewContext(nextToken);
+                    TokenContextInstance childContext = ContextDefinition.CreateNewContext(nextToken);
                     if (childContext != null)
                     {
                         _childContexts.Add(childContext);
@@ -188,7 +183,7 @@ namespace YoggTree
                 }
 
                 //if this token ends this context, snip the contents down to only what was inside the context and return to the parent context.
-                if (TokenContextDefinition.EndsCurrentContext(nextToken) == true)
+                if (ContextDefinition.EndsCurrentContext(nextToken) == true)
                 {
                     Contents = Contents.Slice(0, nextToken.EndIndex);
 
@@ -204,7 +199,7 @@ namespace YoggTree
         }
 
         /// <summary>
-        /// Gets the next token in this context.
+        /// Gets the next token in this context. Note that this assumes a forward-only sweep of the content and can't be rewound. 
         /// </summary>
         /// <returns></returns>
         private TokenInstance GetNextToken()
@@ -212,28 +207,31 @@ namespace YoggTree
             SpooledResult firstResult = null;
             TokenSpool firstSpool = null;
 
-            foreach (var tokenDefinition in TokenContextDefinition.ValidTokens)
+            //walk the list of every token definition that was included to the context definition and find the one that occurs next in the content string.
+            foreach (var tokenDefinition in ContextDefinition.ValidTokens)
             {
+                //see if we have a spool that's already been made for this type of token. If not, make and add it.
                 if (ParseSession.TokenSpools.TryGetValue(tokenDefinition.ID, out TokenSpool spool) == false)
                 {
-                    spool = new TokenSpool(tokenDefinition, 10);
+                    spool = new TokenSpool(tokenDefinition, tokenDefinition.SpoolSize);
                     ParseSession.TokenSpools.Add(tokenDefinition.ID, spool);
                 }
 
+                //get the next instance of the token in the content string for the entire parse session.
                 var nextInstance = spool.GetNextResult(_currentIndex + _absoluteOffset, ParseSession.Contents);
                 if (nextInstance.IsEmpty() == true) continue;
 
-                if (firstResult == null)
+                if (firstResult == null) //first thing we found, set it as the earliest result
                 {
                     firstResult = nextInstance;
                     firstSpool = spool;
                 }
-                else if (nextInstance.StartIndex < firstResult.StartIndex)
+                else if (nextInstance.StartIndex < firstResult.StartIndex) //a subsequent result began earlier than the current earliest match. Use it instead.
                 {
                     firstResult = nextInstance;
                     firstSpool = spool;
                 }
-                else if (firstResult.StartIndex == nextInstance.StartIndex)
+                else if (firstResult.StartIndex == nextInstance.StartIndex) //two tokens found at the same index - take whichever is longer as that is a more "specific" match and that it also contains the shorter token. NOTE: may want to add a hook to resolve this ambiguity here if we run into problems with this rule
                 {
                     if (nextInstance.Length > firstResult.Length)
                     {
@@ -243,56 +241,23 @@ namespace YoggTree
                 }
             }
 
-            if (firstResult.IsEmpty() == true) return null;
+         
+            if (firstResult.IsEmpty() == true) return null; //no more results. All done.
+
+            //a result was found - advance the index of the spool so it doesn't redundantly search itself for the next result. Note this will always be incremented by one as the loop above only takes the first token from each spool to find the earliest one.
             firstSpool.CurrentIndex++;
 
             return new TokenInstance(firstSpool.Token, this, firstResult.StartIndex - _absoluteOffset, ParseSession.Contents.Slice(firstResult.StartIndex, firstResult.Length));
         }
 
-        public int GetContextualIndex(TokenContextInstance targetContext)
-        {
-            if (targetContext == null) throw new ArgumentNullException(nameof(targetContext));
-            if (StartIndex < 0) throw new Exception("StartIndex must be a positive number.");
-
-            bool parentFound = false;
-
-            TokenContextInstance parent = Parent.Parent;
-
-            while (parent != null)
-            {
-                if (parent == targetContext)
-                {
-                    parentFound = true;
-                    break;
-                }
-
-                parent = parent.Parent;
-            }
-
-            if (parentFound != true) throw new Exception("TokenContextInstance is not contained by the target targetContext.");
-
-            return StartIndex + targetContext.AbsoluteOffset;
-        }
-
-        public int GetAbsoluteIndex()
-        {
-            if (Parent?.ParseSession == null) throw new Exception("TokenContextInstance does not belong to a parse session, cannot calculate absolute index.");
-            return GetContextualIndex(Parent.ParseSession.RootContext);
-        }
-
-        public ReadOnlyMemory<char> GetContents(IContentSpan start, IContentSpan end = null)
-        {
-            if (start == null) throw new ArgumentNullException(nameof(start));
-            return GetContents(start.GetAbsoluteIndex(), end?.GetAbsoluteIndex() + (end?.Contents.Length));
-        }
-
-        public ReadOnlyMemory<char> GetContents(IContentSpan start, int? end = null)
-        {
-            if (start == null) throw new ArgumentNullException(nameof(start));
-            return GetContents(start.GetAbsoluteIndex(), end + _absoluteOffset);
-        }
-
-        public ReadOnlyMemory<char> GetContents(int start, int? end = null)
+        /// <summary>
+        /// Gets a slice of this context instance's contents.
+        /// </summary>
+        /// <param name="start">The starting index.</param>
+        /// <param name="end">The ending index.</param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
+        public ReadOnlyMemory<char> Slice(int start, int? end = null)
         {
             if (start < 0 || start > Contents.Length) throw new ArgumentOutOfRangeException(nameof(start));
             if (end.HasValue && end.Value > Contents.Length) throw new ArgumentOutOfRangeException(nameof(end));
@@ -314,13 +279,13 @@ namespace YoggTree
         public override string ToString()
         {
 
-            string contextName = TokenContextDefinition.Name;
+            string contextName = ContextDefinition.Name;
             string name = contextName;
 
             var parent = Parent;
             while (parent != null)
             {
-                string parentName = parent.TokenContextDefinition.Name;
+                string parentName = parent.ContextDefinition.Name;
                 if (string.IsNullOrWhiteSpace(parentName) == true) parentName = GetType().Name;
 
                 name = parentName + ">" + name;
@@ -328,11 +293,6 @@ namespace YoggTree
             }
 
             return $"({contextName}[{Depth}]) " + name;
-        }
-
-        public TokenContextInstance GetContext()
-        {
-            return Parent;
         }
     }
 }

@@ -1,4 +1,5 @@
 using Xunit.Abstractions;
+using YoggTree.Core.Tokens;
 
 namespace BasicTests
 {
@@ -11,7 +12,6 @@ namespace BasicTests
             public TestContext()
                 :base("TestContext", StandardTokens.GetAllStandardTokens())
             {
-
             }
         }
 
