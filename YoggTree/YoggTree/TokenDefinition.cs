@@ -3,11 +3,7 @@
 This source code is licensed under the MIT license found in the
 LICENSE file in the root directory of this source tree.*/
 
-using System.Net.Http.Headers;
 using System.Text.RegularExpressions;
-using YoggTree.Core.DelegateSet;
-using YoggTree.Core.Interfaces;
-using YoggTree.Core.Tokens;
 
 namespace YoggTree
 {
@@ -17,17 +13,12 @@ namespace YoggTree
     public abstract class TokenDefinition
     {
         private Guid _id = Guid.NewGuid();
-        private DelegateItemOridinalProvider _counterProvider = new DelegateItemOridinalProvider();
-        private DelegateSetCollection<CanComeAfterPredicate<TokenDefinition>, TokenDefinition> _canComeAfters = null;
-        private DelegateSetCollection<CanComeBeforePredicate<TokenDefinition>, TokenDefinition> _canComeBefores = null;
-        private DelegateSetCollection<IsValidInstancePredicate<TokenDefinition>, TokenDefinition> _isValidInstances = null;
-        private DelegateSetCollection<CreateTokenParseContext<TokenDefinition>, TokenDefinition> _tokenParseContextFactories = null;
 
         protected readonly string _name = null;
         protected readonly Regex _token = null;
-        protected HashSet<string> _tags = new HashSet<string>();
-        protected readonly TokenTypeFlags _flags = TokenTypeFlags.Defaul;
+        protected readonly TokenTypeFlags _flags = TokenTypeFlags.Default;
         protected readonly string _contextKey = null;
+        protected readonly int _spoolSize = 25;
 
         /// <summary>
         /// The unique ID of this token definition.
@@ -54,16 +45,8 @@ namespace YoggTree
         }
 
         /// <summary>
-        /// Tags that mark a token as belonging to a category of tokens.
+        /// Flags indicating special behavior to be taken when the default implementations of TokenInstances and TokenContextInstances is used.
         /// </summary>
-        public HashSet<string> Tags
-        {
-            get
-            {
-                return _tags;
-            }
-        }
-
         public TokenTypeFlags Flags
         {
             get
@@ -72,9 +55,20 @@ namespace YoggTree
             }
         }
 
+        /// <summary>
+        /// In the event that this token has a ContextStarter and/or a ContextEnder flag, this is the key used by the TokenContextInstance used to determine if the start token and end token of a context match.
+        /// </summary>
         public string ContextKey
         {
             get { return _contextKey; }
+        }
+
+        /// <summary>
+        /// When being used by a TokenContextInstance, this is the size of the buffer of results to keep at a time. The default is 25 - but Regexes with a large number of results (like whitespace) should have a higher SpoolSizes.
+        /// </summary>
+        public int SpoolSize
+        {
+            get { return _spoolSize; }
         }
 
         /// <summary>
@@ -100,7 +94,26 @@ namespace YoggTree
         /// <param name="name">The human readable name of the token.</param>
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="ArgumentException"></exception>
-        public TokenDefinition(Regex token, string name, TokenTypeFlags flags, string contextKey = null)
+        public TokenDefinition(Regex token, string name, int spoolSize)
+        {
+            if (token == null) throw new ArgumentNullException(nameof(token));
+            if (string.IsNullOrWhiteSpace(name) == true) throw new ArgumentException(nameof(name));
+            if (_spoolSize < 0) throw new ArgumentOutOfRangeException(nameof(spoolSize));
+
+            _name = name;
+            _token = token;
+            _spoolSize = spoolSize;
+
+        }
+
+        /// <summary>
+        /// Creates a new TokenDefinition.
+        /// </summary>
+        /// <param name="token">The regular expression used to identify the token/</param>
+        /// <param name="name">The human readable name of the token.</param>
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="ArgumentException"></exception>
+        public TokenDefinition(Regex token, string name, TokenTypeFlags flags, string contextKey = null, int? spoolSize = null)
         {
             if (token == null) throw new ArgumentNullException(nameof(token));
             if (string.IsNullOrWhiteSpace(name) == true) throw new ArgumentException(nameof(name));
@@ -110,167 +123,57 @@ namespace YoggTree
                 _contextKey = contextKey;
             }
 
+            if (spoolSize.HasValue == true)
+            {
+                if (spoolSize.Value < 0) throw new ArgumentOutOfRangeException(nameof(spoolSize));
+                _spoolSize = spoolSize.Value;
+            }
+
             _name = name;
             _token = token;
-            _flags = flags;
+            _flags = flags;           
         }
 
         /// <summary>
         /// Determines whether or not a token can come after the previous token found in the context's Content.
         /// </summary>
         /// <param name="previousToken">The token found immediately before this one.</param>
-        /// <param name="context">The context in which the token was found.</param>
         /// <returns></returns>
-        internal bool CanComeAfter(TokenInstance previousToken)
+        public virtual bool CanComeAfter(TokenInstance previousToken)
         {
-            if (_canComeAfters != null)
-            {
-                var dele = _canComeAfters.GetFirstDelegate(previousToken.TokenDefinition);
-                if (dele != null) return dele(previousToken, previousToken.TokenDefinition);
-            }
-
-            return HandleCanComeAfter(previousToken);
+            return true;
         }
 
         /// <summary>
         /// Determines whether or not a token can come before the next token found in the content's Content.
         /// </summary>
         /// <param name="nextToken"></param>
-        /// <param name="context"></param>
         /// <returns></returns>
-        internal bool CanComeBefore(TokenInstance nextToken)
+        public  virtual bool CanComeBefore(TokenInstance nextToken)
         {
-            if (_canComeBefores != null)
-            {
-                var dele = _canComeBefores.GetFirstDelegate(nextToken.TokenDefinition);
-                if (dele != null) return dele(nextToken, nextToken.TokenDefinition);
-            }
-
-            return HandleCanComeBefore(nextToken);
+            return true;
         }
 
         /// <summary>
         /// Determines if the token instance that was found is "valid" and does not fall into some exception case.
         /// </summary>
         /// <param name="instance">The current token instance.</param>
-        /// <param name="context">The context in which the token was found.</param>
         /// <returns></returns>
-        internal bool IsValidInstance(TokenInstance instance)
-        {
-            if (_isValidInstances != null)
-            {
-                var dele = _isValidInstances.GetFirstDelegate(instance.TokenDefinition);
-                if (dele != null) return dele(instance, instance.TokenDefinition);
-            }
-
-            return HandleIsValidInstance(instance);
-        }
-
-        public TokenContextInstance CreateContext(TokenInstance start)
-        {
-            if (_tokenParseContextFactories != null)
-            {
-                var dele = _tokenParseContextFactories.GetFirstDelegate(start.TokenDefinition);
-                if (dele == null) return dele(start.Context.Parent, start, start.TokenDefinition);
-            }
-
-            return HandleCreateContext(start);
-        }
-
-        protected internal void AddCheckCanComeAfter<TTokenDef>(Func<TokenInstance, TTokenDef, bool> comeAfterDele, Func<TTokenDef, bool> shouldHandle = null) where TTokenDef : TokenDefinition
-        {
-            if (_canComeAfters == null) _canComeAfters = new DelegateSetCollection<CanComeAfterPredicate<TokenDefinition>, TokenDefinition>(_counterProvider);
-
-            if (shouldHandle != null)
-            {
-                _canComeAfters.AddHandler<TTokenDef>(comeAfterDele, iTokenDef => shouldHandle((TTokenDef)iTokenDef));
-            }
-            else
-            {
-                _canComeAfters.AddHandler<TTokenDef>(comeAfterDele);
-            }
-        }
-
-        protected internal void AddCheckCanComeBefore<TTokenDef>(Func<TokenInstance, TTokenDef, bool> comeBeforeDele, Func<TTokenDef, bool> shouldHandle = null) where TTokenDef : TokenDefinition
-        {
-            if (_canComeBefores == null) _canComeBefores = new DelegateSetCollection<CanComeBeforePredicate<TokenDefinition>, TokenDefinition>(_counterProvider);
-
-            if (shouldHandle != null)
-            {
-                _canComeBefores.AddHandler<TTokenDef>(comeBeforeDele, iTokenDef => shouldHandle((TTokenDef)iTokenDef));
-            }
-            else
-            {
-                _canComeBefores.AddHandler<TTokenDef>(comeBeforeDele);
-            }
-        }
-
-        protected internal void AddCheckIsValidTokenInstance<TTokenDef>(Func<TokenInstance, TTokenDef, bool> isValidDele, Func<TTokenDef, bool> shouldHandle = null) where TTokenDef : TokenDefinition
-        {
-            if (_isValidInstances == null) _isValidInstances = new DelegateSetCollection<IsValidInstancePredicate<TokenDefinition>, TokenDefinition>(_counterProvider);
-
-            if (shouldHandle != null)
-            {
-                _isValidInstances.AddHandler<TTokenDef>(isValidDele, iTokenDef => shouldHandle((TTokenDef)iTokenDef));
-            }
-            else
-            {
-                _isValidInstances.AddHandler<TTokenDef>(isValidDele);
-            }
-        }
-
-        protected internal void AddTokenParseContextFactory<TTokenDef>(Func<TokenContextInstance, TokenInstance, TTokenDef, TokenContextInstance> contextFactory, Func<TTokenDef, bool> shouldHandle = null) where TTokenDef : TokenDefinition
-        {
-            if (_tokenParseContextFactories == null) _tokenParseContextFactories = new DelegateSetCollection<CreateTokenParseContext<TokenDefinition>, TokenDefinition>(_counterProvider);
-
-            if (shouldHandle != null)
-            {
-                _tokenParseContextFactories.AddHandler<TTokenDef>(contextFactory, tokenDef => shouldHandle((TTokenDef)tokenDef));
-            }
-            else
-            {
-                _tokenParseContextFactories.AddHandler<TTokenDef>(contextFactory);
-            }
-        }
-
-        protected virtual bool HandleCanComeAfter(TokenInstance previousToken)
+        public bool IsValidInstance(TokenInstance instance)
         {
             return true;
         }
 
-        protected virtual bool HandleCanComeBefore(TokenInstance nextToken)
+        /// <summary>
+        /// Returns the type of child context to create When this token has signaled that it starts a child context.
+        /// </summary>
+        /// <param name="start">The token that has been flagged as the start of a new child context.</param>
+        /// <returns></returns>
+        public virtual TokenContextDefinition GetNewContextDefinition(TokenInstance start)
         {
-            return true;
+            return start.Context.ContextDefinition;
         }
-
-        protected virtual bool HandleIsValidInstance(TokenInstance instance)
-        {
-            return true;
-        }
-
-        protected virtual TokenContextInstance HandleCreateContext(TokenInstance start)
-        {
-            return new TokenContextInstance(start.Context.TokenContextDefinition, start.Context, start);
-        }
-
-        protected internal void AddTag(string tag)
-        {
-            if (tag == null) return;
-            if (_tags.Contains(tag) == false)
-            {
-                _tags.Add(tag);
-            }
-        }
-
-        protected internal void AddTags(IEnumerable<string> tags)
-        {
-            if (tags == null) return;
-            foreach (var tag in tags)
-            {
-                AddTag(tag);
-            }
-        }
-
+       
         public override string ToString()
         {
             return $"{GetType().Name}-{_name}-({_token.ToString()})";

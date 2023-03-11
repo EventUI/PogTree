@@ -3,20 +3,12 @@
 This source code is licensed under the MIT license found in the
 LICENSE file in the root directory of this source tree.*/
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using YoggTree.Core.Interfaces;
-
 namespace YoggTree
 {
     /// <summary>
     /// Represents an instance of a TokenDefinition that was found in a TokenContextInstance's Content.
     /// </summary>
-    public sealed record TokenInstance : IContentSpan
+    public sealed record TokenInstance
     {
         /// <summary>
         /// The definition of the rules for the token.
@@ -43,6 +35,16 @@ namespace YoggTree
         /// </summary>
         public int EndIndex { get; internal init; } = -1;
 
+        /// <summary>
+        /// Internal constructor used to make a new TokenInstance.
+        /// </summary>
+        /// <param name="tokenDefinition">The definition of the token that was found.</param>
+        /// <param name="context">The context in whichi the token was found.</param>
+        /// <param name="tokenStartIndex">The start index of the token in its context.</param>
+        /// <param name="value">The value of the token.</param>
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
+        /// <exception cref="ArgumentException"></exception>
         internal TokenInstance(TokenDefinition tokenDefinition, TokenContextInstance context, int tokenStartIndex, ReadOnlyMemory<char> value)
         {
             if (tokenDefinition == null) throw new ArgumentNullException("token");
@@ -57,12 +59,38 @@ namespace YoggTree
             EndIndex = StartIndex + value.Length;
         }
 
-        public override string ToString()
+        /// <summary>
+        /// Gets a clone of this token that is relative to a different (parent) context.
+        /// </summary>
+        /// <param name="targetContext"></param>
+        /// <returns></returns>
+        public TokenInstance GetContextualInstance(TokenContextInstance targetContext)
         {
-            return $"{TokenDefinition.ToString()}  @{StartIndex}";
+            int contextualStartIndex = GetContextualStartIndex(targetContext);
+            int delta = contextualStartIndex - StartIndex;
+
+            return this with { Context = targetContext, EndIndex = EndIndex + delta, StartIndex = StartIndex + delta };
         }
 
-        public int GetContextualIndex(TokenContextInstance targetContext)
+        /// <summary>
+        /// Gets a clone of this token that is relative to the entire parse session.
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
+        public TokenInstance GetAbsoluteInstance()
+        {
+            if (Context?.ParseSession == null) throw new Exception("Token does not belong to a parse session, cannot get absolute instance.");
+            return GetContextualInstance(Context?.ParseSession?.RootContext);
+        }
+
+        /// <summary>
+        /// Gets the start index of this token in another context.
+        /// </summary>
+        /// <param name="targetContext"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="Exception"></exception>
+        private int GetContextualStartIndex(TokenContextInstance targetContext)
         {
             if (targetContext == null) throw new ArgumentNullException(nameof(targetContext));
             if (StartIndex < 0) throw new Exception("StartIndex must be a positive number.");
@@ -87,29 +115,9 @@ namespace YoggTree
             return StartIndex + targetContext.AbsoluteOffset;
         }
 
-        public int GetAbsoluteIndex()
+        public override string ToString()
         {
-            if (Context?.ParseSession == null) throw new Exception("Token does not belong to a parse session, cannot calculate absolute index.");
-            return GetContextualIndex(Context.ParseSession.RootContext);
-        }
-
-        public TokenInstance GetContextualInstance(TokenContextInstance targetContext)
-        {
-            int contextualStartIndex = GetContextualIndex(targetContext);
-            int delta = contextualStartIndex - StartIndex;
-
-            return this with { Context = targetContext, EndIndex = EndIndex + delta, StartIndex = StartIndex + delta };
-        }
-
-        public TokenInstance GetAbsoluteInstance()
-        {
-            if (Context?.ParseSession == null) throw new Exception("Token does not belong to a parse session, cannot get absolute instance.");
-            return GetContextualInstance(Context?.ParseSession?.RootContext);
-        }
-
-        public TokenContextInstance GetContext()
-        {
-            return Context;
+            return $"{TokenDefinition.ToString()}  @{StartIndex}";
         }
     }
 }

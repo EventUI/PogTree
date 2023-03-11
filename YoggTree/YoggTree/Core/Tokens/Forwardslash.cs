@@ -6,12 +6,12 @@ LICENSE file in the root directory of this source tree.*/
 namespace YoggTree.Core.Tokens
 {
     /// <summary>
-    /// Token for finding "`" characters.
+    /// Token for finding "/" characters.
     /// </summary>
-    public class StringGrave : TokenDefinition
+    public class Forwardslash : TokenDefinition
     {
-        public StringGrave()
-            : base(TokenRegexStore.Grave, "`", TokenTypeFlags.ContextEnder | TokenTypeFlags.ContextStarter, "StringGrave")
+        public Forwardslash() 
+            : base(TokenRegexStore.Forwardslash, "/")
         {
         }
     }

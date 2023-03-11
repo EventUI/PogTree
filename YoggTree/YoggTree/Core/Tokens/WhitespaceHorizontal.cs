@@ -3,20 +3,15 @@
 This source code is licensed under the MIT license found in the
 LICENSE file in the root directory of this source tree.*/
 
-
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-
 namespace YoggTree.Core.Tokens
 {
-    public class WhitespaceHorizontal : TokenDefinition, IWhitespaceToken
+    /// <summary>
+    /// Token for finding all "horizontal" (non-line breaking) whitespace characters that are not separated by a non-whitespace character.
+    /// </summary>
+    public class WhitespaceHorizontal : TokenDefinition
     {
         public WhitespaceHorizontal() 
-            : base(TokenRegexStore.Whitespace_Horizontal, "<horizontal whitespace>")
+            : base(TokenRegexStore.Whitespace_Horizontal, "<horizontal whitespace>", 100)
         {
         }
     }

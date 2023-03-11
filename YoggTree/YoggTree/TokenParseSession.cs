@@ -3,14 +3,7 @@
 This source code is licensed under the MIT license found in the
 LICENSE file in the root directory of this source tree.*/
 
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using YoggTree.Core.Interfaces;
 using YoggTree.Core.Spools;
 
 namespace YoggTree
@@ -26,6 +19,17 @@ namespace YoggTree
         private TokenContextRegistry _contextRegistry = null;
 
         /// <summary>
+        /// All of the TokenSpools contained within the session.
+        /// </summary>
+        internal Dictionary<Guid, TokenSpool> TokenSpools
+        {
+            get
+            {
+                return _tokenSpools;
+            }
+        }
+
+        /// <summary>
         /// The full contents of the string being parsed.
         /// </summary>
         public ReadOnlyMemory<char> Contents
@@ -33,17 +37,6 @@ namespace YoggTree
             get
             {
                 return _contents;
-            }
-        }
-
-        /// <summary>
-        /// All of the tokens contained within the
-        /// </summary>
-        internal Dictionary<Guid, TokenSpool> TokenSpools
-        {
-            get
-            {
-                return _tokenSpools;
             }
         }
 
@@ -58,6 +51,9 @@ namespace YoggTree
             }
         }
 
+        /// <summary>
+        /// The registry of replacement contexts to use during the parse operation.
+        /// </summary>
         public TokenContextRegistry ContextRegistry
         {
             get
