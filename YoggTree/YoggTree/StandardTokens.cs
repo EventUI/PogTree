@@ -35,6 +35,12 @@ namespace YoggTree
 
         public readonly static Forwardslash Forwardslash = new Forwardslash();
 
+        public readonly static Parenthesis_Open OpenParenthesis = new Parenthesis_Open();
+
+        public readonly static Parenthesis_Close CloseParenthsis= new Parenthesis_Close();
+
+        public readonly static TextContent TextContent = new TextContent();
+
         /// <summary>
         /// Gets the horizontal and vertical whitespace tokens.
         /// </summary>
@@ -101,6 +107,15 @@ namespace YoggTree
             };
         }
 
+        public static List<TokenDefinition> GetParenthesisTokens()
+        {
+            return new List<TokenDefinition>()
+            {
+                OpenParenthesis,
+                CloseParenthsis
+            };
+        }
+
         /// <summary>
         /// Gets all the tokens in this object.
         /// </summary>
@@ -113,6 +128,8 @@ namespace YoggTree
             allTokens.AddRange(GetBracketTokens());
             allTokens.AddRange(GetCurlyBraceTokens());
             allTokens.AddRange(GetSlashTokens());
+            allTokens.AddRange(GetParenthesisTokens());
+
             return allTokens;
         }
     }

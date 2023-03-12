@@ -122,15 +122,14 @@ namespace YoggTree
             ParseSession = parent.ParseSession;
             Parent = parent;
             StartIndex = start.StartIndex;
-            StartToken = start;
+            StartToken = start with { Context = this, StartIndex = 0, EndIndex = start.Contents.Length };
             Contents = parent.Contents.Slice(StartIndex);
             Depth = parent.Depth + 1;
 
             _absoluteOffset = parent._absoluteOffset + start.StartIndex;
             _childContextsRO = _childContexts.AsReadOnly();
             _tokensRO = _tokens.AsReadOnly();
-
-            _tokens.Add(start with { Context = this, StartIndex = start.StartIndex - _absoluteOffset, EndIndex = start.EndIndex - _absoluteOffset });
+            _tokens.Add(StartToken);
         }
 
         /// <summary>
@@ -139,23 +138,49 @@ namespace YoggTree
         /// <exception cref="Exception"></exception>
         internal void WalkContent()
         {
-            TokenInstance _previousToken = (_tokens.Count > 0) ? _tokens[0] : null;
-
+            TokenInstance previousToken = (_tokens.Count > 0) ? _tokens[0] : null;
+            TokenInstance textContentToken = null;
+            TokenInstance currentToken = null;
             while (_currentIndex < Contents.Length)
             {
-                TokenInstance nextToken = GetNextToken();
+                TokenInstance nextToken = null;
+                
+                if (textContentToken != null)
+                {
+                    nextToken = currentToken;
+
+                    currentToken = null;
+                    textContentToken = null;
+                }
+                else
+                {
+                    nextToken = GetNextToken();
+                }
+
+                //get the start and end of the last two tokens to see if there is a gap between them
+                int textContentEndIndex = (nextToken == null) ? Contents.Length : nextToken.StartIndex;
+                int textContentStartIndex = (previousToken == null || _currentIndex > previousToken?.EndIndex) ? _currentIndex : previousToken.EndIndex;
+
+                if (textContentStartIndex < textContentEndIndex)
+                {
+                    currentToken = nextToken;
+                    textContentToken = new TokenInstance(StandardTokens.TextContent, this, textContentStartIndex, Contents.Slice(textContentStartIndex, textContentEndIndex - textContentStartIndex));
+
+                    nextToken = textContentToken;
+                }
+
                 CurrentToken = nextToken;
 
                 if (nextToken == null) break;
 
                 //slot for enforcing token syntax rules - if one token cannot come before or after another token without being invalid, this will stop the whole parse operation
-                if (_previousToken != null)
+                if (previousToken != null)
                 {
-                    if (nextToken.TokenDefinition.CanComeAfter(_previousToken) == false) throw new Exception($"{nextToken.ToString()} cannot come after {_previousToken.ToString()}");
-                    if (_previousToken.TokenDefinition.CanComeBefore(nextToken) == false) throw new Exception($"{_previousToken.ToString()} cannot come before {nextToken.ToString()}");
-
-                    _previousToken = nextToken;
+                    if (nextToken.TokenDefinition.CanComeAfter(previousToken) == false) throw new Exception($"{nextToken.ToString()} cannot come after {previousToken.ToString()}");
+                    if (previousToken.TokenDefinition.CanComeBefore(nextToken) == false) throw new Exception($"{previousToken.ToString()} cannot come before {nextToken.ToString()}");
                 }
+
+                previousToken = nextToken;
 
                 //check to see if both the context allows this token to be valid, and that the token detects itself to be valid in this context. Skip if either is false.
                 if (nextToken.TokenDefinition.IsValidInstance(nextToken) == false)
@@ -173,11 +198,22 @@ namespace YoggTree
                     TokenContextInstance childContext = ContextDefinition.CreateNewContext(nextToken);
                     if (childContext != null)
                     {
+                        //replace the token in the array with one that is flagged as starting a context instance.
+                        _tokens[_tokens.Count -1] = nextToken with { StartedContextInstance = childContext };
+
                         _childContexts.Add(childContext);
                         childContext.WalkContent();
 
                         _currentIndex = childContext.EndIndex;
-                        if (childContext.EndToken != null) _tokens.Add(childContext.EndToken);
+
+                        if (childContext.EndToken != null)
+                        {
+                            int delta = childContext.AbsoluteOffset - AbsoluteOffset;
+                            previousToken = childContext.EndToken with { Context = this, StartIndex = childContext.EndToken.StartIndex + delta, EndIndex = childContext.EndToken.EndIndex + delta };
+                            
+                            _tokens.Add(previousToken);
+                        }
+
                         continue;
                     }
                 }
@@ -240,7 +276,6 @@ namespace YoggTree
                     }
                 }
             }
-
          
             if (firstResult.IsEmpty() == true) return null; //no more results. All done.
 

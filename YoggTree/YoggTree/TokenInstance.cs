@@ -3,6 +3,14 @@
 This source code is licensed under the MIT license found in the
 LICENSE file in the root directory of this source tree.*/
 
+
+
+using System.Xml.Linq;
+/**Copyright (c) 2023 Richard H Stannard
+
+This source code is licensed under the MIT license found in the
+LICENSE file in the root directory of this source tree.*/
+
 namespace YoggTree
 {
     /// <summary>
@@ -34,6 +42,11 @@ namespace YoggTree
         /// The ending index of the token.
         /// </summary>
         public int EndIndex { get; internal init; } = -1;
+
+        /// <summary>
+        /// If this token successfully started a new context as it was being processed, this was the context that was started and can be drilled into recursively. 
+        /// </summary>
+        public TokenContextInstance StartedContextInstance { get; internal init; } = null;
 
         /// <summary>
         /// Internal constructor used to make a new TokenInstance.
@@ -112,12 +125,12 @@ namespace YoggTree
 
             if (parentFound != true) throw new Exception("TokenInstance is not contained by the target targetContext.");
 
-            return StartIndex + targetContext.AbsoluteOffset;
+            return StartIndex + parent.AbsoluteOffset;
         }
 
         public override string ToString()
         {
-            return $"{TokenDefinition.ToString()}  @{StartIndex}";
+            return $"{TokenDefinition.GetType().Name} @:{StartIndex}=\"{Contents}\"";
         }
     }
 }
