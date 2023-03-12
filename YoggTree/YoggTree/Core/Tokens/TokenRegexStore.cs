@@ -33,5 +33,9 @@ namespace YoggTree.Core.Tokens
         public static Regex Backslash { get; } = new Regex("\\\\", RegexOptions.NonBacktracking | RegexOptions.Compiled);
 
         public static Regex Forwardslash { get; } = new Regex("\\/", RegexOptions.NonBacktracking | RegexOptions.Compiled);
+
+        public static Regex Parenthesis_Open { get; } = new Regex("\\(", RegexOptions.NonBacktracking | RegexOptions.Compiled);
+
+        public static Regex Parenthesis_Close { get; } = new Regex("\\)", RegexOptions.NonBacktracking | RegexOptions.Compiled);
     }
 }
