@@ -157,7 +157,7 @@ namespace YoggTree
                     nextToken = GetNextToken();
                 }
 
-                //get the start and end of the last two tokens to see if there is a gap between them
+                //get the start and end of the last two tokens to see if there is a gap between them. If there is, we need to make a TextContent token to fill in the gap.
                 int textContentEndIndex = (nextToken == null) ? Contents.Length : nextToken.StartIndex;
                 int textContentStartIndex = (previousToken == null || _currentIndex > previousToken?.EndIndex) ? _currentIndex : previousToken.EndIndex;
 
