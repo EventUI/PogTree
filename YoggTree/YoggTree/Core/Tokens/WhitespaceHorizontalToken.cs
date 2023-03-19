@@ -8,9 +8,9 @@ namespace YoggTree.Core.Tokens
     /// <summary>
     /// Token for finding all "horizontal" (non-line breaking) whitespace characters that are not separated by a non-whitespace character.
     /// </summary>
-    public class WhitespaceHorizontal : TokenDefinition
+    public class WhitespaceHorizontalToken : TokenDefinition
     {
-        public WhitespaceHorizontal() 
+        public WhitespaceHorizontalToken() 
             : base(TokenRegexStore.Whitespace_Horizontal, "<horizontal whitespace>", 100)
         {
         }

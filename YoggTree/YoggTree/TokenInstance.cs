@@ -1,4 +1,5 @@
-﻿using System.Xml.Linq;
+﻿using System.Runtime.CompilerServices;
+using System.Xml.Linq;
 /**Copyright (c) 2023 Richard H Stannard
 
 This source code is licensed under the MIT license found in the
@@ -9,7 +10,7 @@ namespace YoggTree
     /// <summary>
     /// Represents an instance of a TokenDefinition that was found in a TokenContextInstance's Content.
     /// </summary>
-    public sealed record TokenInstance
+    public record TokenInstance
     {
         /// <summary>
         /// The definition of the rules for the token.
@@ -37,9 +38,9 @@ namespace YoggTree
         public int EndIndex { get; internal init; } = -1;
 
         /// <summary>
-        /// If this token successfully started a new context as it was being processed, this was the context that was started and can be drilled into recursively. 
+        /// The type of instance this token represents.
         /// </summary>
-        public TokenContextInstance StartedContextInstance { get; internal init; } = null;
+        public TokenInstanceType TokenInstanceType { get; } = TokenInstanceType.None;
 
         /// <summary>
         /// Internal constructor used to make a new TokenInstance.
@@ -51,7 +52,7 @@ namespace YoggTree
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="ArgumentOutOfRangeException"></exception>
         /// <exception cref="ArgumentException"></exception>
-        internal TokenInstance(TokenDefinition tokenDefinition, TokenContextInstance context, int tokenStartIndex, ReadOnlyMemory<char> value)
+        internal TokenInstance(TokenDefinition tokenDefinition, TokenContextInstance context, int tokenStartIndex, ReadOnlyMemory<char> value, TokenInstanceType instanceType)
         {
             if (tokenDefinition == null) throw new ArgumentNullException("token");
             if (context == null) throw new ArgumentNullException("targetContext");
@@ -63,6 +64,56 @@ namespace YoggTree
             StartIndex = tokenStartIndex;
             Contents = value;
             EndIndex = StartIndex + value.Length;
+            TokenInstanceType = instanceType;
+        }        
+
+        public override string ToString()
+        {
+            return $"{TokenDefinition.GetType().Name} @:{StartIndex}=\"{Contents}\"";
+        }
+    }
+
+    /// <summary>
+    /// Represents an instance of a token that wraps a child TokenContextInstance.
+    /// </summary>
+    public record ChildContextTokenInstance : TokenInstance
+    {
+        public TokenContextInstance ChildContext { get; internal init; } = null;
+
+        internal ChildContextTokenInstance(TokenContextInstance context, int tokenStartIndex, ReadOnlyMemory<char> value, TokenContextInstance childContext)
+            : base(StandardTokens.Empty, context, tokenStartIndex, value, TokenInstanceType.ContextPlaceholder)
+        {
+            ChildContext = childContext;
+        }
+    }
+
+    /// <summary>
+    /// Represents an instance of a token that is a run of text between other tokens.
+    /// </summary>
+    public record TextPlacehodlerTokenInstance : TokenInstance
+    { 
+        internal TextPlacehodlerTokenInstance(TokenContextInstance context, int tokenStartIndex, ReadOnlyMemory<char> value)
+            :base (StandardTokens.TextContent, context, tokenStartIndex, value, TokenInstanceType.TextPlaceholder)
+        {
+
+        }
+    }
+
+    public static class TokenInstanceExtensions
+    {
+        /// <summary>
+        /// If the TokenInstance is a ChildContextTokenInstance, this will return the TokenContextInstance being wrapped.
+        /// </summary>
+        /// <param name="instance"></param>
+        /// <returns></returns>
+        public static TokenContextInstance GetChildContext(this TokenInstance instance)
+        {
+            return (instance as ChildContextTokenInstance)?.ChildContext;
+        }
+
+        public static string GetText(this TokenInstance instance)
+        {
+            return (instance == null) ? null : instance.Contents.ToString();
         }
 
         /// <summary>
@@ -70,12 +121,12 @@ namespace YoggTree
         /// </summary>
         /// <param name="targetContext"></param>
         /// <returns></returns>
-        public TokenInstance GetContextualInstance(TokenContextInstance targetContext)
+        public static TokenInstance GetContextualInstance(this TokenInstance instance, TokenContextInstance targetContext)
         {
-            int contextualStartIndex = GetContextualStartIndex(targetContext);
-            int delta = contextualStartIndex - StartIndex;
+            int contextualStartIndex = instance.GetContextualStartIndex(targetContext);
+            int delta = contextualStartIndex - instance.StartIndex;
 
-            return this with { Context = targetContext, EndIndex = EndIndex + delta, StartIndex = StartIndex + delta };
+            return instance with { Context = targetContext, EndIndex = instance.EndIndex + delta, StartIndex = instance.StartIndex + delta };
         }
 
         /// <summary>
@@ -83,10 +134,10 @@ namespace YoggTree
         /// </summary>
         /// <returns></returns>
         /// <exception cref="Exception"></exception>
-        public TokenInstance GetAbsoluteInstance()
+        public static TokenInstance GetAbsoluteInstance(this TokenInstance instance)
         {
-            if (Context?.ParseSession == null) throw new Exception("Token does not belong to a parse session, cannot get absolute instance.");
-            return GetContextualInstance(Context?.ParseSession?.RootContext);
+            if (instance?.Context?.ParseSession == null) throw new Exception("Token does not belong to a parse session, cannot get absolute instance.");
+            return instance.GetContextualInstance(instance?.Context?.ParseSession?.RootContext);
         }
 
         /// <summary>
@@ -96,14 +147,14 @@ namespace YoggTree
         /// <returns></returns>
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="Exception"></exception>
-        private int GetContextualStartIndex(TokenContextInstance targetContext)
+        private static int GetContextualStartIndex(this TokenInstance instance, TokenContextInstance targetContext)
         {
             if (targetContext == null) throw new ArgumentNullException(nameof(targetContext));
-            if (StartIndex < 0) throw new Exception("StartIndex must be a positive number.");
+            if (instance.StartIndex < 0) throw new Exception("StartIndex must be a positive number.");
 
             bool parentFound = false;
 
-            TokenContextInstance parent = Context.Parent;
+            TokenContextInstance parent = instance.Context.Parent;
 
             while (parent != null)
             {
@@ -118,12 +169,7 @@ namespace YoggTree
 
             if (parentFound != true) throw new Exception("TokenInstance is not contained by the target targetContext.");
 
-            return StartIndex + parent.AbsoluteOffset;
-        }
-
-        public override string ToString()
-        {
-            return $"{TokenDefinition.GetType().Name} @:{StartIndex}=\"{Contents}\"";
+            return instance.StartIndex + parent.AbsoluteOffset;
         }
     }
 }

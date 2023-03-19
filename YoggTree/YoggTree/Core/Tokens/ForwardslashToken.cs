@@ -8,9 +8,9 @@ namespace YoggTree.Core.Tokens
     /// <summary>
     /// Token for finding "/" characters.
     /// </summary>
-    public class Forwardslash : TokenDefinition
+    public class ForwardslashToken : TokenDefinition
     {
-        public Forwardslash() 
+        public ForwardslashToken() 
             : base(TokenRegexStore.Forwardslash, "/")
         {
         }

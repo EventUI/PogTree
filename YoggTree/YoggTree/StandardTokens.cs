@@ -21,25 +21,27 @@ namespace YoggTree
 
         public readonly static CloseCurlyBraceToken CloseCurlyBrace = new CloseCurlyBraceToken();
 
-        public readonly static StringDoubleQuote DoubleQuote = new StringDoubleQuote();
+        public readonly static StringDoubleQuoteToken DoubleQuote = new StringDoubleQuoteToken();
 
-        public readonly static StringSingleQuote SingleQuote = new StringSingleQuote();
+        public readonly static StringSingleQuoteToken SingleQuote = new StringSingleQuoteToken();
 
-        public readonly static StringGrave Grave = new StringGrave();
+        public readonly static StringGraveToken Grave = new StringGraveToken();
 
-        public readonly static WhitespaceHorizontal WhitespaceHorizontal = new WhitespaceHorizontal();
+        public readonly static WhitespaceHorizontalToken WhitespaceHorizontal = new WhitespaceHorizontalToken();
 
-        public readonly static WhitespaceVertical WhitespaceVertical = new WhitespaceVertical();
+        public readonly static WhitespaceVerticalToken WhitespaceVertical = new WhitespaceVerticalToken();
 
-        public readonly static Backslash Backslash = new Backslash();
+        public readonly static BackslashToken Backslash = new BackslashToken();
 
-        public readonly static Forwardslash Forwardslash = new Forwardslash();
+        public readonly static ForwardslashToken Forwardslash = new ForwardslashToken();
 
-        public readonly static Parenthesis_Open OpenParenthesis = new Parenthesis_Open();
+        public readonly static Parenthesis_OpenToken OpenParenthesis = new Parenthesis_OpenToken();
 
-        public readonly static Parenthesis_Close CloseParenthsis= new Parenthesis_Close();
+        public readonly static Parenthesis_CloseToken CloseParenthsis = new Parenthesis_CloseToken();
 
-        public readonly static TextContent TextContent = new TextContent();
+        public readonly static TextContentToken TextContent = new TextContentToken();
+
+        public readonly static EmptyToken Empty = new EmptyToken();
 
         /// <summary>
         /// Gets the horizontal and vertical whitespace tokens.
@@ -107,6 +109,10 @@ namespace YoggTree
             };
         }
 
+        /// <summary>
+        /// Gets the "(" and ")" characters.
+        /// </summary>
+        /// <returns></returns>
         public static List<TokenDefinition> GetParenthesisTokens()
         {
             return new List<TokenDefinition>()

@@ -8,12 +8,12 @@ namespace YoggTree
     /// <summary>
     /// Bit flags for indicating special behavior for TokenDefinitions.
     /// </summary>
-    public enum TokenTypeFlags
+    public enum TokenDefinitionFlags
     {
         /// <summary>
-        /// None. Default.
+        /// None. None.
         /// </summary>
-        Default = 0,
+        None = 0,
         /// <summary>
         /// Token marks the start of a new child TokenContextInstance.
         /// </summary>
@@ -22,5 +22,18 @@ namespace YoggTree
         /// Token marks the end of a TokenContextInstance.
         /// </summary>
         ContextEnder = 2
+    }
+
+    public enum TokenInstanceType
+    {
+        None = 0,
+        RegexResult = 1,
+        TextPlaceholder = 2,
+        ContextPlaceholder = 3
+    }
+
+    public enum ContextDefinitionFlags
+    {
+        None = 0
     }
 }

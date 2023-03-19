@@ -14,10 +14,10 @@ namespace YoggTree.Core.Tokens
     /// <summary>
     /// Token for finding "(" characters.
     /// </summary>
-    public class Parenthesis_Open : TokenDefinition
+    public class Parenthesis_OpenToken : TokenDefinition
     {
-        public Parenthesis_Open()
-            :base(TokenRegexStore.Parenthesis_Open, "(", TokenTypeFlags.ContextStarter, "Parenthesis")
+        public Parenthesis_OpenToken()
+            :base(TokenRegexStore.Parenthesis_Open, "(", TokenDefinitionFlags.ContextStarter, "Parenthesis")
         {
 
         }
@@ -26,10 +26,10 @@ namespace YoggTree.Core.Tokens
     /// <summary>
     /// Token for finding ")" characters.
     /// </summary>
-    public class Parenthesis_Close : TokenDefinition
+    public class Parenthesis_CloseToken : TokenDefinition
     {
-        public Parenthesis_Close()
-            : base(TokenRegexStore.Parenthesis_Close, ")", TokenTypeFlags.ContextEnder, "Parenthesis")
+        public Parenthesis_CloseToken()
+            : base(TokenRegexStore.Parenthesis_Close, ")", TokenDefinitionFlags.ContextEnder, "Parenthesis")
         {
 
         }

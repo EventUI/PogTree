@@ -11,7 +11,7 @@ namespace YoggTree.Core.Tokens
     public class OpenCurlyBraceToken : TokenDefinition
     {
         public OpenCurlyBraceToken()
-            : base(TokenRegexStore.Brace_OpenCurly, "{", TokenTypeFlags.ContextStarter, "Brace_Curly")
+            : base(TokenRegexStore.Brace_OpenCurly, "{", TokenDefinitionFlags.ContextStarter, "Brace_Curly")
         {
         }
     }
@@ -22,7 +22,7 @@ namespace YoggTree.Core.Tokens
     public class CloseCurlyBraceToken : TokenDefinition
     {
         public CloseCurlyBraceToken()
-            : base(TokenRegexStore.Brace_CloseCurly, "}", TokenTypeFlags.ContextEnder, "Brace_Curly")
+            : base(TokenRegexStore.Brace_CloseCurly, "}", TokenDefinitionFlags.ContextEnder, "Brace_Curly")
         {
         }
     }

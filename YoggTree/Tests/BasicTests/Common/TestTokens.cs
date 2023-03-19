@@ -27,17 +27,25 @@ namespace YoggTreeTest.Common
 
         public static TestTokenInstance HorizontalWhitespace(string whitespace)
         {
-            return new TestTokenInstance(StandardTokens.WhitespaceHorizontal, whitespace);
+            return new TestTokenInstance(StandardTokens.WhitespaceHorizontal, whitespace, TokenInstanceType.RegexResult);
         }
 
         public static TestTokenInstance VerticalWhitespace(string whitespace)
         {
-            return new TestTokenInstance(StandardTokens.WhitespaceVertical, whitespace);
+            return new TestTokenInstance(StandardTokens.WhitespaceVertical, whitespace, TokenInstanceType.RegexResult);
         }
 
         public static TestTokenInstance TextContent(string content)
         {
-            return new TestTokenInstance(StandardTokens.TextContent, content);
+            return new TestTokenInstance(StandardTokens.TextContent, content, TokenInstanceType.TextPlaceholder);
+        }
+
+        public static TestTokenInstance ChildContext(string contextContent, TestContextInstance childContext)
+        {
+            return new TestTokenInstance(StandardTokens.Empty, contextContent, TokenInstanceType.ContextPlaceholder)
+            {
+                TestContextInstance = childContext
+            };
         }
     }
 }

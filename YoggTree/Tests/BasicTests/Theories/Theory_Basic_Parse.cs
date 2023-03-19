@@ -101,27 +101,28 @@ namespace BasicTests.Theories
         {
             string contentToParse = "[]";
             TestContext testContext = new TestContext();
+            TestContextInstance childInstance = new TestContextInstance(testContext)
+            {
+                Contents = "[]",
+                Depth = 1,
+                Tokens = new List<TestTokenInstance>()
+                {
+                    TestTokens.OpenBracket,
+                    TestTokens.CloseBracket
+                }
+            };
+
             TestContextInstance expected = new TestContextInstance(testContext)
             {
                 Contents = contentToParse,
                 Depth = 0,
                 Tokens = new List<TestTokenInstance>()
                 {
-                    TestTokens.OpenBracket , 
-                    TestTokens.CloseBracket
+                    TestTokens.ChildContext("[]", childInstance)
                 },
                 ChildContexts = new List<TestContextInstance>()
                 {
-                    new TestContextInstance(testContext)
-                    {
-                        Contents = "[]",
-                        Depth = 1,
-                        Tokens = new List<TestTokenInstance>()
-                        {
-                            TestTokens.OpenBracket, 
-                            TestTokens.CloseBracket
-                        }
-                    }
+                    childInstance
                 }
             };
 
@@ -134,41 +135,44 @@ namespace BasicTests.Theories
 
             args.Add(YoggTreeTestHelper.ToObjArray(testArgs));
 
+            /*****************************************************************************************/
+
             contentToParse = "[]{}";
             testContext = new TestContext();
+            TestContextInstance child1 = new TestContextInstance(testContext)
+            {
+                Contents = "[]",
+                Depth = 1,
+                Tokens = new List<TestTokenInstance>()
+                {
+                    TestTokens.OpenBracket,
+                    TestTokens.CloseBracket
+                }
+            };
+
+            TestContextInstance child2 = new TestContextInstance(testContext)
+            {
+                Contents = "{}",
+                Depth = 1,
+                Tokens = new List<TestTokenInstance>()
+                {
+                    TestTokens.OpenBrace,
+                    TestTokens.CloseBrace,
+                }
+            };
+
             expected = new TestContextInstance(testContext)
             {
                 Contents = contentToParse,
                 Depth = 0,
                 Tokens = new List<TestTokenInstance>()
                 {
-                    TestTokens.OpenBracket,
-                    TestTokens.CloseBracket,
-                    TestTokens.OpenBrace,
-                    TestTokens.CloseBrace
+                    TestTokens.ChildContext("[]", child1),
+                    TestTokens.ChildContext("{}", child2)
                 },
                 ChildContexts = new List<TestContextInstance>()
                 {
-                    new TestContextInstance(testContext)
-                    {
-                        Contents = "[]",
-                        Depth = 1,
-                        Tokens = new List<TestTokenInstance>()
-                        {
-                            TestTokens.OpenBracket,
-                            TestTokens.CloseBracket
-                        }
-                    },
-                    new TestContextInstance(testContext)
-                    {
-                        Contents = "{}",
-                        Depth = 1,
-                        Tokens = new List<TestTokenInstance>()
-                        {
-                            TestTokens.OpenBrace,
-                            TestTokens.CloseBrace,
-                        }
-                    }
+                    child1, child2
                 }
             };
 
@@ -181,44 +185,49 @@ namespace BasicTests.Theories
 
             args.Add(YoggTreeTestHelper.ToObjArray(testArgs));
 
+            /*****************************************************************************************/
+
             contentToParse = "[[]]";
             testContext = new TestContext();
+
+            var childSub1 = new TestContextInstance(testContext)
+            {
+                Contents = "[]",
+                Depth = 2,
+                Tokens = new List<TestTokenInstance>()
+                {
+                    TestTokens.OpenBracket,
+                    TestTokens.CloseBracket,
+                }
+            };
+
+            child1 = new TestContextInstance(testContext)
+            {
+                Contents = "[[]]",
+                Depth = 1,
+                Tokens = new List<TestTokenInstance>()
+                {
+                    TestTokens.OpenBracket,
+                    TestTokens.ChildContext("[]", childSub1),
+                    TestTokens.CloseBracket
+                },
+                ChildContexts = new List<TestContextInstance>()
+                {
+                    childSub1     
+                }
+            };
+
             expected = new TestContextInstance(testContext)
             {
                 Contents = contentToParse,
                 Depth = 0,
                 Tokens = new List<TestTokenInstance>()
                 {
-                    TestTokens.OpenBracket,
-                    TestTokens.CloseBracket
+                    TestTokens.ChildContext("[[]]", child1),
                 },
                 ChildContexts = new List<TestContextInstance>()
                 {
-                    new TestContextInstance(testContext)
-                    {
-                        Contents = "[[]]",
-                        Depth = 1,
-                        Tokens = new List<TestTokenInstance>()
-                        {
-                            TestTokens.OpenBracket,
-                            TestTokens.OpenBracket,
-                            TestTokens.CloseBracket,
-                            TestTokens.CloseBracket
-                        },
-                        ChildContexts= new List<TestContextInstance>()
-                        {
-                            new TestContextInstance(testContext)
-                            {
-                                Contents = "[]",
-                                Depth = 2,
-                                Tokens = new List<TestTokenInstance>()
-                                {
-                                    TestTokens.OpenBracket,
-                                    TestTokens.CloseBracket
-                                }
-                            }
-                        }
-                    }                    
+                    child1   
                 }
             };
 
@@ -237,89 +246,96 @@ namespace BasicTests.Theories
             string contentToParse = "[{[[()]]}]";
             TestContext testContext = new TestContext();
 
-            TestContextInstance expected = new TestContextInstance(testContext)
+            var child_1_5 = new TestContextInstance(testContext)
+            {
+                Contents = "()",
+                Depth = 5,
+                Tokens = new List<TestTokenInstance>()
+                {
+                    TestTokens.OpenParens,
+                    TestTokens.CloseParens
+                }
+            };
+
+            var child_1_4 = new TestContextInstance(testContext)
+            {
+                Contents = "[()]",
+                Depth = 4,
+                Tokens = new List<TestTokenInstance>()
+                {
+                    TestTokens.OpenBracket,
+                    TestTokens.ChildContext("()", child_1_5),
+                    TestTokens.CloseBracket
+                },
+                ChildContexts = new List<TestContextInstance>()
+                {
+                    child_1_5
+                }
+            };
+
+            var child_1_3 = new TestContextInstance(testContext)
+            {
+                Contents = "[[()]]",
+                Depth = 3,
+                Tokens = new List<TestTokenInstance>()
+                {
+                    TestTokens.OpenBracket,
+                    TestTokens.ChildContext("[()]", child_1_4),
+                    TestTokens.CloseBracket
+                },
+                ChildContexts = new List<TestContextInstance>()
+                {
+                    child_1_4
+                }
+            };
+
+            var child_1_2 = new TestContextInstance(testContext)
+            {
+                Contents = "{[[()]]}",
+                Depth = 2,
+                Tokens = new List<TestTokenInstance>()
+                {
+                    TestTokens.OpenBrace,
+                    TestTokens.ChildContext("[[()]]", child_1_3),
+                    TestTokens.CloseBrace
+                },
+                ChildContexts = new List<TestContextInstance>()
+                {
+                    child_1_3
+                }
+            };
+
+            var child_1_1 = new TestContextInstance(testContext)
+            {
+                Contents = "[{[[()]]}]",
+                Depth = 1,
+                Tokens = new List<TestTokenInstance>()
+                {
+                    TestTokens.OpenBracket,
+                    TestTokens.ChildContext("{[[()]]}", child_1_2),
+                    TestTokens.CloseBracket
+                },
+                ChildContexts = new List<TestContextInstance>()
+                {
+                    child_1_2
+                }
+            };
+
+            var child = new TestContextInstance(testContext)
             {
                 Contents = contentToParse,
                 Depth = 0,
                 Tokens = new List<TestTokenInstance>()
                 {
-                    TestTokens.OpenBracket,
-                    TestTokens.CloseBracket
+                    TestTokens.ChildContext("[{[[()]]}]", child_1_1)
                 },
                 ChildContexts = new List<TestContextInstance>()
                 {
-                    new TestContextInstance(testContext)
-                    {
-                        Contents = "[{[[()]]}]",
-                        Depth = 1,
-                        Tokens = new List<TestTokenInstance>()
-                        {
-                            TestTokens.OpenBracket,
-                            TestTokens.OpenBrace,
-                            TestTokens.CloseBrace,
-                            TestTokens.CloseBracket
-                        },
-                        ChildContexts = new List<TestContextInstance>()
-                        {
-                            new TestContextInstance(testContext)
-                            {
-                                Contents = "{[[()]]}",
-                                Depth = 2,
-                                Tokens = new List<TestTokenInstance>()
-                                {
-                                    TestTokens.OpenBrace,
-                                    TestTokens.OpenBracket,
-                                    TestTokens.CloseBracket,
-                                    TestTokens.CloseBrace                                   
-                                },
-                                ChildContexts = new List<TestContextInstance>()
-                                {
-                                    new TestContextInstance(testContext)
-                                    {
-                                        Contents = "[[()]]",
-                                        Depth = 3,
-                                        Tokens = new List<TestTokenInstance>()
-                                        {
-                                            TestTokens.OpenBracket,
-                                            TestTokens.OpenBracket,
-                                            TestTokens.CloseBracket,
-                                            TestTokens.CloseBracket
-                                        },
-                                        ChildContexts = new List<TestContextInstance>()
-                                        {
-                                            new TestContextInstance(testContext)
-                                            {
-                                                Contents = "[()]",
-                                                Depth = 4,
-                                                Tokens = new List<TestTokenInstance>()
-                                                {
-                                                    TestTokens.OpenBracket,
-                                                    TestTokens.OpenParens,
-                                                    TestTokens.CloseParens,
-                                                    TestTokens.CloseBracket
-                                                },
-                                                ChildContexts= new List<TestContextInstance>()
-                                                {
-                                                    new TestContextInstance(testContext)
-                                                    {
-                                                        Contents = "()",
-                                                        Depth = 5,
-                                                        Tokens = new List<TestTokenInstance>()
-                                                        {
-                                                            TestTokens.OpenParens,
-                                                            TestTokens.CloseParens
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
+                    child_1_1
                 }
             };
+
+            TestContextInstance expected = child;
 
             var testArgs = new TestParseArgs<TestContext>()
             {
@@ -330,91 +346,99 @@ namespace BasicTests.Theories
 
             args.Add(YoggTreeTestHelper.ToObjArray(testArgs));
 
+            /****************************************************************************************/
+
             contentToParse = "abcd[cats{are[\tgreat[pets] to] keep}not lonely]efgh";
             testContext = new TestContext();
 
-            expected = new TestContextInstance(testContext)
+            child_1_4 = new TestContextInstance(testContext)
+            {
+                Contents = "[pets]",
+                Depth = 4,
+                Tokens = new List<TestTokenInstance>()
+                {
+                    TestTokens.OpenBracket,
+                    TestTokens.TextContent("pets"),
+                    TestTokens.CloseBracket
+                }
+            };
+
+            child_1_3 = new TestContextInstance(testContext)
+            {
+                Contents = "[\tgreat[pets] to]",
+                Depth = 3,
+                Tokens = new List<TestTokenInstance>()
+                {
+                    TestTokens.OpenBracket,
+                    TestTokens.HorizontalWhitespace("\t"),
+                    TestTokens.TextContent("great"),
+                    TestTokens.ChildContext("[pets]", child_1_4),
+                    TestTokens.HorizontalWhitespace(" "),
+                    TestTokens.TextContent("to"),
+                    TestTokens.CloseBracket
+                },
+                ChildContexts = new List<TestContextInstance>()
+                {
+                    child_1_4
+                }
+            };
+
+            child_1_2 = new TestContextInstance(testContext)
+            {
+                Contents = "{are[\tgreat[pets] to] keep}",
+                Depth = 2,
+                Tokens = new List<TestTokenInstance>()
+                {
+                    TestTokens.OpenBrace,
+                    TestTokens.TextContent("are"),
+                    TestTokens.ChildContext("[\tgreat[pets] to]", child_1_3),
+                    TestTokens.HorizontalWhitespace(" "),
+                    TestTokens.TextContent("keep"),
+                    TestTokens.CloseBrace
+                },
+                ChildContexts = new List<TestContextInstance>()
+                {
+                    child_1_3
+                }
+            };
+
+            child_1_1 = new TestContextInstance(testContext)
+            {
+                Contents = "[cats{are[\tgreat[pets] to] keep}not lonely]",
+                Depth = 1,
+                Tokens = new List<TestTokenInstance>()
+                {
+                    TestTokens.OpenBracket,
+                    TestTokens.TextContent("cats"),
+                    TestTokens.ChildContext("{are[\tgreat[pets] to] keep}", child_1_2),
+                    TestTokens.TextContent("not"),
+                    TestTokens.HorizontalWhitespace(" "),
+                    TestTokens.TextContent("lonely"),
+                    TestTokens.CloseBracket
+                },
+                ChildContexts = new List<TestContextInstance>()
+                {
+                    child_1_2
+                }
+            };
+
+            child = new TestContextInstance(testContext)
             {
                 Contents = contentToParse,
                 Depth = 0,
                 Tokens = new List<TestTokenInstance>()
                 {
                     TestTokens.TextContent("abcd"),
-                    TestTokens.OpenBracket,
-                    TestTokens.CloseBracket,
+                    TestTokens.ChildContext("[cats{are[\tgreat[pets] to] keep}not lonely]", child_1_1),
                     TestTokens.TextContent("efgh")
                 },
                 ChildContexts = new List<TestContextInstance>()
-                {
-                    new TestContextInstance(testContext)
-                    {
-                        Contents = "[cats{are[\tgreat[pets] to] keep}not lonely]",
-                        Depth = 1,
-                        Tokens = new List<TestTokenInstance>()
-                        {
-                            TestTokens.OpenBracket,
-                            TestTokens.TextContent("cats"),
-                            TestTokens.OpenBrace,
-                            TestTokens.CloseBrace,
-                            TestTokens.TextContent("not"),
-                            TestTokens.HorizontalWhitespace(" "),
-                            TestTokens.TextContent("lonely"),
-                            TestTokens.CloseBracket
-                        },
-                        ChildContexts = new List<TestContextInstance>()
-                        {
-                            new TestContextInstance(testContext)
-                            {
-                                Contents = "{are[\tgreat[pets] to] keep}",
-                                Depth = 2,
-                                Tokens = new List<TestTokenInstance>()
-                                {
-                                    TestTokens.OpenBrace,
-                                    TestTokens.TextContent("are"),
-                                    TestTokens.OpenBracket,
-                                    TestTokens.CloseBracket,
-                                    TestTokens.HorizontalWhitespace(" "),
-                                    TestTokens.TextContent("keep"),
-                                    TestTokens.CloseBrace
-                                },
-                                ChildContexts = new List<TestContextInstance>()
-                                {
-                                    new TestContextInstance(testContext)
-                                    {
-                                        Contents = "[\tgreat[pets] to]",
-                                        Depth = 3,
-                                        Tokens = new List<TestTokenInstance>()
-                                        {
-                                            TestTokens.OpenBracket,
-                                            TestTokens.HorizontalWhitespace("\t"),
-                                            TestTokens.TextContent("great"),
-                                            TestTokens.OpenBracket,
-                                            TestTokens.CloseBracket,
-                                            TestTokens.HorizontalWhitespace(" "),
-                                            TestTokens.TextContent("to"),
-                                            TestTokens.CloseBracket
-                                        },
-                                        ChildContexts = new List<TestContextInstance>()
-                                        {
-                                            new TestContextInstance(testContext)
-                                            {
-                                                Contents = "[pets]",
-                                                Depth = 4,
-                                                Tokens = new List<TestTokenInstance>()
-                                                {
-                                                    TestTokens.OpenBracket,
-                                                    TestTokens.TextContent("pets"),
-                                                    TestTokens.CloseBracket
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
+                { 
+                    child_1_1
                 }
             };
+
+            expected = child;
 
             testArgs = new TestParseArgs<TestContext>()
             {

@@ -8,10 +8,10 @@ namespace YoggTree.Core.Tokens
     /// <summary>
     /// Token for finding "'" characters.
     /// </summary>
-    public class StringSingleQuote : TokenDefinition
+    public class StringSingleQuoteToken : TokenDefinition
     {
-        public StringSingleQuote() 
-            : base(TokenRegexStore.SingleQuote, "'", TokenTypeFlags.ContextEnder | TokenTypeFlags.ContextStarter, "StringSingleQuote") 
+        public StringSingleQuoteToken() 
+            : base(TokenRegexStore.SingleQuote, "'", TokenDefinitionFlags.ContextEnder | TokenDefinitionFlags.ContextStarter, "StringSingleQuoteToken") 
         { 
         }
     }
