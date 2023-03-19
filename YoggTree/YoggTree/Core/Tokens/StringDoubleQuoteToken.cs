@@ -8,10 +8,10 @@ namespace YoggTree.Core.Tokens
     /// <summary>
     /// Token for finding " characters.
     /// </summary>
-    public class StringDoubleQuote : TokenDefinition
+    public class StringDoubleQuoteToken : TokenDefinition
     {
-        public StringDoubleQuote() 
-            : base(TokenRegexStore.DoubleQuote, "\"", TokenTypeFlags.ContextEnder | TokenTypeFlags.ContextStarter, "StringDoubleQuote") 
+        public StringDoubleQuoteToken() 
+            : base(TokenRegexStore.DoubleQuote, "\"", TokenDefinitionFlags.ContextEnder | TokenDefinitionFlags.ContextStarter, "StringDoubleQuoteToken") 
         { 
         }
     }

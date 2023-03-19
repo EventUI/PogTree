@@ -16,6 +16,7 @@ namespace YoggTree
         private Guid _id = Guid.NewGuid();
         private IReadOnlyList<TokenDefinition> _validTokensRO = null;
         private List<TokenDefinition> _validTokens = new List<TokenDefinition>();
+        private ContextDefinitionFlags _flags = ContextDefinitionFlags.None;
 
         /// <summary>
         /// The unique ID of this Context.
@@ -28,28 +29,14 @@ namespace YoggTree
         public string Name { get; } = null;
 
         /// <summary>
+        /// Flags indicating special behavior to be taken when encountering this context definition.
+        /// </summary>
+        public ContextDefinitionFlags Flags { get { return _flags; } }
+
+        /// <summary>
         /// All of the token definitions that should be processed in this context.
         /// </summary>
         public IReadOnlyList<TokenDefinition> ValidTokens { get { return _validTokensRO; } }
-
-        /// <summary>
-        /// Creates a new ContextDefinition that is initialized with a set of tokens to look for.
-        /// </summary>
-        /// <param name="name">A name to give the context.</param>
-        /// <param name="validTokens">A set of TokenDefinitions to look for in this context.</param>
-        /// <exception cref="ArgumentException"></exception>
-        public TokenContextDefinition(string name, IEnumerable<TokenDefinition> validTokens)
-        {
-            if (string.IsNullOrWhiteSpace(name) == true) throw new ArgumentException(nameof(name) + " cannot be null or whitespace.");
-            Name = name;
-            
-            _validTokensRO = _validTokens.AsReadOnly();
-
-            if (validTokens != null)
-            {
-                AddTokens(validTokens);
-            }
-        }
 
         /// <summary>
         /// Creates a new ContextDefinition that is blank once initialized.
@@ -62,6 +49,60 @@ namespace YoggTree
 
             Name = name;
             _validTokensRO = _validTokens.AsReadOnly();
+        }
+
+        /// <summary>
+        /// Creates a new ContextDefinition that is blank once initialized.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <exception cref="ArgumentException"></exception>
+        public TokenContextDefinition(string name, ContextDefinitionFlags flags)
+        {
+            if (string.IsNullOrWhiteSpace(name) == true) throw new ArgumentException(nameof(name) + " cannot be null or whitespace.");
+
+            Name = name;
+            _validTokensRO = _validTokens.AsReadOnly();
+            _flags = flags;
+        }
+
+
+        /// <summary>
+        /// Creates a new ContextDefinition that is initialized with a set of tokens to look for.
+        /// </summary>
+        /// <param name="name">A name to give the context.</param>
+        /// <param name="validTokens">A set of TokenDefinitions to look for in this context.</param>
+        /// <exception cref="ArgumentException"></exception>
+        public TokenContextDefinition(string name, IEnumerable<TokenDefinition> validTokens)
+        {
+            if (string.IsNullOrWhiteSpace(name) == true) throw new ArgumentException(nameof(name) + " cannot be null or whitespace.");
+            Name = name;
+
+            _validTokensRO = _validTokens.AsReadOnly();
+
+            if (validTokens != null)
+            {
+                AddTokens(validTokens);
+            }
+        }
+
+        /// <summary>
+        /// Creates a new ContextDefinition that is initialized with a set of tokens to look for.
+        /// </summary>
+        /// <param name="name">A name to give the context.</param>
+        /// <param name="validTokens">A set of TokenDefinitions to look for in this context.</param>
+        /// <exception cref="ArgumentException"></exception>
+        public TokenContextDefinition(string name, ContextDefinitionFlags flags, IEnumerable<TokenDefinition> validTokens)
+        {
+            if (string.IsNullOrWhiteSpace(name) == true) throw new ArgumentException(nameof(name) + " cannot be null or whitespace.");
+            Name = name;
+
+            _validTokensRO = _validTokens.AsReadOnly();
+            _flags = flags;
+
+            if (validTokens != null)
+            {
+                AddTokens(validTokens);
+            }
         }
 
         /// <summary>
@@ -95,7 +136,7 @@ namespace YoggTree
             Dictionary<string, TokenDefinition> allRegexes = new Dictionary<string, TokenDefinition>();
             foreach (var token in ValidTokens)
             {
-                allRegexes.Add(token.Token.ToString(), token);
+                allRegexes.Add($"\"{token.Token.ToString()}\"::\"{(int)token.Token.Options}", token);
             }
 
             foreach (var token in tokens)
@@ -112,7 +153,7 @@ namespace YoggTree
                 }
 
                 _validTokens.Add(token);
-                allRegexes.Add(token.Token.ToString(), token);
+                allRegexes.Add(tokenKey, token);
             }
         }
 
@@ -195,7 +236,7 @@ namespace YoggTree
         /// <returns></returns>
         public virtual bool StartsNewContext(TokenInstance tokenInstance)
         {
-            if (tokenInstance.TokenDefinition.Flags.HasFlag(TokenTypeFlags.ContextStarter)) return true;
+            if (tokenInstance.TokenDefinition.Flags.HasFlag(TokenDefinitionFlags.ContextStarter)) return true;
             return false;
         }
 
@@ -209,7 +250,7 @@ namespace YoggTree
             if (tokenInstance.StartIndex == 0) return false;
             if (tokenInstance.Context.StartToken == null) return false;
 
-            if (tokenInstance.TokenDefinition.Flags.HasFlag(TokenTypeFlags.ContextEnder) == true)
+            if (tokenInstance.TokenDefinition.Flags.HasFlag(TokenDefinitionFlags.ContextEnder) == true)
             {
                 if (tokenInstance.TokenDefinition.ContextKey == tokenInstance.Context.StartToken?.TokenDefinition.ContextKey)
                 {

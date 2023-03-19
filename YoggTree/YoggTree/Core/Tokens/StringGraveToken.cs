@@ -8,10 +8,10 @@ namespace YoggTree.Core.Tokens
     /// <summary>
     /// Token for finding "`" characters.
     /// </summary>
-    public class StringGrave : TokenDefinition
+    public class StringGraveToken : TokenDefinition
     {
-        public StringGrave()
-            : base(TokenRegexStore.Grave, "`", TokenTypeFlags.ContextEnder | TokenTypeFlags.ContextStarter, "StringGrave")
+        public StringGraveToken()
+            : base(TokenRegexStore.Grave, "`", TokenDefinitionFlags.ContextEnder | TokenDefinitionFlags.ContextStarter, "StringGraveToken")
         {
         }
     }

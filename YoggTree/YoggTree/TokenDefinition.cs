@@ -16,7 +16,7 @@ namespace YoggTree
 
         protected readonly string _name = null;
         protected readonly Regex _token = null;
-        protected readonly TokenTypeFlags _flags = TokenTypeFlags.Default;
+        protected readonly TokenDefinitionFlags _flags = TokenDefinitionFlags.None;
         protected readonly string _contextKey = null;
         protected readonly int _spoolSize = 25;
 
@@ -45,9 +45,9 @@ namespace YoggTree
         }
 
         /// <summary>
-        /// Flags indicating special behavior to be taken when the default implementations of TokenInstances and TokenContextInstances is used.
+        /// Flags indicating special behavior to be taken when this token is encountered.
         /// </summary>
-        public TokenTypeFlags Flags
+        public TokenDefinitionFlags Flags
         {
             get
             {
@@ -113,11 +113,11 @@ namespace YoggTree
         /// <param name="name">The human readable name of the token.</param>
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="ArgumentException"></exception>
-        public TokenDefinition(Regex token, string name, TokenTypeFlags flags, string contextKey = null, int? spoolSize = null)
+        public TokenDefinition(Regex token, string name, TokenDefinitionFlags flags, string contextKey = null, int? spoolSize = null)
         {
             if (token == null) throw new ArgumentNullException(nameof(token));
             if (string.IsNullOrWhiteSpace(name) == true) throw new ArgumentException(nameof(name));
-            if (flags.HasFlag(TokenTypeFlags.ContextStarter) || flags.HasFlag(TokenTypeFlags.ContextEnder))
+            if (flags.HasFlag(TokenDefinitionFlags.ContextStarter) || flags.HasFlag(TokenDefinitionFlags.ContextEnder))
             {
                 if (string.IsNullOrEmpty(contextKey) == true) throw new ArgumentException("When using ContextStarter or ContextEnder flags, the contextKey must be a non-empty string.");
                 _contextKey = contextKey;

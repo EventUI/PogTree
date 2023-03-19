@@ -11,7 +11,7 @@ namespace YoggTree.Core.Tokens
     public class OpenBracketToken : TokenDefinition
     {
         public OpenBracketToken()
-            : base(TokenRegexStore.Brace_OpenBracket, "[", TokenTypeFlags.ContextStarter, "Brace_Bracket")
+            : base(TokenRegexStore.Brace_OpenBracket, "[", TokenDefinitionFlags.ContextStarter, "Brace_Bracket")
         {
         }
     }
@@ -22,7 +22,7 @@ namespace YoggTree.Core.Tokens
     public class CloseBracketToken : TokenDefinition
     {
         public CloseBracketToken()
-            : base(TokenRegexStore.Brace_CloseBracket, "]", TokenTypeFlags.ContextEnder, "Brace_Bracket")
+            : base(TokenRegexStore.Brace_CloseBracket, "]", TokenDefinitionFlags.ContextEnder, "Brace_Bracket")
         {
         }
     }

@@ -22,6 +22,13 @@ namespace YoggTree
         private List<TokenInstance> _tokens = new List<TokenInstance>();
         private IReadOnlyList<TokenInstance> _tokensRO = null; //read-only wrapper to expose as the tokens list.
 
+        /// <summary>
+        /// The ID of this context instance.
+        /// </summary>
+        public Guid ID
+        {
+            get { return _id; }
+        }
 
         /// <summary>
         /// The unique ID of this Context.
@@ -157,14 +164,14 @@ namespace YoggTree
                     nextToken = GetNextToken();
                 }
 
-                //get the start and end of the last two tokens to see if there is a gap between them. If there is, we need to make a TextContent token to fill in the gap.
+                //get the start and end of the last two tokens to see if there is a gap between them. If there is, we need to make a TextContentToken token to fill in the gap.
                 int textContentEndIndex = (nextToken == null) ? Contents.Length : nextToken.StartIndex;
                 int textContentStartIndex = (previousToken == null || _currentIndex > previousToken?.EndIndex) ? _currentIndex : previousToken.EndIndex;
 
                 if (textContentStartIndex < textContentEndIndex)
                 {
                     currentToken = nextToken;
-                    textContentToken = new TokenInstance(StandardTokens.TextContent, this, textContentStartIndex, Contents.Slice(textContentStartIndex, textContentEndIndex - textContentStartIndex));
+                    textContentToken = new TextPlacehodlerTokenInstance(this, textContentStartIndex, Contents.Slice(textContentStartIndex, textContentEndIndex - textContentStartIndex));
 
                     nextToken = textContentToken;
                 }
@@ -188,8 +195,7 @@ namespace YoggTree
                     _currentIndex = nextToken.EndIndex;
                     continue;
                 }
-
-                _tokens.Add(nextToken);
+                
 
                 //if this token meets the context's criteria for starting a new sub-context, make the context and walk its contents starting at the start token.
                 //The new sub-context will eventually hit the block below to end itself and then we return to this context.
@@ -198,25 +204,18 @@ namespace YoggTree
                     TokenContextInstance childContext = ContextDefinition.CreateNewContext(nextToken);
                     if (childContext != null)
                     {
-                        //replace the token in the array with one that is flagged as starting a context instance.
-                        _tokens[_tokens.Count -1] = nextToken with { StartedContextInstance = childContext };
-
                         _childContexts.Add(childContext);
                         childContext.WalkContent();
 
                         _currentIndex = childContext.EndIndex;
 
-                        if (childContext.EndToken != null)
-                        {
-                            int delta = childContext.AbsoluteOffset - AbsoluteOffset;
-                            previousToken = childContext.EndToken with { Context = this, StartIndex = childContext.EndToken.StartIndex + delta, EndIndex = childContext.EndToken.EndIndex + delta };
-                            
-                            _tokens.Add(previousToken);
-                        }
+                        _tokens.Add(new ChildContextTokenInstance(this, nextToken.StartIndex, childContext.Contents, childContext));
 
                         continue;
                     }
                 }
+
+                _tokens.Add(nextToken);
 
                 //if this token ends this context, snip the contents down to only what was inside the context and return to the parent context.
                 if (ContextDefinition.EndsCurrentContext(nextToken) == true)
@@ -282,7 +281,7 @@ namespace YoggTree
             //a result was found - advance the index of the spool so it doesn't redundantly search itself for the next result. Note this will always be incremented by one as the loop above only takes the first token from each spool to find the earliest one.
             firstSpool.CurrentIndex++;
 
-            return new TokenInstance(firstSpool.Token, this, firstResult.StartIndex - _absoluteOffset, ParseSession.Contents.Slice(firstResult.StartIndex, firstResult.Length));
+            return new TokenInstance(firstSpool.Token, this, firstResult.StartIndex - _absoluteOffset, ParseSession.Contents.Slice(firstResult.StartIndex, firstResult.Length), TokenInstanceType.RegexResult);
         }
 
         /// <summary>

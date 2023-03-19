@@ -12,12 +12,12 @@ using System.Threading.Tasks;
 
 namespace YoggTree.Core.Tokens
 {
-    public sealed class TextContent : TokenDefinition
+    /// <summary>
+    /// Placeholder token for spans of text that is between two sequential tokens. WARNING: Never include in the ValidTokens list as this will match the entire string - this is used by the TokenContextInstance to make spans of plain text on the fly.
+    /// </summary>
+    public sealed class TextContentToken : TokenDefinition
     {
-        /// <summary>
-        /// Placeholder token for spans of text that is between two sequential tokens. WARNING: Never include in the ValidTokens list as this will match the entire string - this is used by the TokenContextInstance to make spans of plain text on the fly.
-        /// </summary>
-        public TextContent()
+        public TextContentToken()
             : base(new Regex(".+"), "<text content>")
         {
 

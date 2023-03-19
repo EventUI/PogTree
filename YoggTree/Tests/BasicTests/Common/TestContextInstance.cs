@@ -33,10 +33,10 @@ namespace YoggTreeTest.Common
         {
             if (ContextDefinition.ID != instance.ContextDefinition.ID)
             {
-                if (ContextDefinition.GetType() != instance.ContextDefinition.GetType()) throw new Exception($"Context definition mismatch. Expected: {ContextDefinition} Actual: {instance.ContextDefinition}");
+                if (ContextDefinition.GetType() != instance.ContextDefinition.GetType()) throw new Exception($"Context definition mismatch. \nExpected: {ContextDefinition} \nActual: {instance.ContextDefinition}");
             }
 
-            if (instance.Contents.ToString() != Contents) throw new Exception($"{ContextDefinition} mismatched expected contents. Expected: \"{Contents}\" Actual: \"{instance.Contents}\"");
+            if (instance.Contents.ToString() != Contents) throw new Exception($"{ContextDefinition} mismatched expected contents. \nExpected: \"{Contents}\" Actual: \n\"{instance.Contents}\"");
             if (Depth != instance.Depth) throw new Exception($"{ContextDefinition} mismatched expected depth. Expected: \"{Depth}\" Actual: \"{instance.Depth}\"");
             if (Tokens.Count != instance.Tokens.Count) throw new Exception($"{ContextDefinition} mismatched expected token count. Expected: \"{Tokens.Count}\" Actual: \"{instance.Tokens.Count}\"");
 
@@ -50,9 +50,10 @@ namespace YoggTreeTest.Common
 
                 if (previousToken != null)
                 {
-                    if (previousToken.StartedContextInstance != null)
+                    var childContext = previousToken.GetChildContext();
+                    if (childContext != null)
                     {
-                        if (previousToken.StartIndex + previousToken.StartedContextInstance.Contents.Length != resultToken.StartIndex + resultToken.Contents.Length) throw new Exception($"Token index sequence error. Current ({resultToken}) and previous ({previousToken}) overlapped after previous token started new child context.");
+                        if (previousToken.StartIndex + childContext.Contents.Length != resultToken.StartIndex) throw new Exception($"Token index sequence error. Current ({resultToken}) and previous ({previousToken}) overlapped after previous token started new child context.");
                     }
                     else
                     {
@@ -79,31 +80,43 @@ namespace YoggTreeTest.Common
 
     public record TestTokenInstance
     {
+        public TokenInstanceType InstanceType { get; } = TokenInstanceType.None;
+
         public TokenDefinition TokenDefinition { get; }
 
         public string Contents { get; init; }
+
+        public TestContextInstance TestContextInstance { get; init; }
 
         public TestTokenInstance(TokenDefinition tokenDefinition)
         {
             if (tokenDefinition == null) throw new ArgumentNullException(nameof(tokenDefinition));
 
             TokenDefinition = tokenDefinition;
+            InstanceType = TokenInstanceType.RegexResult;
         }
 
-        public TestTokenInstance(TokenDefinition tokenDefinition, string contents)
+        public TestTokenInstance(TokenDefinition tokenDefinition, string contents, TokenInstanceType instanceType)
         {
             if (tokenDefinition == null) throw new ArgumentNullException(nameof(tokenDefinition));
 
             TokenDefinition = tokenDefinition;
             Contents = contents;
+            InstanceType = instanceType;
         }
 
         public bool CompareToActual(TokenInstance instance)
         {
-            if (Contents != instance.Contents.ToString()) throw new Exception($"{TokenDefinition} mismatched expected contents. Expected: \"{Contents}\" Actual: \"{instance.Contents}\"");
+            if (Contents != instance.Contents.ToString()) throw new Exception($"{TokenDefinition} mismatched expected contents. \nExpected: \"{Contents}\" \nActual: \"{instance.Contents}\"");
+            if (InstanceType != instance.TokenInstanceType) throw new Exception(($"{TokenDefinition} mismatched expected InstanceType. Expected: \"{InstanceType}\" Actual: \"{instance.TokenInstanceType}\""));
             if (instance.TokenDefinition.ID != TokenDefinition.ID)
             {
-                if (instance.TokenDefinition.GetType() != TokenDefinition.GetType()) throw new Exception($"Token definition mismatch. Expected: {TokenDefinition} Actual: {instance.TokenDefinition}");
+                if (instance.TokenDefinition.GetType() != TokenDefinition.GetType()) throw new Exception($"Token definition mismatch. \nExpected: {TokenDefinition} \nActual: {instance.TokenDefinition}");
+            }            
+
+            if (TestContextInstance != null)
+            {
+                if (TestContextInstance.Contents.ToString() != instance.GetChildContext()?.Contents.ToString()) throw new Exception($"Contents of TestContextInstance did not match: Expected: \"{TestContextInstance.Contents}\" \n Actual: {instance.GetChildContext().Contents}");
             }
 
             return true;

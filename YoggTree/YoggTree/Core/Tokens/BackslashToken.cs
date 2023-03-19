@@ -8,9 +8,9 @@ namespace YoggTree.Core.Tokens
     /// <summary>
     /// Token for finding "\" characters.
     /// </summary>
-    public class Backslash : TokenDefinition
+    public class BackslashToken : TokenDefinition
     {
-        public Backslash() 
+        public BackslashToken() 
             : base(TokenRegexStore.Backslash, "\\")
         {
         }
