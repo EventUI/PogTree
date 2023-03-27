@@ -8,6 +8,7 @@ namespace YoggTree
     /// <summary>
     /// Bit flags for indicating special behavior for TokenDefinitions.
     /// </summary>
+    [Flags]
     public enum TokenDefinitionFlags
     {
         /// <summary>
@@ -29,11 +30,21 @@ namespace YoggTree
         None = 0,
         RegexResult = 1,
         TextPlaceholder = 2,
-        ContextPlaceholder = 3
+        ContextPlaceholder = 3,
+        BoundingPlaceholder = 4
     }
 
     public enum ContextDefinitionFlags
     {
         None = 0
+    }
+
+    [Flags]
+    public enum TokenSeekFlags
+    {
+        None = 0,
+        IgnoreTextPlaceholders = 1,
+        IgnoreContextPlaceholders = 2,
+        IgnorePlaceholders = IgnoreTextPlaceholders | IgnoreContextPlaceholders,
     }
 }

@@ -31,5 +31,14 @@ namespace YoggTreeTest.Specs
 
             YoggTreeTestHelper.CompareParseResults(testParseArgs);
         }
+
+        [Theory(DisplayName = "Token seek tests.")]
+        [ClassData(typeof(Theory_Basic_Parse))]
+        public void TokenSeekTests<T>(TestParseArgs<T> testParseArgs) where T : TokenContextDefinition, new()
+        {
+            _output.WriteLine($"Testing: {testParseArgs.TestName}");
+
+            YoggTreeTestHelper.CompareSeekResults(testParseArgs);
+        }
     }
 }
