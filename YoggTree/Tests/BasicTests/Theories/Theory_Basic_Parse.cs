@@ -13,7 +13,7 @@ using YoggTreeTest.Common;
 
 namespace BasicTests.Theories
 {
-    public class Theory_Basic_Parse : IEnumerable<object[]>
+    public class Theory_Basic_Parse<T> : IEnumerable<object[]> where T : TokenContextDefinition, new()
     {
         public IEnumerator<object[]> GetEnumerator()
         {
@@ -38,13 +38,13 @@ namespace BasicTests.Theories
         private static void AddSimpleTestArgs(List<object[]> args)
         {
             string contentToParse = "";
-            TestContextInstance expected = new TestContextInstance(new TestContext())
+            TestContextInstance expected = new TestContextInstance(new T())
             {
                 Contents = contentToParse,
                 Depth = 0
             };
 
-            var testArgs = new TestParseArgs<TestContext>()
+            var testArgs = new TestParseArgs<T>()
             {
                 Expected = expected,
                 ContentToParse = contentToParse,
@@ -100,7 +100,7 @@ namespace BasicTests.Theories
         private static void AddSimpleHierarchyTests(List<object[]> args)
         {
             string contentToParse = "[]";
-            TestContext testContext = new TestContext();
+            T testContext = new T();
             TestContextInstance childInstance = new TestContextInstance(testContext)
             {
                 Contents = "[]",
@@ -126,7 +126,7 @@ namespace BasicTests.Theories
                 }
             };
 
-            var testArgs = new TestParseArgs<TestContext>()
+            var testArgs = new TestParseArgs<T>()
             {
                 Expected = expected,
                 ContentToParse = contentToParse,
@@ -138,7 +138,7 @@ namespace BasicTests.Theories
             /*****************************************************************************************/
 
             contentToParse = "[]{}";
-            testContext = new TestContext();
+            testContext = new T();
             TestContextInstance child1 = new TestContextInstance(testContext)
             {
                 Contents = "[]",
@@ -176,7 +176,7 @@ namespace BasicTests.Theories
                 }
             };
 
-            testArgs = new TestParseArgs<TestContext>()
+            testArgs = new TestParseArgs<T>()
             {
                 Expected = expected,
                 ContentToParse = contentToParse,
@@ -188,7 +188,7 @@ namespace BasicTests.Theories
             /*****************************************************************************************/
 
             contentToParse = "[[]]";
-            testContext = new TestContext();
+            testContext = new T();
 
             var childSub1 = new TestContextInstance(testContext)
             {
@@ -231,7 +231,7 @@ namespace BasicTests.Theories
                 }
             };
 
-            testArgs = new TestParseArgs<TestContext>()
+            testArgs = new TestParseArgs<T>()
             {
                 Expected = expected,
                 ContentToParse = contentToParse,
@@ -244,7 +244,7 @@ namespace BasicTests.Theories
         private static void AddComplexHierarchyTests(List<object[]> args)
         {
             string contentToParse = "[{[[()]]}]";
-            TestContext testContext = new TestContext();
+            T testContext = new T();
 
             var child_1_5 = new TestContextInstance(testContext)
             {
@@ -337,7 +337,7 @@ namespace BasicTests.Theories
 
             TestContextInstance expected = child;
 
-            var testArgs = new TestParseArgs<TestContext>()
+            var testArgs = new TestParseArgs<T>()
             {
                 Expected = expected,
                 ContentToParse = contentToParse,
@@ -348,8 +348,8 @@ namespace BasicTests.Theories
 
             /****************************************************************************************/
 
-            contentToParse = "abcd[cats{are[\tgreat[pets] to] keep}not lonely]efgh";
-            testContext = new TestContext();
+            contentToParse = "abcd[cats{are[\tgreat[pets] to] keep}as friends]efgh";
+            testContext = new T();
 
             child_1_4 = new TestContextInstance(testContext)
             {
@@ -404,16 +404,16 @@ namespace BasicTests.Theories
 
             child_1_1 = new TestContextInstance(testContext)
             {
-                Contents = "[cats{are[\tgreat[pets] to] keep}not lonely]",
+                Contents = "[cats{are[\tgreat[pets] to] keep}as friends]",
                 Depth = 1,
                 Tokens = new List<TestTokenInstance>()
                 {
                     TestTokens.OpenBracket,
                     TestTokens.TextContent("cats"),
                     TestTokens.ChildContext("{are[\tgreat[pets] to] keep}", child_1_2),
-                    TestTokens.TextContent("not"),
+                    TestTokens.TextContent("as"),
                     TestTokens.HorizontalWhitespace(" "),
-                    TestTokens.TextContent("lonely"),
+                    TestTokens.TextContent("friends"),
                     TestTokens.CloseBracket
                 },
                 ChildContexts = new List<TestContextInstance>()
@@ -429,7 +429,7 @@ namespace BasicTests.Theories
                 Tokens = new List<TestTokenInstance>()
                 {
                     TestTokens.TextContent("abcd"),
-                    TestTokens.ChildContext("[cats{are[\tgreat[pets] to] keep}not lonely]", child_1_1),
+                    TestTokens.ChildContext("[cats{are[\tgreat[pets] to] keep}as friends]", child_1_1),
                     TestTokens.TextContent("efgh")
                 },
                 ChildContexts = new List<TestContextInstance>()
@@ -440,7 +440,7 @@ namespace BasicTests.Theories
 
             expected = child;
 
-            testArgs = new TestParseArgs<TestContext>()
+            testArgs = new TestParseArgs<T>()
             {
                 Expected = expected,
                 ContentToParse = contentToParse,

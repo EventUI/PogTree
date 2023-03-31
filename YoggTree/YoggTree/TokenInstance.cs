@@ -192,8 +192,31 @@ namespace YoggTree
         internal static int GetContextualStartIndex(this TokenInstance instance, TokenContextInstance targetContext)
         {
             if (targetContext == null) throw new ArgumentNullException(nameof(targetContext));
+
+            if (instance == null) return -1;
             if (instance.StartIndex < 0) throw new Exception("StartIndex must be a positive number.");
 
+            TokenContextInstance currentContext = instance.Context;
+            if (currentContext.Depth == targetContext.Depth)
+            {
+                if (currentContext == targetContext)
+                {
+                    return instance.StartIndex;
+                }
+                else
+                {
+                    var previousContext = targetContext.PreviousContext;
+                    if (previousContext != null)
+                    {
+                        return previousContext.EndIndex + instance.StartIndex;
+                    }
+                }
+            }
+
+
+            int delta = currentContext.AbsoluteOffset- targetContext.AbsoluteOffset;
+            return instance.StartIndex + delta;
+                
             bool parentFound = false;
 
             if (instance.Context != instance.Context.ParseSession.RootContext)

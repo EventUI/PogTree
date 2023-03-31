@@ -12,39 +12,55 @@ namespace YoggTree
     public enum TokenDefinitionFlags
     {
         /// <summary>
-        /// None. None.
+        /// Default. None.
         /// </summary>
         None = 0,
+
         /// <summary>
         /// Token marks the start of a new child TokenContextInstance.
         /// </summary>
         ContextStarter = 1,
+
         /// <summary>
         /// Token marks the end of a TokenContextInstance.
         /// </summary>
         ContextEnder = 2
     }
 
+    /// <summary>
+    /// Determines what type of token an instance represents.
+    /// </summary>
     public enum TokenInstanceType
     {
+        /// <summary>
+        /// Default. Not set.
+        /// </summary>
         None = 0,
+
+        /// <summary>
+        /// Token instance is a Regex result found in the source Content.
+        /// </summary>
         RegexResult = 1,
+
+        /// <summary>
+        /// Token instance is a placeholder that contains the span of text between two consecutive (but not directly adjacent) tokens of other TokenInstanceTypes.
+        /// </summary>
         TextPlaceholder = 2,
-        ContextPlaceholder = 3,
-        BoundingPlaceholder = 4
+
+        /// <summary>
+        /// Token instance is a wrapper that contains the complete contents (and a reference to) to a child TokenContextInstance of the token instance's TokenContextInstance.
+        /// </summary>
+        ContextPlaceholder = 3
     }
 
+    /// <summary>
+    /// Bit flags for indicating special behavior for TokenContextDefinitions.
+    /// </summary>
     public enum ContextDefinitionFlags
     {
+        /// <summary>
+        /// Default. Not set.
+        /// </summary>
         None = 0
-    }
-
-    [Flags]
-    public enum TokenSeekFlags
-    {
-        None = 0,
-        IgnoreTextPlaceholders = 1,
-        IgnoreContextPlaceholders = 2,
-        IgnorePlaceholders = IgnoreTextPlaceholders | IgnoreContextPlaceholders,
     }
 }

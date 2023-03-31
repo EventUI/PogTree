@@ -4,6 +4,9 @@
     <TargetFramework>net7.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>disable</Nullable>
+    <AssemblyName>YoggTree</AssemblyName>
+    <RootNamespace>YoggTree</RootNamespace>
+    <IncludeSymbols>True</IncludeSymbols>
   </PropertyGroup>
 
   <ItemGroup>

@@ -24,7 +24,7 @@ namespace YoggTreeTest.Specs
         }
 
         [Theory(DisplayName = "Basic parse tests.")]
-        [ClassData(typeof(Theory_Basic_Parse))]
+        [ClassData(typeof(Theory_Basic_Parse<TestContext>))]
         public void ParseDefaultTests<T>(TestParseArgs<T> testParseArgs) where T : TokenContextDefinition, new()
         {
             _output.WriteLine($"Testing: {testParseArgs.TestName}");
@@ -33,12 +33,21 @@ namespace YoggTreeTest.Specs
         }
 
         [Theory(DisplayName = "Token seek tests.")]
-        [ClassData(typeof(Theory_Basic_Parse))]
+        [ClassData(typeof(Theory_Basic_Parse<TestContext>))]
         public void TokenSeekTests<T>(TestParseArgs<T> testParseArgs) where T : TokenContextDefinition, new()
         {
             _output.WriteLine($"Testing: {testParseArgs.TestName}");
 
             YoggTreeTestHelper.CompareSeekResults(testParseArgs);
+        }
+
+        [Theory(DisplayName = "Token lazy seeking tests.")]
+        [ClassData(typeof(Theory_Basic_Parse<SeekAheadContext>))]
+        public void TestLazySeeking<T>(TestParseArgs<T> testParseArgs) where T : TokenContextDefinition, new()
+        {
+            _output.WriteLine($"Testing: {testParseArgs.TestName}");
+
+            YoggTreeTestHelper.CompareParseResults(testParseArgs);
         }
     }
 }
