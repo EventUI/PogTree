@@ -27,4 +27,25 @@ namespace YoggTreeTest.Common
 
         }
     }
+
+    public class SeekAheadContext : TokenContextDefinition
+    {
+        public SeekAheadContext()
+            :base("SeekAhead", StandardTokens.GetAllStandardTokens())
+        {
+
+        }
+
+        public override bool StartsNewContext(TokenInstance tokenInstance)
+        {
+            var nextInstance = tokenInstance.GetNextToken();
+
+            while (nextInstance != null)
+            {
+                nextInstance = nextInstance.GetNextToken();
+            }
+
+            return base.StartsNewContext(tokenInstance);
+        }
+    }
 }
