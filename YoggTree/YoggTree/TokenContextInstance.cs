@@ -4,7 +4,6 @@ This source code is licensed under the MIT license found in the
 LICENSE file in the root directory of this source tree.*/
 
 using YoggTree.Core.Spools;
-using YoggTree.Core.Tokens;
 
 namespace YoggTree
 {
@@ -378,6 +377,52 @@ namespace YoggTree
             }
 
             return $"({contextName}[{Depth}]) " + name;
+        }
+    }
+
+    public static class TokenContextInstanceExtensions
+    {
+        /// <summary>
+        /// Gets the next peer context to the current context.
+        /// </summary>
+        /// <param name="instance"></param>
+        /// <returns></returns>
+        public static TokenContextInstance GetNextContext(this TokenContextInstance instance)
+        {
+            if (instance == null) return null;
+            return instance.NextContext;
+        }
+
+        /// <summary>
+        /// Gets the previous peer context to the current context.
+        /// </summary>
+        /// <param name="instance"></param>
+        /// <returns></returns>
+        public static TokenContextInstance GetPreviousContext(this TokenContextInstance instance)
+        {
+            if (instance == null) return null;  
+            return instance.PreviousContext;
+        }
+
+        /// <summary>
+        /// Determines if the TokenContextDefintion satisfies the "is" operator for the given type.
+        /// </summary>
+        /// <typeparam name="T">The type of TokenContextDefintion to check against.</typeparam>
+        /// <param name="instance"></param>
+        /// <returns></returns>
+        public static bool Is<T>(this TokenContextInstance instance) where T : TokenContextDefinition
+        {
+            return instance?.ContextDefinition is T;
+        }
+
+        /// <summary>
+        /// Gets the full text contents of the TokenContextInstance.
+        /// </summary>
+        /// <param name="instance"></param>
+        /// <returns></returns>
+        public static string GetText(this TokenContextInstance instance)
+        {
+            return instance?.Contents.ToString();
         }
     }
 }

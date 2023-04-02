@@ -1,6 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-using System.Xml.Linq;
-/**Copyright (c) 2023 Richard H Stannard
+﻿/**Copyright (c) 2023 Richard H Stannard
 
 This source code is licensed under the MIT license found in the
 LICENSE file in the root directory of this source tree.*/
@@ -131,6 +129,11 @@ namespace YoggTree
             return (instance as ChildContextTokenInstance)?.ChildContext;
         }
 
+        /// <summary>
+        /// Gets the full text content of the TokenInstance.
+        /// </summary>
+        /// <param name="instance"></param>
+        /// <returns></returns>
         public static string GetText(this TokenInstance instance)
         {
             return (instance == null) ? null : instance.Contents.ToString();
@@ -183,6 +186,17 @@ namespace YoggTree
         }
 
         /// <summary>
+        /// Determines if the TokenDefintion of this instance satisfy's the "is" operator as a type check.
+        /// </summary>
+        /// <typeparam name="T">The type to check against.</typeparam>
+        /// <param name="instance"></param>
+        /// <returns></returns>
+        public static bool Is<T>(this TokenInstance instance) where T : TokenDefinition
+        {
+            return instance?.TokenDefinition is T;
+        }
+
+        /// <summary>
         /// Gets the start index of this token in another context.
         /// </summary>
         /// <param name="targetContext"></param>
@@ -216,32 +230,6 @@ namespace YoggTree
 
             int delta = currentContext.AbsoluteOffset- targetContext.AbsoluteOffset;
             return instance.StartIndex + delta;
-                
-            bool parentFound = false;
-
-            if (instance.Context != instance.Context.ParseSession.RootContext)
-            {
-                TokenContextInstance parent = instance.Context.Parent;
-                parentFound = true;
-
-                while (parent != null)
-                {
-                    if (parent == targetContext)
-                    {
-                        parentFound = true;
-                        break;
-                    }
-
-                    parent = parent.Parent;
-                }
-
-                if (parentFound != true) throw new Exception("TokenInstance is not contained by the target targetContext.");
-                return instance.StartIndex + parent.AbsoluteOffset;
-            }
-            else
-            {
-                return instance.StartIndex;
-            }
         }
     }
 }
