@@ -1,8 +1,11 @@
-﻿/**Copyright (c) 2023 Richard H Stannard
+﻿
+
+using System.Data.Common;
+using YoggTree.Core.Tokens;
+/**Copyright (c) 2023 Richard H Stannard
 
 This source code is licensed under the MIT license found in the
 LICENSE file in the root directory of this source tree.*/
-
 namespace YoggTree
 {
     /// <summary>
@@ -210,6 +213,8 @@ namespace YoggTree
             if (instance == null) return -1;
             if (instance.StartIndex < 0) throw new Exception("StartIndex must be a positive number.");
 
+            return instance.StartIndex + (instance.Context.AbsoluteOffset - targetContext.AbsoluteOffset);
+
             TokenContextInstance currentContext = instance.Context;
             if (currentContext.Depth == targetContext.Depth)
             {
@@ -230,6 +235,39 @@ namespace YoggTree
 
             int delta = currentContext.AbsoluteOffset- targetContext.AbsoluteOffset;
             return instance.StartIndex + delta;
+        }
+
+        /// <summary>
+        /// Gets the line number and column number of the start of the token relative to the entire string being parsed.
+        /// </summary>
+        /// <param name="instance"></param>
+        /// <returns></returns>
+        public static (int LineNumber, int ColumnNumber) GetLineAndColumn(this TokenInstance instance)
+        {
+            if (instance == null) return (-1, -1);
+            
+            int column = -1;
+            int line = 0;
+
+            foreach (var result in TokenRegexStore.Whitespace_Vertical.EnumerateMatches(instance.Context.ParseSession.Contents.Span))
+            {
+                if (result.Index < instance.StartIndex)
+                {
+                    line++;
+                }
+                else
+                {
+                    column = instance.StartIndex - (result.Index + result.Length);
+                    break;
+                }
+            }
+            
+            if (line == 0)
+            {
+                column = instance.StartIndex;
+            }
+
+            return (line, column);
         }
     }
 }

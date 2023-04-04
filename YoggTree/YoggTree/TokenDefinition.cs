@@ -157,7 +157,7 @@ namespace YoggTree
         /// </summary>
         /// <param name="instance">The current token instance.</param>
         /// <returns></returns>
-        public bool IsValidInstance(TokenInstance instance)
+        public virtual bool IsValidInstance(TokenInstance instance)
         {
             return true;
         }

@@ -3,6 +3,9 @@
 This source code is licensed under the MIT license found in the
 LICENSE file in the root directory of this source tree.*/
 
+using System.Data;
+using System.Diagnostics;
+using YoggTree.Core.Exceptions;
 using YoggTree.Core.Spools;
 
 namespace YoggTree
@@ -151,9 +154,9 @@ namespace YoggTree
         {
             TokenInstance nextToken = previousToken == null ? null : previousToken.NextToken;
 
-            if (nextToken != null)
+            if (nextToken != null) //we already discovered the next token in the content string
             {
-                if (setContext == true && nextToken.Context != this)
+                if (setContext == true && nextToken.Context != this) //if setting the context, we need to shift the start index of the token to be relative to its current context.
                 {
                     var newStart = nextToken.GetContextualStartIndex(this);
                     nextToken.Context = this;
@@ -161,12 +164,9 @@ namespace YoggTree
                     nextToken.EndIndex = newStart + nextToken.Contents.Length;
                 }
 
-                //if (nextToken.NextToken != null) return nextToken;
-                //if (nextToken.TokenInstanceType != TokenInstanceType.RegexResult) return nextToken;
-
                 return nextToken;
             }
-            else
+            else //need to get another token from the regex spools
             {
                 nextToken = GetNextToken(previousToken == null ? 0 : previousToken.EndIndex);
                 if (nextToken != null && nextToken.StartIndex == previousToken?.StartIndex && nextToken.Contents.Length == previousToken?.Contents.Length)
@@ -179,7 +179,7 @@ namespace YoggTree
             int textContentEndIndex = (nextToken == null) ? Contents.Length : nextToken.StartIndex;
             int textContentStartIndex = (previousToken == null) ? 0 : previousToken.EndIndex;
 
-            if (textContentStartIndex < textContentEndIndex)
+            if (textContentStartIndex < textContentEndIndex) //there's a gap - make a text placeholder token
             {
                 var textContentToken = new TextPlacehodlerTokenInstance(this, textContentStartIndex, Contents.Slice(textContentStartIndex, textContentEndIndex - textContentStartIndex));
 
@@ -189,9 +189,10 @@ namespace YoggTree
 
                 return textContentToken;
             }
-            else
+            else //no gap, regex result token is fine as-is
             {
-                if (nextToken == null) return null;
+                if (nextToken == null) return null; //no subsequent token, all done
+
                 nextToken.PreviousToken = previousToken;
                 if (previousToken != null) previousToken.NextToken = nextToken;
             }
@@ -216,20 +217,25 @@ namespace YoggTree
                 //slot for enforcing token syntax rules - if one token cannot come before or after another token without being invalid, this will stop the whole parse operation
                 if (previousToken != null)
                 {
-                    if (nextToken.TokenDefinition.CanComeAfter(previousToken) == false) throw new Exception($"{nextToken.ToString()} cannot come after {previousToken.ToString()}");
-                    if (previousToken.TokenDefinition.CanComeBefore(nextToken) == false) throw new Exception($"{previousToken.ToString()} cannot come before {nextToken.ToString()}");
+                    if (nextToken.TokenDefinition.CanComeAfter(previousToken) == false)
+                    {
+                        var lineAndCol = nextToken.GetLineAndColumn();
+                        throw new TokenSyntaxErrorExecption($"{nextToken} cannot come after {previousToken}.\nLine: {lineAndCol.LineNumber} Column: {lineAndCol.ColumnNumber}", lineAndCol.LineNumber, lineAndCol.ColumnNumber);                       
+                    }
+
+                    if (previousToken.TokenDefinition.CanComeBefore(nextToken) == false) 
+                    {
+                        var lineAndCol = nextToken.GetLineAndColumn();
+                        throw new TokenSyntaxErrorExecption($"{previousToken} cannot come before {nextToken}.\nLine: {lineAndCol.LineNumber} Column: {lineAndCol.ColumnNumber}", lineAndCol.LineNumber, lineAndCol.ColumnNumber);
+                    }
                 }
 
-                //check to see if the context allows this token to be valid, if not skip it
+                //check to see if the token defintion allows this token to be valid in its current context, fail if it is not
                 if (nextToken.TokenDefinition.IsValidInstance(nextToken) == false)
                 {
-                    _currentIndex = nextToken.EndIndex;
-                    previousToken = nextToken;
-
-                    continue;
+                    var lineAndCol = nextToken.GetLineAndColumn();
+                    throw new TokenSyntaxErrorExecption($"{nextToken} is not valid in context {this}.\nLine: {lineAndCol.LineNumber} Column: {lineAndCol.ColumnNumber}", lineAndCol.LineNumber, lineAndCol.ColumnNumber);
                 }
-
-                bool wasPlaceholder = false;
 
                 //if this token meets the context's criteria for starting a new sub-context, make the context and walk its contents starting at the start token.
                 //The new sub-context will eventually hit the block below to end itself and then we return to this context.
@@ -240,30 +246,42 @@ namespace YoggTree
                     {
                         _childContexts.Add(childContext);
 
+                        //hook up the context's linked lists
                         childContext.PreviousContext = previousContext;
                         if (previousContext != null) previousContext.NextContext = childContext;
+
+                        //advance the "previous" context to be the current one
                         previousContext = childContext;
 
+                        //recursively discover or re-assign tokens to the new sub-context
                         childContext.WalkContent();
 
+                        //once the child context is done being processed, make a placeholder to put into this context's list of tokens.
                         var contextPlaceholder = new ChildContextTokenInstance(this, childContext.StartIndex, childContext.Contents, childContext);
-                        if (previousToken == null)
-                        {
-                            if (childContext.EndToken != null) previousToken = childContext.EndToken;
-                        }
 
+                        //insert the context placeholder between the previous and "next" tokens in the token list
+                        contextPlaceholder.PreviousToken = previousToken;
+
+                        //the logical "next" token is actually whatever follows the end token of the child context because we don't know how many tokens forward the child context (or its contexts) have brought us
                         contextPlaceholder.NextToken = childContext.EndToken?.NextToken;
-                        previousToken.NextToken = contextPlaceholder;
-                        wasPlaceholder = true;
 
-                        nextToken = contextPlaceholder;
+                        //if we had a previous token, it's new "next" token is the placeholder
+                        if (previousToken != null) previousToken.NextToken = contextPlaceholder;
+
+                        //previousToken.NextToken = contextPlaceholder;
+                        _tokens.Add(contextPlaceholder);
+
+                        _currentIndex = contextPlaceholder.EndIndex;
+                        previousToken = contextPlaceholder;
+
+                        continue;
                     }
                 }
 
                 _tokens.Add(nextToken);
 
                 //if this token ends this context, snip the contents down to only what was inside the context and return to the parent context.
-                if (wasPlaceholder == false && ContextDefinition.EndsCurrentContext(nextToken) == true)
+                if (ContextDefinition.EndsCurrentContext(nextToken) == true)
                 {
                     Contents = Contents.Slice(0, nextToken.EndIndex);
 
@@ -272,13 +290,16 @@ namespace YoggTree
                     EndToken = nextToken;
 
                     nextToken.PreviousToken = previousToken;
-                    previousToken.NextToken = nextToken;
+                    if (previousToken != null) previousToken.NextToken = nextToken;
 
                     break;
                 }
 
                 _currentIndex = nextToken.EndIndex;
+
                 nextToken.PreviousToken = previousToken;
+                if (previousToken != null) previousToken.NextToken = nextToken;
+
                 previousToken = nextToken;
             }
         }
