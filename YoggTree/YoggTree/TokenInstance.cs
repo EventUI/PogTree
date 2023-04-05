@@ -57,9 +57,10 @@ namespace YoggTree
         /// Internal constructor used to make a new TokenInstance.
         /// </summary>
         /// <param name="tokenDefinition">The definition of the token that was found.</param>
-        /// <param name="context">The context in whichi the token was found.</param>
+        /// <param name="context">The context in which the token was found.</param>
         /// <param name="tokenStartIndex">The start index of the token in its context.</param>
         /// <param name="value">The value of the token.</param>
+        /// <param name="instanceType">The type of content being represented by this instance.</param>
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="ArgumentOutOfRangeException"></exception>
         /// <exception cref="ArgumentException"></exception>
@@ -145,7 +146,8 @@ namespace YoggTree
         /// <summary>
         /// Gets a clone of this token that is relative to a different (parent) context.
         /// </summary>
-        /// <param name="targetContext"></param>
+        /// <param name="instance">The token instance to get a copy of.</param>
+        /// <param name="targetContext">The context in which the new instance would be found.</param>
         /// <returns></returns>
         public static TokenInstance GetContextualInstance(this TokenInstance instance, TokenContextInstance targetContext)
         {
@@ -202,7 +204,8 @@ namespace YoggTree
         /// <summary>
         /// Gets the start index of this token in another context.
         /// </summary>
-        /// <param name="targetContext"></param>
+        /// <param name="instance">The instance to get the new starting index of.</param>
+        /// <param name="targetContext">The context in which to get the starting index.</param>
         /// <returns></returns>
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="Exception"></exception>
@@ -214,27 +217,6 @@ namespace YoggTree
             if (instance.StartIndex < 0) throw new Exception("StartIndex must be a positive number.");
 
             return instance.StartIndex + (instance.Context.AbsoluteOffset - targetContext.AbsoluteOffset);
-
-            TokenContextInstance currentContext = instance.Context;
-            if (currentContext.Depth == targetContext.Depth)
-            {
-                if (currentContext == targetContext)
-                {
-                    return instance.StartIndex;
-                }
-                else
-                {
-                    var previousContext = targetContext.PreviousContext;
-                    if (previousContext != null)
-                    {
-                        return previousContext.EndIndex + instance.StartIndex;
-                    }
-                }
-            }
-
-
-            int delta = currentContext.AbsoluteOffset- targetContext.AbsoluteOffset;
-            return instance.StartIndex + delta;
         }
 
         /// <summary>

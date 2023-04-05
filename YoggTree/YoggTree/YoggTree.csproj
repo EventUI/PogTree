@@ -7,6 +7,15 @@
     <AssemblyName>YoggTree</AssemblyName>
     <RootNamespace>YoggTree</RootNamespace>
     <IncludeSymbols>True</IncludeSymbols>
+	<GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <NoWarn>1701;1702;1587</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <NoWarn>1701;1702;1587</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
