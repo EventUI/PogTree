@@ -140,8 +140,9 @@ namespace YoggTree
         /// Determines whether or not a token can come after the previous token found in the context's Content.
         /// </summary>
         /// <param name="previousToken">The token found immediately before this one.</param>
+        /// <param name="validatingToken">The token instance on which the validation method is being called.</param>
         /// <returns></returns>
-        public virtual bool CanComeAfter(TokenInstance previousToken)
+        public virtual bool CanComeAfter(TokenInstance previousToken, TokenInstance validatingToken)
         {
             return true;
         }
@@ -149,9 +150,10 @@ namespace YoggTree
         /// <summary>
         /// Determines whether or not a token can come before the next token found in the content's Content.
         /// </summary>
-        /// <param name="nextToken"></param>
+        /// <param name="nextToken">The token found immediately after this one.</param>
+        /// <param name="validatingToken">The token instance on which the validation method is being called.</param>
         /// <returns></returns>
-        public  virtual bool CanComeBefore(TokenInstance nextToken)
+        public virtual bool CanComeBefore(TokenInstance nextToken, TokenInstance validatingToken)
         {
             return true;
         }
