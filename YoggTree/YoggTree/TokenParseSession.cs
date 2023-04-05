@@ -64,8 +64,6 @@ namespace YoggTree
         /// <summary>
         /// Makes a new ParseSession for the given string and token set.
         /// </summary>
-        /// <param name="contents">The string content to parse.</param>
-        /// <param name="tokens">All of the tokens that can be found in the content.</param>
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="Exception"></exception>
         internal TokenParseSession(TokenContextInstance rootContext, TokenContextRegistry contextRegistry)

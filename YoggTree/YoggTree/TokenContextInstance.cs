@@ -116,6 +116,7 @@ namespace YoggTree
         /// <summary>
         /// Internal only constructor that creates a new sub-context that is the child of another context.
         /// </summary>
+        /// <param name="contextDefinition">The definition of the rules for this context instance.</param>
         /// <param name="parent">The context that is the parent of this one.</param>
         /// <param name="start">The token instance that signaled the beginning of this context.</param>
         /// <exception cref="ArgumentNullException"></exception>
