@@ -231,7 +231,7 @@ namespace YoggTree
                     }
                 }
 
-                //check to see if the token defintion allows this token to be valid in its current context, fail if it is not
+                //check to see if the token definition allows this token to be valid in its current context, fail if it is not
                 if (nextToken.TokenDefinition.IsValidInstance(nextToken) == false)
                 {
                     var lineAndCol = nextToken.GetLineAndColumn();
@@ -302,6 +302,12 @@ namespace YoggTree
                 if (previousToken != null) previousToken.NextToken = nextToken;
 
                 previousToken = nextToken;
+            }
+
+            if (EndToken == null)
+            {
+                if (ContextDefinition.Flags.HasFlag(ContextDefinitionFlags.Unbounded) || Parent == null) return;
+                throw new UnexpectedEndOfContentException($"Context {this} had no end token and was not flagged as Unbounded or was not the root of the ParseSession.");
             }
         }
 

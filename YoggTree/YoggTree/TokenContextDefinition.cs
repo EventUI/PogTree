@@ -52,7 +52,7 @@ namespace YoggTree
         /// Creates a new ContextDefinition that is blank once initialized.
         /// </summary>
         /// <param name="name">A name to give the context.</param>
-        /// <param name="flags">Flags to indicate special behavior for this context. Not yet implemented.</param>
+        /// <param name="flags">Flags to indicate special behavior for this context.</param>
         /// <exception cref="ArgumentException"></exception>
         public TokenContextDefinition(string name, ContextDefinitionFlags flags)
         {
@@ -88,7 +88,7 @@ namespace YoggTree
         /// </summary>
         /// <param name="name">A name to give the context.</param>
         /// <param name="validTokens">A set of TokenDefinitions to look for in this context.</param>
-        /// <param name="flags">Flags to indicate special behavior for this context. Not yet implemented.</param>
+        /// <param name="flags">Flags to indicate special behavior for this context.</param>
         /// <exception cref="ArgumentException"></exception>
         public TokenContextDefinition(string name, ContextDefinitionFlags flags, IEnumerable<TokenDefinition> validTokens)
         {
