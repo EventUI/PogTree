@@ -218,13 +218,13 @@ namespace YoggTree
                 //slot for enforcing token syntax rules - if one token cannot come before or after another token without being invalid, this will stop the whole parse operation
                 if (previousToken != null)
                 {
-                    if (nextToken.TokenDefinition.CanComeAfter(previousToken) == false)
+                    if (nextToken.TokenDefinition.CanComeAfter(previousToken, nextToken) == false)
                     {
                         var lineAndCol = nextToken.GetLineAndColumn();
                         throw new TokenSyntaxErrorExecption($"{nextToken} cannot come after {previousToken}.\nLine: {lineAndCol.LineNumber} Column: {lineAndCol.ColumnNumber}", lineAndCol.LineNumber, lineAndCol.ColumnNumber);                       
                     }
 
-                    if (previousToken.TokenDefinition.CanComeBefore(nextToken) == false) 
+                    if (previousToken.TokenDefinition.CanComeBefore(nextToken, previousToken) == false) 
                     {
                         var lineAndCol = nextToken.GetLineAndColumn();
                         throw new TokenSyntaxErrorExecption($"{previousToken} cannot come before {nextToken}.\nLine: {lineAndCol.LineNumber} Column: {lineAndCol.ColumnNumber}", lineAndCol.LineNumber, lineAndCol.ColumnNumber);
