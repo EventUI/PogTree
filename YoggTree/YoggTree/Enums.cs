@@ -61,6 +61,10 @@ namespace YoggTree
         /// <summary>
         /// Default. Not set.
         /// </summary>
-        None = 0
+        None = 0,
+        /// <summary>
+        /// Context does not have an end token and can go to the end of the RootContext's Content.
+        /// </summary>
+        Unbounded = 1,
     }
 }
