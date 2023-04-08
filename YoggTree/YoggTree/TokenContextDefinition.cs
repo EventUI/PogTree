@@ -75,8 +75,9 @@ namespace YoggTree
         /// </summary>
         /// <param name="name">A name to give the context.</param>
         /// <param name="flags">Flags to indicate special behavior for this context.</param>
+        /// <param name="tokenTypes">An IEnumerable of types representing a set of TokenDefinitions to initialize the context with.</param>
         /// <exception cref="ArgumentException"></exception>
-        public TokenContextDefinition(string name, ContextDefinitionFlags flags, List<Type> tokenTypes)
+        public TokenContextDefinition(string name, ContextDefinitionFlags flags, IEnumerable<Type> tokenTypes)
         {
             if (string.IsNullOrWhiteSpace(name) == true) throw new ArgumentException(nameof(name) + " cannot be null or whitespace.");
 
@@ -108,7 +109,7 @@ namespace YoggTree
         }
 
         /// <summary>
-        /// A
+        /// Adds a token to this context's list of tokens to look for. Duplicate tokens will cause an exception to be thrown (pattern AND flags must match for it to be considered a duplicate).
         /// </summary>
         /// <param name="tokenType"></param>
         /// <exception cref="Exception"></exception>
@@ -122,6 +123,10 @@ namespace YoggTree
             _validTokens.TryAdd(tokenType, addedToken);
         }
 
+        /// <summary>
+        /// Adds an IEnumerable of Types as Tokens. Each Type must be of an object derived from TokenDefinition.
+        /// </summary>
+        /// <param name="tokenTypes"></param>
         public void AddTokens(IEnumerable<Type> tokenTypes)
         {
             foreach (var token in tokenTypes)
@@ -130,11 +135,21 @@ namespace YoggTree
             }
         }
 
+        /// <summary>
+        /// Determines whether or not this context uses the given token definition.
+        /// </summary>
+        /// <typeparam name="TToken"></typeparam>
+        /// <returns></returns>
         public bool HasToken<TToken>() where TToken: TokenDefinition
         {
             return HasToken(typeof(TToken));
         }
 
+        /// <summary>
+        /// Determines whether or not this context uses the given token definition.
+        /// </summary>
+        /// <param name="tokenType"></param>
+        /// <returns></returns>
         public bool HasToken(Type tokenType)
         {
             return _validTokens.ContainsKey(tokenType);
@@ -221,6 +236,11 @@ namespace YoggTree
             return false;
         }
 
+        /// <summary>
+        /// Validates that a token that is going to be added to the context is not a duplicate in terms of its Regex.
+        /// </summary>
+        /// <param name="token">The token to check for uniqueness</param>
+        /// <exception cref="ArgumentException"></exception>
         private void ValidateTokenNotDuplicate(TokenDefinition token)
         {
             foreach (var tokenDefinition in _validTokens)

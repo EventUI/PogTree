@@ -137,7 +137,7 @@ namespace YoggTree.Core.Spools
                 return (null, -1);
             }
 
-            startIndex = lastResult.IsEmpty() == true ? 0 : lastResult.StartIndex + lastResult.Length; //we restart the spool AFTER the last usable result so we don't re-spool old results. This should only fire on the first attempt to use the spool.
+            startIndex = lastResult.IsEmpty() == true ? 0 : lastResult.StartIndex + lastResult.Length; //we restart the spool AFTER the last usable result so we don't re-spool old results. This should only resolve to 0 on the first attempt to use the spool.
 
             spool.FillSpool(startIndex, content); //refill the spool from the new index
             spool.CurrentSpoolIndex = 0;
