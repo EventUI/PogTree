@@ -1,11 +1,11 @@
-﻿
-
-using System.Data.Common;
-using YoggTree.Core.Tokens;
-/**Copyright (c) 2023 Richard H Stannard
+﻿/**Copyright (c) 2023 Richard H Stannard
 
 This source code is licensed under the MIT license found in the
 LICENSE file in the root directory of this source tree.*/
+
+using System.Data.Common;
+using YoggTree.Core.Tokens;
+
 namespace YoggTree
 {
     /// <summary>
@@ -90,10 +90,13 @@ namespace YoggTree
     /// </summary>
     public record ChildContextTokenInstance : TokenInstance
     {
+        /// <summary>
+        /// The context that is being represented by this token.
+        /// </summary>
         public TokenContextInstance ChildContext { get; internal init; } = null;
 
         internal ChildContextTokenInstance(TokenContextInstance context, int tokenStartIndex, ReadOnlyMemory<char> value, TokenContextInstance childContext)
-            : base(StandardTokens.Empty, context, tokenStartIndex, value, TokenInstanceType.ContextPlaceholder)
+            : base(EmptyToken.Instance, context, tokenStartIndex, value, TokenInstanceType.ContextPlaceholder)
         {
             ChildContext = childContext;
         }
@@ -110,7 +113,7 @@ namespace YoggTree
     public record TextPlacehodlerTokenInstance : TokenInstance
     { 
         internal TextPlacehodlerTokenInstance(TokenContextInstance context, int tokenStartIndex, ReadOnlyMemory<char> value)
-            :base (StandardTokens.TextContent, context, tokenStartIndex, value, TokenInstanceType.TextPlaceholder)
+            :base (TextContentToken.Instance, context, tokenStartIndex, value, TokenInstanceType.TextPlaceholder)
         {
 
         }

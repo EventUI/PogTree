@@ -10,6 +10,8 @@ namespace YoggTree.Core.Tokens
     /// </summary>
     public sealed class TextContentToken : TokenDefinition
     {
+        public static TextContentToken Instance { get; } = new TextContentToken();
+
         public TextContentToken()
             : base(new Regex(".+"), "<text content>")
         {

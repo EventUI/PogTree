@@ -11,7 +11,7 @@ namespace YoggTree
     /// <summary>
     /// A container for a list of TokenContextDefinitions that can be used to swap out one TokenContextDefinition for another at runtime automatically.
     /// </summary>
-    public sealed class TokenContextRegistry
+    public sealed class TokenContextCollection
     {
         private ConcurrentDictionary<Type, TokenContextDefinition> _contexts = new ConcurrentDictionary<Type, TokenContextDefinition>();
 
@@ -173,18 +173,18 @@ namespace YoggTree
         }
 
         /// <summary>
-        /// Creates a new TokenContextRegistry.
+        /// Creates a new TokenContextCollection.
         /// </summary>
-        public TokenContextRegistry()
+        public TokenContextCollection()
         {
 
         }
 
         /// <summary>
-        /// Creates a clone of an existing TokenContextRegistry.
+        /// Creates a clone of an existing TokenContextCollection.
         /// </summary>
-        /// <param name="other">The TokenContextRegistry to make a clone of.</param>
-        public TokenContextRegistry(TokenContextRegistry other)
+        /// <param name="other">The TokenContextCollection to make a clone of.</param>
+        public TokenContextCollection(TokenContextCollection other)
         {
             if (other == null) throw new ArgumentNullException(nameof(other));
 

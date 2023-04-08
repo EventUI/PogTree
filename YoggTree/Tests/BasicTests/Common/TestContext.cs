@@ -8,14 +8,30 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using YoggTree.Core.Tokens;
 
 namespace YoggTreeTest.Common
 {
     public class TestContext : TokenContextDefinition
     {
         public TestContext()
-            : base("TestContext", StandardTokens.GetAllStandardTokens())
+            : base("TestContext")
         {
+            AddTokens(new List<Type>()
+            {
+                typeof(OpenBracketToken),
+                typeof(CloseBracketToken),
+                typeof(OpenCurlyBraceToken),
+                typeof(CloseCurlyBraceToken),
+                typeof(StringDoubleQuoteToken),
+                typeof(StringGraveToken),
+                typeof(WhitespaceHorizontalToken),
+                typeof(WhitespaceVerticalToken),
+                typeof(BackslashToken),
+                typeof(ForwardslashToken),
+                typeof(CloseParenthesisToken),
+                typeof(OpenParenthesisToken)
+            });
         }
     }
 
@@ -31,9 +47,23 @@ namespace YoggTreeTest.Common
     public class SeekAheadContext : TokenContextDefinition
     {
         public SeekAheadContext()
-            :base("SeekAhead", StandardTokens.GetAllStandardTokens())
+            :base("SeekAhead")
         {
-
+            AddTokens(new List<Type>()
+            {
+                typeof(OpenBracketToken),
+                typeof(CloseBracketToken),
+                typeof(OpenCurlyBraceToken),
+                typeof(CloseCurlyBraceToken),
+                typeof(StringDoubleQuoteToken),
+                typeof(StringGraveToken),
+                typeof(WhitespaceHorizontalToken),
+                typeof(WhitespaceVerticalToken),
+                typeof(BackslashToken),
+                typeof(ForwardslashToken),
+                typeof(CloseParenthesisToken),
+                typeof(OpenParenthesisToken)
+            });
         }
 
         public override bool StartsNewContext(TokenInstance tokenInstance)

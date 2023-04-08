@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using YoggTree.Core.Tokens;
 using YoggTreeTest.Common;
 
 namespace BasicTests.Theories
@@ -60,7 +61,7 @@ namespace BasicTests.Theories
                 Depth = 0,
                 Tokens = new List<TestTokenInstance>()
                 {
-                    new TestTokenInstance(StandardTokens.WhitespaceHorizontal)
+                    new TestTokenInstance(new WhitespaceHorizontalToken())
                     {
                         Contents = contentToParse,
                     }
