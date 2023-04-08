@@ -90,10 +90,13 @@ namespace YoggTree
     /// </summary>
     public record ChildContextTokenInstance : TokenInstance
     {
+        /// <summary>
+        /// The context that is being represented by this token.
+        /// </summary>
         public TokenContextInstance ChildContext { get; internal init; } = null;
 
         internal ChildContextTokenInstance(TokenContextInstance context, int tokenStartIndex, ReadOnlyMemory<char> value, TokenContextInstance childContext)
-            : base(StandardTokens.Empty, context, tokenStartIndex, value, TokenInstanceType.ContextPlaceholder)
+            : base(EmptyToken.Instance, context, tokenStartIndex, value, TokenInstanceType.ContextPlaceholder)
         {
             ChildContext = childContext;
         }
@@ -110,7 +113,7 @@ namespace YoggTree
     public record TextPlacehodlerTokenInstance : TokenInstance
     { 
         internal TextPlacehodlerTokenInstance(TokenContextInstance context, int tokenStartIndex, ReadOnlyMemory<char> value)
-            :base (StandardTokens.TextContent, context, tokenStartIndex, value, TokenInstanceType.TextPlaceholder)
+            :base (TextContentToken.Instance, context, tokenStartIndex, value, TokenInstanceType.TextPlaceholder)
         {
 
         }

@@ -10,12 +10,12 @@ namespace YoggTree
     /// </summary>
     public class TokenParser
     {
-        private TokenContextRegistry _contextRegistry = null;
+        private TokenContextCollection _contextRegistry = null;
 
         /// <summary>
         /// A registry of tokens to replace at runtime.
         /// </summary>
-        public TokenContextRegistry ContextRegistry
+        public TokenContextCollection ContextRegistry
         {
             get
             {
@@ -24,19 +24,19 @@ namespace YoggTree
         }
 
         /// <summary>
-        /// creates a new TokenParser with a blank TokenContextRegistry.
+        /// creates a new TokenParser with a blank TokenContextCollection.
         /// </summary>
         public TokenParser()
         {
-            _contextRegistry = new TokenContextRegistry();
+            _contextRegistry = new TokenContextCollection();
         }
 
         /// <summary>
-        /// Creates a new instance of the TokenParser with the provided TokenContextRegistry.
+        /// Creates a new instance of the TokenParser with the provided TokenContextCollection.
         /// </summary>
         /// <param name="contextRegistry">The registry to use for all content parsed by this object.</param>
         /// <exception cref="ArgumentNullException"></exception>
-        public TokenParser(TokenContextRegistry contextRegistry)
+        public TokenParser(TokenContextCollection contextRegistry)
         {
             if (contextRegistry == null) throw new ArgumentNullException(nameof(contextRegistry));
             _contextRegistry = contextRegistry;
@@ -59,7 +59,7 @@ namespace YoggTree
                 }
             }
 
-            var parseSession = new TokenParseSession(new TokenContextInstance(contextDefition, contents), new TokenContextRegistry(_contextRegistry));
+            var parseSession = new TokenParseSession(new TokenContextInstance(contextDefition, contents), new TokenContextCollection(_contextRegistry));
             parseSession.RootContext.WalkContent();
 
             return parseSession.RootContext;

@@ -1,8 +1,12 @@
-﻿/**Copyright (c) 2023 Richard H Stannard
+﻿
+
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Collections.Immutable;
+/**Copyright (c) 2023 Richard H Stannard
 
 This source code is licensed under the MIT license found in the
 LICENSE file in the root directory of this source tree.*/
-
 namespace YoggTree
 {
     /// <summary>
@@ -11,8 +15,7 @@ namespace YoggTree
     public abstract class TokenContextDefinition
     {
         private Guid _id = Guid.NewGuid();
-        private IReadOnlyList<TokenDefinition> _validTokensRO = null;
-        private List<TokenDefinition> _validTokens = new List<TokenDefinition>();
+        private ConcurrentDictionary<Type, TokenDefinition> _validTokens = new ConcurrentDictionary<Type, TokenDefinition>();
         private ContextDefinitionFlags _flags = ContextDefinitionFlags.None;
 
         /// <summary>
@@ -33,7 +36,13 @@ namespace YoggTree
         /// <summary>
         /// All of the token definitions that should be processed in this context.
         /// </summary>
-        public IReadOnlyList<TokenDefinition> ValidTokens { get { return _validTokensRO; } }
+        public IReadOnlyCollection<TokenDefinition> ValidTokens 
+        { 
+            get 
+            {
+                return (IReadOnlyCollection<TokenDefinition>)_validTokens.Values;
+            } 
+        }
 
         /// <summary>
         /// Creates a new ContextDefinition that is blank once initialized.
@@ -45,7 +54,6 @@ namespace YoggTree
             if (string.IsNullOrWhiteSpace(name) == true) throw new ArgumentException(nameof(name) + " cannot be null or whitespace.");
 
             Name = name;
-            _validTokensRO = _validTokens.AsReadOnly();
         }
 
         /// <summary>
@@ -59,147 +67,100 @@ namespace YoggTree
             if (string.IsNullOrWhiteSpace(name) == true) throw new ArgumentException(nameof(name) + " cannot be null or whitespace.");
 
             Name = name;
-            _validTokensRO = _validTokens.AsReadOnly();
             _flags = flags;
         }
 
-
         /// <summary>
-        /// Creates a new ContextDefinition that is initialized with a set of tokens to look for.
+        /// Creates a new ContextDefinition that is blank once initialized.
         /// </summary>
         /// <param name="name">A name to give the context.</param>
-        /// <param name="validTokens">A set of TokenDefinitions to look for in this context.</param>
-        /// <exception cref="ArgumentException"></exception>
-        public TokenContextDefinition(string name, IEnumerable<TokenDefinition> validTokens)
-        {
-            if (string.IsNullOrWhiteSpace(name) == true) throw new ArgumentException(nameof(name) + " cannot be null or whitespace.");
-            Name = name;
-
-            _validTokensRO = _validTokens.AsReadOnly();
-
-            if (validTokens != null)
-            {
-                AddTokens(validTokens);
-            }
-        }
-
-        /// <summary>
-        /// Creates a new ContextDefinition that is initialized with a set of tokens to look for.
-        /// </summary>
-        /// <param name="name">A name to give the context.</param>
-        /// <param name="validTokens">A set of TokenDefinitions to look for in this context.</param>
         /// <param name="flags">Flags to indicate special behavior for this context.</param>
         /// <exception cref="ArgumentException"></exception>
-        public TokenContextDefinition(string name, ContextDefinitionFlags flags, IEnumerable<TokenDefinition> validTokens)
+        public TokenContextDefinition(string name, ContextDefinitionFlags flags, List<Type> tokenTypes)
         {
             if (string.IsNullOrWhiteSpace(name) == true) throw new ArgumentException(nameof(name) + " cannot be null or whitespace.");
-            Name = name;
 
-            _validTokensRO = _validTokens.AsReadOnly();
+            Name = name;
             _flags = flags;
 
-            if (validTokens != null)
-            {
-                AddTokens(validTokens);
-            }
+            AddTokens(tokenTypes);
         }
 
         /// <summary>
         /// Adds a token to this context's list of tokens to look for. Duplicate tokens will cause an exception to be thrown (pattern AND flags must match for it to be considered a duplicate).
         /// </summary>
-        /// <param name="token">The token definition to add.</param>
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="ArgumentException"></exception>
-        public void AddToken(TokenDefinition token)
+        public void AddToken<TToken>() where TToken : TokenDefinition, new()
         {
-            if (token == null) throw new ArgumentNullException(nameof(token));
+            var token = TokenCollection.AddToken<TToken>();
+            if (token == null) throw new Exception($"Failed to get or add Token ({typeof(TToken).Name})");
 
             foreach (var tokenDefinition in _validTokens)
             {
-                if (tokenDefinition.Token.ToString() == token.Token.ToString() && tokenDefinition.Token.Options == token.Token.Options)
+                if (tokenDefinition.Value.Token.ToString() == token.Token.ToString() && tokenDefinition.Value.Token.Options == token.Token.Options)
                 {
-                    throw new ArgumentException("A token with the Regex of " + tokenDefinition.Token.ToString() + " already exists in this context.");
+                    throw new ArgumentException("A token with the Regex of " + tokenDefinition.Value.Token.ToString() + " already exists in this context.");
                 }
             }
 
-            _validTokens.Add(token);
+            _validTokens.TryAdd(typeof(TToken), token);
         }
 
         /// <summary>
-        /// Adds a set of tokens to this context's list of tokens to look for. Duplicate tokens will cause an exception to be thrown (pattern AND flags must match for it to be considered a duplicate).
+        /// A
         /// </summary>
-        /// <param name="tokens">The token definitions to add.</param>
-        /// <exception cref="ArgumentException"></exception>
-        public void AddTokens(IEnumerable<TokenDefinition> tokens)
+        /// <param name="tokenType"></param>
+        /// <exception cref="Exception"></exception>
+        public void AddToken(Type tokenType)
         {
-            Dictionary<string, TokenDefinition> allRegexes = new Dictionary<string, TokenDefinition>();
-            foreach (var token in ValidTokens)
+            var addedToken = TokenCollection.AddToken(tokenType);
+            if (tokenType == null) throw new Exception($"Failed to get or add Token ({tokenType.Name})");
+
+            ValidateTokenNotDuplicate(addedToken);
+
+            _validTokens.TryAdd(tokenType, addedToken);
+        }
+
+        public void AddTokens(IEnumerable<Type> tokenTypes)
+        {
+            foreach (var token in tokenTypes)
             {
-                allRegexes.Add($"\"{token.Token.ToString()}\"::\"{(int)token.Token.Options}", token);
+                AddToken(token);
             }
+        }
 
-            foreach (var token in tokens)
-            {
-                if (token == null) continue;
-                string tokenKey = $"\"{token.Token.ToString()}\"::\"{(int)token.Token.Options}";
+        public bool HasToken<TToken>() where TToken: TokenDefinition
+        {
+            return HasToken(typeof(TToken));
+        }
 
-                if (allRegexes.TryGetValue(tokenKey, out TokenDefinition match) == true)
-                {
-                    if (match.Token.Options == token.Token.Options)
-                    {
-                        throw new ArgumentException("A token with the Regex of " + token.Token.ToString() + " already exists in this context.");
-                    }
-                }
+        public bool HasToken(Type tokenType)
+        {
+            return _validTokens.ContainsKey(tokenType);
+        }
 
-                _validTokens.Add(token);
-                allRegexes.Add(tokenKey, token);
-            }
+        /// <summary>
+        /// Adds a token to this context's list of tokens to look for. Duplicate tokens will cause an exception to be thrown (pattern AND flags must match for it to be considered a duplicate).
+        /// </summary>
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="ArgumentException"></exception>
+        public void AddToken<TToken>(Func<TToken> factory) where TToken : TokenDefinition
+        {
+            var token = TokenCollection.AddToken<TToken>(factory);
+            if (token == null) throw new Exception($"Failed to get or add Token ({typeof(TToken).Name})");
+
+            ValidateTokenNotDuplicate(token);
+
+            _validTokens.TryAdd(typeof(TToken), token);
         }
 
         /// <summary>
         /// Removes a token definition from this context.
         /// </summary>
-        /// <param name="token">The token definition to remove.</param>
-        public void RemoveToken(TokenDefinition token)
+        public void RemoveToken<TToken>() where TToken: TokenDefinition
         {
-            if (_validTokens.Contains(token) == true)
-            {
-                _validTokens.Remove(token);
-            }
-        }
-
-        /// <summary>
-        /// Removes a token definition from this context based on its ID.
-        /// </summary>
-        /// <param name="tokenID">The ID of the token definition to remove.</param>
-        public void RemoveToken(Guid tokenID)
-        {
-            for (int x = 0; x < _validTokens.Count; x++)
-            {
-                var curToken = _validTokens[x];
-                if (curToken.ID == tokenID)
-                {
-                    _validTokens.RemoveAt(x);
-                    break;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Removes a token definition from this context based on the matching of the token definition's Regex pattern and flags.
-        /// </summary>
-        /// <param name="regex">The Regex to find and remove from this context.</param>
-        public void RemoveToken(Regex regex)
-        {
-            for (int x = 0; x < _validTokens.Count; x++)
-            {
-                var curToken = _validTokens[x];
-                if (curToken.Token.ToString() == regex.ToString() && curToken.Token.Options == regex.Options)
-                {
-                    _validTokens.RemoveAt(x);
-                    break;
-                }
-            }
+            _validTokens.TryRemove(typeof(TToken), out _);
         }
 
         /// <summary>
@@ -258,6 +219,17 @@ namespace YoggTree
             }
 
             return false;
-        }       
+        }
+
+        private void ValidateTokenNotDuplicate(TokenDefinition token)
+        {
+            foreach (var tokenDefinition in _validTokens)
+            {
+                if (tokenDefinition.Value.Token.ToString() == token.Token.ToString() && tokenDefinition.Value.Token.Options == token.Token.Options)
+                {
+                    throw new ArgumentException("A token with the Regex of " + tokenDefinition.Value.Token.ToString() + " already exists in this context.");
+                }
+            }
+        }
     }
 }

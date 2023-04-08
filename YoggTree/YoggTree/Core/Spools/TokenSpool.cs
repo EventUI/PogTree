@@ -23,7 +23,12 @@ namespace YoggTree.Core.Spools
         /// <summary>
         /// The current index of the spool in the ResultSpool array. This is incremented every time a value is taken from the spool and is determined to be the next result in the content string relative to all the other tokens in a TokenContextInstance.
         /// </summary>
-        public int CurrentIndex { get; set; } = 0;
+        public int CurrentSpoolIndex { get; set; } = 0;
+
+        /// <summary>
+        /// The index the TokenSpool was at the last time it pulled out a token.
+        /// </summary>
+        public int CurrentContentIndex { get; set; } = 0;
 
         /// <summary>
         /// The length of the ResultSpool.
@@ -65,27 +70,78 @@ namespace YoggTree.Core.Spools
         /// <param name="startIndex">The starting index in the content to search for matches from.</param>
         /// <param name="content">The content to search for matches in using the TokenSpool's TokenDefinition's Regex.</param>
         /// <returns></returns>
-        internal static SpooledResult GetNextResult(this TokenSpool spool, int startIndex, ReadOnlyMemory<char> content)
+        internal static (SpooledResult Spool, int CurrentSpoolIndex) GetNextResult(this TokenSpool spool, int startIndex, ReadOnlyMemory<char> content)
         {
-            if (spool.EndOfContent == true) return spool.ResultSpool[0]; //the last spooling operation ran out of content - no more work to do. (This assumes we're getting the same content over and over and not different spans of chars.)
+            SpooledResult lastResult = null;
+            int lastIndex = 0;
 
-            SpooledResult lastResult = (spool.CurrentIndex == 0) ? null : spool.ResultSpool[spool.CurrentIndex - 1]; //get the previously used result and use it as the starting point to begin spooling again should CurrentIndex == SpoolSize.
-            for (int x = spool.CurrentIndex; x < spool.SpoolSize; x++)
+            if (startIndex >= spool.CurrentContentIndex) //if we're looking forwards down the spool, start looking at all the next results and find the one before the one that is after the start index.
             {
-                var curSpool = spool.ResultSpool[x];
-                if (curSpool == null) break;
+                if (spool.EndOfContent == true) return (spool.ResultSpool[spool.CurrentSpoolIndex], -1); //the last spooling operation ran out of content - no more work to do. (This assumes we're getting the same content over and over and not different spans of chars.)
 
-                lastResult = curSpool;
-                if (curSpool.IsEmpty() == false && curSpool.IsAfter(startIndex) == true)
+                lastResult = (spool.CurrentSpoolIndex == 0) ? null : spool.ResultSpool[spool.CurrentSpoolIndex - 1]; //get the previously used result and use it as the starting point to begin spooling again should CurrentSpoolIndex == SpoolSize.
+                for (int x = spool.CurrentSpoolIndex; x < spool.SpoolSize; x++)
                 {
-                    return curSpool;
+                    var curSpool = spool.ResultSpool[x];
+                    if (curSpool == null) break;
+
+                    lastIndex = curSpool.StartIndex + curSpool.Length;
+
+                    lastResult = curSpool;
+                    if (curSpool.IsEmpty() == false && curSpool.IsAfter(startIndex) == true)
+                    {
+                        return (curSpool, x);
+                    }
                 }
             }
+            else //if we're looking backwards back up the spool, start at the beginning of the spool to see if any of the spooled results straddle the index we're looking for
+            {
+                int x = 0;
+                SpooledResult previousResult = null;
+                while (x < spool.SpoolSize)
+                {
+                    var curSpool = spool.ResultSpool[x];
+                    if (curSpool == null || curSpool.IsEmpty()) break;
 
-            startIndex = lastResult == null ? 0 : lastResult.StartIndex + lastResult.Length; //we restart the spool AFTER the last usable result so we don't re-spool old results.
+                    if (curSpool.IsBefore(startIndex) == true)
+                    {
+                        previousResult = curSpool;
+                    }
+                    else if (previousResult.IsEmpty() == false && curSpool.IsAfter(startIndex) == true) //we need to have a result both before AND after the target index - if we have nothing before it, we could be too far down the content to find what we're looking for. If nothing comes after it, we need to see forwards.
+                    {
+                        lastResult = curSpool;
+                        break;
+                    }
+
+                    x++;
+                }
+
+                if (lastResult == null) //not in range, spool starting at the start index and look forwards from there.
+                {
+                    spool.FillSpool(startIndex, content);
+                    spool.CurrentSpoolIndex = 0;
+                    spool.EndOfContent = false;
+                    spool.CurrentContentIndex = startIndex;
+
+                    return spool.GetNextResult(startIndex, content);
+                }
+                else
+                {
+                    return (lastResult, x);
+                }                
+            }
+
+            if (lastIndex < startIndex && lastResult.IsEmpty()) //we didn't find anything after the starting index, we're done
+            {
+                spool.EndOfContent = true;
+                return (null, -1);
+            }
+
+            startIndex = lastResult.IsEmpty() == true ? 0 : lastResult.StartIndex + lastResult.Length; //we restart the spool AFTER the last usable result so we don't re-spool old results. This should only fire on the first attempt to use the spool.
 
             spool.FillSpool(startIndex, content); //refill the spool from the new index
-            spool.CurrentIndex = 0;
+            spool.CurrentSpoolIndex = 0;
+            spool.CurrentContentIndex = startIndex;
 
             //keep recursively going in this loop until we find a result or run out of results.
             //NOTE: Possible problem and a fix for later - this COULD cause a stack overflow should the number of calls (numRegexResults/SpoolSize) exceed the amount that can fit on the stack. An iterative solution is needed instead if that happens.

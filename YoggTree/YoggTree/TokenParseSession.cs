@@ -15,7 +15,7 @@ namespace YoggTree
         private ReadOnlyMemory<char> _contents = ReadOnlyMemory<char>.Empty;
         private Dictionary<Guid, TokenSpool> _tokenSpools = new Dictionary<Guid, TokenSpool>();
         private TokenContextInstance _rootContext = null;
-        private TokenContextRegistry _contextRegistry = null;
+        private TokenContextCollection _contextRegistry = null;
 
         /// <summary>
         /// All of the TokenSpools contained within the session.
@@ -53,7 +53,7 @@ namespace YoggTree
         /// <summary>
         /// The registry of replacement contexts to use during the parse operation.
         /// </summary>
-        public TokenContextRegistry ContextRegistry
+        public TokenContextCollection ContextRegistry
         {
             get
             {
@@ -66,7 +66,7 @@ namespace YoggTree
         /// </summary>
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="Exception"></exception>
-        internal TokenParseSession(TokenContextInstance rootContext, TokenContextRegistry contextRegistry)
+        internal TokenParseSession(TokenContextInstance rootContext, TokenContextCollection contextRegistry)
         {
             if (rootContext == null) throw new ArgumentNullException(nameof(rootContext));
             if (contextRegistry == null) throw new ArgumentNullException(nameof(contextRegistry));
