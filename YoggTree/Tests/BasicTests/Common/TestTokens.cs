@@ -26,6 +26,8 @@ namespace YoggTreeTest.Common
 
         public static TestTokenInstance CloseParens = new TestTokenInstance(new CloseParenthesisToken()) { Contents = ")" };
 
+        public static TestTokenInstance SparseCloseBracketToken = new TestTokenInstance(new SparseCloseBracketToken(), "]", TokenInstanceType.RegexResult);
+
         public static TestTokenInstance HorizontalWhitespace(string whitespace)
         {
             return new TestTokenInstance(new WhitespaceHorizontalToken(), whitespace, TokenInstanceType.RegexResult);
@@ -47,6 +49,41 @@ namespace YoggTreeTest.Common
             {
                 TestContextInstance = childContext
             };
+        }
+
+        public static TestTokenInstance SparseOpenBracket<TChildContext>() where TChildContext : TokenContextDefinition, new()
+        {
+            return new TestTokenInstance(new SparseOpenBracketToken<TChildContext>(), "[", TokenInstanceType.RegexResult);
+        }
+    }
+
+    public class SparseOpenBracketToken<TChildContext> : TokenDefinition where TChildContext : TokenContextDefinition, new()
+    {
+        public SparseOpenBracketToken()
+            : base(new System.Text.RegularExpressions.Regex("\\["), "[", TokenDefinitionFlags.ContextStarter, "SparseBracket")
+        {
+
+        }
+
+        public override TokenContextDefinition GetNewContextDefinition(TokenInstance start)
+        {
+            var child = new TChildContext();
+
+            child.RemoveToken<OpenBracketToken>();
+            child.RemoveToken<CloseBracketToken>();
+            child.AddToken<SparseOpenBracketToken<TChildContext>>();
+            child.AddToken<SparseCloseBracketToken>();
+
+            return child;
+        }
+    }
+
+    public class SparseCloseBracketToken : TokenDefinition
+    {
+        public SparseCloseBracketToken()
+            : base(new System.Text.RegularExpressions.Regex("\\]"), "]", TokenDefinitionFlags.ContextEnder, "SparseBracket")
+        {
+
         }
     }
 }

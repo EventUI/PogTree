@@ -17,6 +17,17 @@ namespace YoggTreeTest.Common
         public TestContext()
             : base("TestContext")
         {
+            AddTokens();
+        }
+
+        protected TestContext(string name) 
+            : base(name)
+        {
+            AddTokens();
+        }
+
+        private void AddTokens()
+        {
             AddTokens(new List<Type>()
             {
                 typeof(OpenBracketToken),
@@ -44,26 +55,11 @@ namespace YoggTreeTest.Common
         }
     }
 
-    public class SeekAheadContext : TokenContextDefinition
+    public class SeekAheadContext : TestContext
     {
         public SeekAheadContext()
             :base("SeekAhead")
         {
-            AddTokens(new List<Type>()
-            {
-                typeof(OpenBracketToken),
-                typeof(CloseBracketToken),
-                typeof(OpenCurlyBraceToken),
-                typeof(CloseCurlyBraceToken),
-                typeof(StringDoubleQuoteToken),
-                typeof(StringGraveToken),
-                typeof(WhitespaceHorizontalToken),
-                typeof(WhitespaceVerticalToken),
-                typeof(BackslashToken),
-                typeof(ForwardslashToken),
-                typeof(CloseParenthesisToken),
-                typeof(OpenParenthesisToken)
-            });
         }
 
         public override bool StartsNewContext(TokenInstance tokenInstance)
@@ -76,6 +72,19 @@ namespace YoggTreeTest.Common
             }
 
             return base.StartsNewContext(tokenInstance);
+        }
+    }
+
+    public class SparseContext<TChildContext> : TokenContextDefinition where TChildContext : TokenContextDefinition, new()
+    {
+        public SparseContext()
+            : base("SparseContext")
+        {
+            AddTokens(new List<Type>()
+            {
+                typeof(SparseOpenBracketToken<TChildContext>),
+                typeof(SparseCloseBracketToken),
+            });
         }
     }
 }

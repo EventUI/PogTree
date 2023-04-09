@@ -41,15 +41,6 @@ namespace YoggTreeTest.Specs
             YoggTreeTestHelper.CompareSeekResults(testParseArgs);
         }
 
-        [Theory(DisplayName = "Token lazy seeking tests.")]
-        [ClassData(typeof(Theory_Basic_Parse<SeekAheadContext>))]
-        public void TestLazySeeking<T>(TestParseArgs<T> testParseArgs) where T : TokenContextDefinition, new()
-        {
-            _output.WriteLine($"Testing: {testParseArgs.TestName}");
-
-            YoggTreeTestHelper.CompareParseResults(testParseArgs);
-        }
-
         [Theory(DisplayName = "Token list matching tests.")]
         [ClassData(typeof(Theory_Basic_Parse<TestContext>))]
         public void MatchTokenList<T>(TestParseArgs<T> testParseArgs) where T : TokenContextDefinition, new()
@@ -57,6 +48,15 @@ namespace YoggTreeTest.Specs
             _output.WriteLine($"Testing: {testParseArgs.TestName}");
 
             YoggTreeTestHelper.ValidateSeekResults(testParseArgs);
+        }
+
+        [Theory(DisplayName = "Token lazy seeking tests.")]
+        [ClassData(typeof(Theory_Basic_Parse<SeekAheadContext>))]
+        public void TestLazySeeking<T>(TestParseArgs<T> testParseArgs) where T : TokenContextDefinition, new()
+        {
+            _output.WriteLine($"Testing: {testParseArgs.TestName}");
+
+            YoggTreeTestHelper.CompareParseResults(testParseArgs);
         }
 
         [Theory(DisplayName = "Token list matching lazy seeking behavior tests.")]
@@ -67,5 +67,15 @@ namespace YoggTreeTest.Specs
 
             YoggTreeTestHelper.ValidateSeekResults(testParseArgs);
         }
+
+        [Theory(DisplayName = "Lazy token seek tests.")]
+        [ClassData(typeof(Theory_Basic_Parse<SeekAheadContext>))]
+        public void LazyTokenSeekTests<T>(TestParseArgs<T> testParseArgs) where T : TokenContextDefinition, new()
+        {
+            _output.WriteLine($"Testing: {testParseArgs.TestName}");
+
+            YoggTreeTestHelper.CompareSeekResults(testParseArgs);
+        }
+
     }
 }

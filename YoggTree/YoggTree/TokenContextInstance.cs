@@ -159,24 +159,29 @@ namespace YoggTree
             if (nextToken != null) //we already discovered the next token in the content string
             {
                 //if we have a token that has a different context, is not included in a context, and is a regular regex result, we may have a different token be the "true" next token and the next token we already have points to a location past the "true" next token, so we go back and look for it
-                if ((nextToken.Context != this || ContextDefinition.HasToken(previousToken.GetType()) == false) && nextToken.TokenInstanceType == TokenInstanceType.RegexResult)
+                if (nextToken.Context != this || (nextToken.TokenInstanceType == TokenInstanceType.RegexResult && ContextDefinition.HasToken(nextToken.TokenDefinition.GetType()) == false))
                 {
-                    contextualStart = nextToken.GetContextualStartIndex(this);
+                    contextualStart = nextToken.StartIndex + nextToken.Context.AbsoluteOffset;
                     if (contextualStart < 0) contextualStart = 0;
 
                     bool foundEarlierToken = false;
-                    var potentialNextToken = GetNextToken(previousToken.EndIndex);
-                    if (potentialNextToken?.StartIndex + potentialNextToken?.Contents.Length <= contextualStart) //if this token starts before the contextually adjusted start index of the next token AND doesn't overlap that token, its the true next token
+                    var potentialNextToken = GetNextToken(previousToken.EndIndex + previousToken.Context.AbsoluteOffset);
+                    if (potentialNextToken != null)
                     {
-                        potentialNextToken.NextToken = nextToken;
-                        nextToken = potentialNextToken;
+                        if (potentialNextToken.StartIndex + AbsoluteOffset < contextualStart) //if this token starts before the contextually adjusted start index of the next token AND doesn't overlap that token, its the true next token
+                        {
+                            potentialNextToken.NextToken = nextToken;
+                            nextToken = potentialNextToken;
 
-                        foundEarlierToken = true;
+                            contextualStart = nextToken.StartIndex + nextToken.Context.AbsoluteOffset;
+                            foundEarlierToken = true;
+                        }
                     }
 
                     if (setContext == true && foundEarlierToken == false) //if setting the context, we need to shift the start index of the token to be relative to its current context - but only if this token was already the true next token
                     {
                         nextToken.Context = this;
+                        contextualStart = Math.Abs(nextToken.Context.AbsoluteOffset - nextToken.StartIndex);
                         nextToken.StartIndex = contextualStart;
                         nextToken.EndIndex = contextualStart + nextToken.Contents.Length;
 
@@ -189,7 +194,7 @@ namespace YoggTree
                     {
                         if (nextToken.Context != this)
                         {
-                            contextualStart = nextToken.GetContextualStartIndex(this);
+                            contextualStart = Math.Abs(nextToken.Context.AbsoluteOffset - nextToken.StartIndex);
                             nextToken.Context = this;
                             nextToken.StartIndex = contextualStart;
                             nextToken.EndIndex = contextualStart + nextToken.Contents.Length;
@@ -201,22 +206,22 @@ namespace YoggTree
             }
             else //need to get another token from the regex spools
             {
-                nextToken = GetNextToken(previousToken == null ? 0 : previousToken.EndIndex);
+                nextToken = GetNextToken(previousToken == null ? 0 : previousToken.EndIndex + previousToken.Context.AbsoluteOffset);
                 if (nextToken != null && nextToken.StartIndex == previousToken?.StartIndex && nextToken.Contents.Length == previousToken?.Contents.Length)
                 {
                     nextToken = null;
                 }
 
-                contextualStart = (nextToken == null) ? 0 : nextToken.StartIndex;
+                contextualStart = (nextToken == null) ? 0 : nextToken.StartIndex + nextToken.Context.AbsoluteOffset;
             }
 
             //get the start and end of the last two tokens to see if there is a gap between them. If there is, we need to make a TextContentToken token to fill in the gap.
-            int textContentEndIndex = (nextToken == null) ? Contents.Length : contextualStart;
-            int textContentStartIndex = (previousToken == null) ? 0 : previousToken.EndIndex;
+            int textContentEndIndex = (nextToken == null) ? Contents.Length + AbsoluteOffset : contextualStart;
+            int textContentStartIndex = (previousToken == null) ? 0 : previousToken.EndIndex + previousToken.Context.AbsoluteOffset;
 
             if (textContentStartIndex < textContentEndIndex) //there's a gap - make a text placeholder token
             {
-                var textContentToken = new TextPlacehodlerTokenInstance(this, textContentStartIndex, Contents.Slice(textContentStartIndex, textContentEndIndex - textContentStartIndex));
+                var textContentToken = new TextPlacehodlerTokenInstance(this, textContentStartIndex - AbsoluteOffset, ParseSession.Contents.Slice(textContentStartIndex, textContentEndIndex - textContentStartIndex));
 
                 if (previousToken != null) previousToken.NextToken = textContentToken;
                 textContentToken.PreviousToken = previousToken;
@@ -365,8 +370,8 @@ namespace YoggTree
                 }
 
                 //get the next instance of the token in the content string for the entire parse session.
-                (SpooledResult SpooledResult, int Index) nextInstance = spool.GetNextResult(startingIndex + _absoluteOffset, ParseSession.Contents);
-                if (nextInstance.SpooledResult.IsEmpty() == true || nextInstance.SpooledResult.StartIndex < startingIndex + _absoluteOffset) continue;
+                (SpooledResult SpooledResult, int Index) nextInstance = spool.GetNextResult(startingIndex, ParseSession.Contents);
+                if (nextInstance.SpooledResult.IsEmpty() == true || nextInstance.SpooledResult.StartIndex < startingIndex) continue;
 
                 if (firstResult.SpooledResult == null) //first thing we found, set it as the earliest result
                 {
@@ -391,7 +396,7 @@ namespace YoggTree
             if (firstResult.SpooledResult.IsEmpty() == true) return null; //no more results. All done.
 
             //a result was found - advance the index of the spool so it doesn't redundantly search itself for the next result. Note this will always be incremented by one as the loop above only takes the first token from each spool to find the earliest one.
-            firstSpool.CurrentSpoolIndex = firstResult.Index + 1;
+            firstSpool.CurrentSpoolIndex = firstResult.Index;
             firstSpool.CurrentContentIndex = firstResult.SpooledResult.StartIndex + firstResult.SpooledResult.Length;
 
             return new TokenInstance(firstSpool.Token, this, firstResult.SpooledResult.StartIndex - _absoluteOffset, ParseSession.Contents.Slice(firstResult.SpooledResult.StartIndex, firstResult.SpooledResult.Length), TokenInstanceType.RegexResult);
