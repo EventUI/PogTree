@@ -73,7 +73,6 @@ namespace YoggTree.Core.Spools
         internal static (SpooledResult Spool, int CurrentSpoolIndex) GetNextResult(this TokenSpool spool, int startIndex, ReadOnlyMemory<char> content)
         {
             SpooledResult lastResult = null;
-            int lastIndex = 0;
 
             if (startIndex >= spool.CurrentContentIndex) //if we're looking forwards down the spool, start looking at all the next results and find the one before the one that is after the start index.
             {
@@ -84,8 +83,6 @@ namespace YoggTree.Core.Spools
                 {
                     var curSpool = spool.ResultSpool[x];
                     if (curSpool == null) break;
-
-                    lastIndex = curSpool.StartIndex + curSpool.Length;
 
                     lastResult = curSpool;
                     if (curSpool.IsEmpty() == false && curSpool.IsAfter(startIndex) == true)
@@ -131,15 +128,9 @@ namespace YoggTree.Core.Spools
                 }                
             }
 
-            if (lastIndex < startIndex && lastResult.IsEmpty()) //we didn't find anything after the starting index, we're done
-            {
-                spool.EndOfContent = true;
-                return (null, -1);
-            }
+            int newStartIndex = lastResult.IsEmpty() == true ? 0 : lastResult.StartIndex + lastResult.Length; //we restart the spool AFTER the last usable result so we don't re-spool old results. This should only resolve to 0 on the first attempt to use the spool.
 
-            startIndex = lastResult.IsEmpty() == true ? 0 : lastResult.StartIndex + lastResult.Length; //we restart the spool AFTER the last usable result so we don't re-spool old results. This should only resolve to 0 on the first attempt to use the spool.
-
-            spool.FillSpool(startIndex, content); //refill the spool from the new index
+            spool.FillSpool(newStartIndex, content); //refill the spool from the new index
             spool.CurrentSpoolIndex = 0;
             spool.CurrentContentIndex = startIndex;
 
