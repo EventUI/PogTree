@@ -191,7 +191,7 @@ namespace YoggTree
                         foundEarlierToken = true;
                     }
 
-                    if (setContext == true && foundEarlierToken == false) //if setting the context, we need to shift the start index of the token to be relative to its current context - but only if this token was already the true next token
+                    if (setContext == true && foundEarlierToken == false) //if setting the context, we need to shift the start index of the token to be relative to its current context
                     {
                         if (Tokens.Count > 0)
                         {

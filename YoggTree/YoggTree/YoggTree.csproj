@@ -8,6 +8,9 @@
     <RootNamespace>YoggTree</RootNamespace>
     <IncludeSymbols>True</IncludeSymbols>
 	<GenerateDocumentationFile>true</GenerateDocumentationFile>
+	<Company>Richard Stannard</Company>
+	<Authors>Richard Stannard</Authors>
+	<Title>YoggTree</Title>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

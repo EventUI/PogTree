@@ -148,7 +148,7 @@ namespace YoggTree
         /// <summary>
         /// Determines whether or not this context uses the given token definition.
         /// </summary>
-        /// <param name="tokenDefinitionType"></param>
+        /// <param name="tokenDefinitionType">The type of a TokenDefinition.</param>
         /// <returns></returns>
         public bool HasToken(Type tokenDefinitionType)
         {
