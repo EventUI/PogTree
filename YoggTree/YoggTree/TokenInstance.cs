@@ -179,6 +179,8 @@ namespace YoggTree
         public static TokenInstance GetNextToken(this TokenInstance instance)
         {
             if (instance == null) return null;
+            if (instance.NextToken != null && instance.NextToken.Context == instance.Context) return instance.NextToken;
+
             return instance.Context.GetNextTokenInstance(instance, false);
         }
 
