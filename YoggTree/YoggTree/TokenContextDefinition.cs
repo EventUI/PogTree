@@ -148,11 +148,23 @@ namespace YoggTree
         /// <summary>
         /// Determines whether or not this context uses the given token definition.
         /// </summary>
-        /// <param name="tokenType"></param>
+        /// <param name="tokenDefinitionType">The type of a TokenDefinition.</param>
         /// <returns></returns>
-        public bool HasToken(Type tokenType)
+        public bool HasToken(Type tokenDefinitionType)
         {
-            return _validTokens.ContainsKey(tokenType);
+            return _validTokens.ContainsKey(tokenDefinitionType);
+        }
+
+        /// <summary>
+        /// Determines whether or not the definition of the token instance is included in this context.
+        /// </summary>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        public bool HasToken(TokenInstance token)
+        {
+            if (token == null) return false;
+
+            return HasToken(token.TokenDefinition.GetType());
         }
 
         /// <summary>

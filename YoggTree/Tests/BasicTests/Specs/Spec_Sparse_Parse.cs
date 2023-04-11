@@ -1,4 +1,9 @@
-﻿using BasicTests.Theories;
+﻿/**Copyright (c) 2023 Richard H Stannard
+
+This source code is licensed under the MIT license found in the
+LICENSE file in the root directory of this source tree.*/
+
+using BasicTests.Theories;
 using Microsoft.VisualStudio.TestPlatform.Utilities;
 using System;
 using System.Collections.Generic;
@@ -19,9 +24,18 @@ namespace YoggTreeTest.Specs
             _output = output;
         }
 
-        [Theory(DisplayName = "Basic parse tests.")]
+        [Theory(DisplayName = "Basic sparse parse tests.")]
         [ClassData(typeof(Theory_Sparse_Parse<SparseContext<TestContext>, TestContext>))]
         public void ParseDefaultTests<T>(TestParseArgs<T> testParseArgs) where T : TokenContextDefinition, new()
+        {
+            _output.WriteLine($"Testing: {testParseArgs.TestName}");
+
+            YoggTreeTestHelper.CompareParseResults(testParseArgs);
+        }
+
+        [Theory(DisplayName = "Seek ahead sparse parse tests.")]
+        [ClassData(typeof(Theory_Sparse_Parse<SparseContext<SeekAheadContext>, SeekAheadContext>))]
+        public void SeekAheadDefaultTests<T>(TestParseArgs<T> testParseArgs) where T : TokenContextDefinition, new()
         {
             _output.WriteLine($"Testing: {testParseArgs.TestName}");
 

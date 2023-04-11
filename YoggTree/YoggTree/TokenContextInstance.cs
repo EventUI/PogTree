@@ -154,36 +154,57 @@ namespace YoggTree
         internal TokenInstance GetNextTokenInstance(TokenInstance previousToken, bool setContext)
         {
             TokenInstance nextToken = previousToken == null ? null : previousToken.NextToken;
-            int contextualStart = 0;
+            int absoluteStart = 0;
 
             if (nextToken != null) //we already discovered the next token in the content string
             {
                 //if we have a token that has a different context, is not included in a context, and is a regular regex result, we may have a different token be the "true" next token and the next token we already have points to a location past the "true" next token, so we go back and look for it
                 if (nextToken.Context != this || (nextToken.TokenInstanceType == TokenInstanceType.RegexResult && ContextDefinition.HasToken(nextToken.TokenDefinition.GetType()) == false))
                 {
-                    contextualStart = nextToken.StartIndex + nextToken.Context.AbsoluteOffset;
-                    if (contextualStart < 0) contextualStart = 0;
+                    absoluteStart = nextToken.StartIndex + nextToken.Context.AbsoluteOffset;
+                    if (absoluteStart < 0) absoluteStart = 0;
 
                     bool foundEarlierToken = false;
                     var potentialNextToken = GetNextToken(previousToken.EndIndex + previousToken.Context.AbsoluteOffset);
                     if (potentialNextToken != null)
                     {
-                        if (potentialNextToken.StartIndex + AbsoluteOffset < contextualStart) //if this token starts before the contextually adjusted start index of the next token AND doesn't overlap that token, its the true next token
+                        int nextTokenAbsoluteStart = potentialNextToken.StartIndex + AbsoluteOffset;
+                        if (nextTokenAbsoluteStart < absoluteStart || (nextTokenAbsoluteStart == absoluteStart && potentialNextToken.Contents.Length > nextToken.Contents.Length)) //if this token starts before the contextually adjusted start index of the next token AND doesn't overlap that token, its the true next token
                         {
                             potentialNextToken.NextToken = nextToken;
                             nextToken = potentialNextToken;
 
-                            contextualStart = nextToken.StartIndex + nextToken.Context.AbsoluteOffset;
+                            absoluteStart = nextToken.StartIndex + nextToken.Context.AbsoluteOffset;
                             foundEarlierToken = true;
                         }
                     }
-
-                    if (setContext == true && foundEarlierToken == false) //if setting the context, we need to shift the start index of the token to be relative to its current context - but only if this token was already the true next token
+                    else if (nextToken.TokenInstanceType != TokenInstanceType.RegexResult) //if we didn't find another token in this context and the previous token was some kind of placeholder, we don't have a real token to continue with
                     {
+                        nextToken = null;
+                        foundEarlierToken = true;
+                    }
+
+                    if (nextToken?.TokenInstanceType == TokenInstanceType.RegexResult && ContextDefinition.HasToken(nextToken) == false) //we found a token in the new context, but it came after the current "next" token - however, it's not in this context so we use the other token instead.
+                    {
+                        nextToken = potentialNextToken;
+                        absoluteStart = nextToken.StartIndex + nextToken.Context.AbsoluteOffset;
+                        foundEarlierToken = true;
+                    }
+
+                    if (setContext == true && foundEarlierToken == false) //if setting the context, we need to shift the start index of the token to be relative to its current context
+                    {
+                        if (Tokens.Count > 0)
+                        {
+                            absoluteStart = Tokens[Tokens.Count - 1].EndIndex;
+                        }
+                        else
+                        {
+                            absoluteStart = StartToken.EndIndex;
+                        }
+
                         nextToken.Context = this;
-                        contextualStart = Math.Abs(nextToken.Context.AbsoluteOffset - nextToken.StartIndex);
-                        nextToken.StartIndex = contextualStart;
-                        nextToken.EndIndex = contextualStart + nextToken.Contents.Length;
+                        nextToken.StartIndex = absoluteStart;
+                        nextToken.EndIndex = absoluteStart + nextToken.Contents.Length;
 
                         return nextToken;
                     }
@@ -194,10 +215,18 @@ namespace YoggTree
                     {
                         if (nextToken.Context != this)
                         {
-                            contextualStart = Math.Abs(nextToken.Context.AbsoluteOffset - nextToken.StartIndex);
+                            if (Tokens.Count > 0)
+                            {
+                                absoluteStart = Tokens[Tokens.Count - 1].EndIndex;
+                            }
+                            else
+                            {
+                                absoluteStart = StartToken.EndIndex;
+                            }
+
                             nextToken.Context = this;
-                            nextToken.StartIndex = contextualStart;
-                            nextToken.EndIndex = contextualStart + nextToken.Contents.Length;
+                            nextToken.StartIndex = absoluteStart;
+                            nextToken.EndIndex = absoluteStart + nextToken.Contents.Length;
                         }
                     }
 
@@ -212,11 +241,11 @@ namespace YoggTree
                     nextToken = null;
                 }
 
-                contextualStart = (nextToken == null) ? 0 : nextToken.StartIndex + nextToken.Context.AbsoluteOffset;
+                absoluteStart = (nextToken == null) ? 0 : nextToken.StartIndex + nextToken.Context.AbsoluteOffset;
             }
 
             //get the start and end of the last two tokens to see if there is a gap between them. If there is, we need to make a TextContentToken token to fill in the gap.
-            int textContentEndIndex = (nextToken == null) ? Contents.Length + AbsoluteOffset : contextualStart;
+            int textContentEndIndex = (nextToken == null) ? Contents.Length + AbsoluteOffset : absoluteStart;
             int textContentStartIndex = (previousToken == null) ? 0 : previousToken.EndIndex + previousToken.Context.AbsoluteOffset;
 
             if (textContentStartIndex < textContentEndIndex) //there's a gap - make a text placeholder token

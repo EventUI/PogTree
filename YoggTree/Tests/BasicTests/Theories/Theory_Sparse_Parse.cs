@@ -1,4 +1,9 @@
-﻿using System;
+﻿/**Copyright (c) 2023 Richard H Stannard
+
+This source code is licensed under the MIT license found in the
+LICENSE file in the root directory of this source tree.*/
+
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Dynamic;
@@ -26,6 +31,7 @@ namespace YoggTreeTest.Theories
 
             MakeSimpleParseArgs(args);
             MakeGapArgs(args);
+            MakeAdvancedArgs(args);
 
             return args;
         }
@@ -287,6 +293,81 @@ namespace YoggTreeTest.Theories
                 Expected = expected,
                 ContentToParse = contentToParse,
                 TestName = "Brackets with noise, leading and lagging text."
+            };
+
+            args.Add(YoggTreeTestHelper.ToObjArray(testArgs));
+        }
+
+        private static void MakeAdvancedArgs(List<object[]> args)
+        {
+            string contentToParse = "  [abc 123 ] lol spaces [someMore[  ]Content]";
+
+            var child1 = new TestContextInstance(new TChild())
+            {
+                Contents = "[abc 123 ]",
+                Depth = 1,
+                Tokens = new List<TestTokenInstance>()
+                {
+                    TestTokens.SparseOpenBracket<TChild>(),
+                    TestTokens.TextContent("abc"),
+                    TestTokens.HorizontalWhitespace(" "),
+                    TestTokens.TextContent("123"),
+                    TestTokens.HorizontalWhitespace(" "),
+                    TestTokens.SparseCloseBracketToken
+                }
+            };
+
+            var child2_1 = new TestContextInstance(new TChild())
+            {
+                Contents = "[  ]",
+                Depth = 2,
+                Tokens = new List<TestTokenInstance>()
+                {
+                    TestTokens.SparseOpenBracket<TChild>(),
+                    TestTokens.HorizontalWhitespace("  "),
+                    TestTokens.SparseCloseBracketToken
+                },
+
+            };
+
+            var child2 = new TestContextInstance(new TChild())
+            {
+                Contents = "[someMore[  ]Content]",
+                Depth = 1,
+                Tokens = new List<TestTokenInstance>()
+                {
+                    TestTokens.SparseOpenBracket<TChild>(),
+                    TestTokens.TextContent("someMore"),
+                    TestTokens.ChildContext("[  ]", child2_1),
+                    TestTokens.TextContent("Content"),
+                    TestTokens.SparseCloseBracketToken
+                },
+                ChildContexts = new List<TestContextInstance>()
+                {
+                    child2_1
+                }
+            };
+
+
+            var expected = new TestContextInstance(new T())
+            {
+                Contents = contentToParse,
+                Depth = 0,
+                Tokens = new List<TestTokenInstance>()
+                {
+                    TestTokens.TextContent("  "),
+                    TestTokens.ChildContext("[abc 123 ]", child1),
+                    TestTokens.TextContent(" lol spaces "),
+                    TestTokens.ChildContext("[someMore[  ]Content]", child2)
+                },
+                ChildContexts = new List<TestContextInstance> { child1, child2 }
+            };
+
+            var testArgs = new TestParseArgs<T>()
+            {
+                Expected = expected,
+                ContentToParse = contentToParse,
+                TestName = "Peers with noise"
             };
 
             args.Add(YoggTreeTestHelper.ToObjArray(testArgs));

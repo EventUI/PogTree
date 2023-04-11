@@ -65,9 +65,12 @@ namespace YoggTreeTest.Common
         public override bool StartsNewContext(TokenInstance tokenInstance)
         {
             var nextInstance = tokenInstance.GetNextToken();
+            List<TokenInstance> tokens = new List<TokenInstance>();
+            tokens.Add(tokenInstance);
 
             while (nextInstance != null)
-            {
+            {                
+                if (nextInstance != null) tokens.Add(nextInstance); 
                 nextInstance = nextInstance.GetNextToken();
             }
 
