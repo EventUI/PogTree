@@ -501,7 +501,8 @@ namespace YoggTree
             var sb = new StringBuilder();
             var reader = highestParent.GetReader();
             reader.Seek(startToken);
-            foreach (var token in.EnumerateAllTokens(true))
+
+            foreach (var token in reader.EnumerateRemainingTokens(true))
             {
                 if (startFound == false && token == startToken)
                 {
