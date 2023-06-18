@@ -5,6 +5,8 @@ LICENSE file in the root directory of this source tree.*/
 
 using System.Data;
 using System.Diagnostics;
+using System.Reflection.Metadata.Ecma335;
+using System.Text;
 using YoggTree.Core.Exceptions;
 using YoggTree.Core.Spools;
 
@@ -250,7 +252,7 @@ namespace YoggTree
 
             if (textContentStartIndex < textContentEndIndex) //there's a gap - make a text placeholder token
             {
-                var textContentToken = new TextPlacehodlerTokenInstance(this, textContentStartIndex - AbsoluteOffset, ParseSession.Contents.Slice(textContentStartIndex, textContentEndIndex - textContentStartIndex));
+                var textContentToken = new TextPlaceholderTokenInstance(this, textContentStartIndex - AbsoluteOffset, ParseSession.Contents.Slice(textContentStartIndex, textContentEndIndex - textContentStartIndex));
 
                 if (previousToken != null) previousToken.NextToken = textContentToken;
                 textContentToken.PreviousToken = previousToken;
@@ -475,6 +477,61 @@ namespace YoggTree
 
             return $"({contextName}[{Depth}]) " + name;
         }
+
+        /// <summary>
+        /// Gets all the text between two tokens using the start token's root context.
+        /// </summary>
+        /// <param name="startToken">The token at which to start getting content.</param>
+        /// <param name="endToken">Optional. The token to stop getting content after. A null value gets the rest of the context's string.</param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
+        public static string GetText(TokenInstance startToken, TokenInstance endToken = null)
+        {
+            if (startToken == null) throw new ArgumentNullException(nameof(startToken));
+
+            TokenContextInstance highestParent = startToken.Context;
+            while (highestParent != null)
+            {
+                if (highestParent.Parent == null) break;
+                highestParent = highestParent.Parent;
+            }
+
+            bool endFound = false;
+            bool startFound = false;
+            var sb = new StringBuilder();
+            var reader = highestParent.GetReader();
+            reader.Seek(startToken);
+            foreach (var token in.EnumerateAllTokens(true))
+            {
+                if (startFound == false && token == startToken)
+                {
+                    startFound = true;
+                }
+                else
+                {
+                    continue;
+                }
+
+                if (token.TokenInstanceType != TokenInstanceType.ContextPlaceholder) sb.Append(token.GetText());
+                if (token == endToken)
+                {
+                    endFound = true;
+                    break;
+                }
+            }
+
+            if (startFound == false)
+            {
+                throw new Exception("Start token not found.");
+            }
+
+            if (endToken != null && endFound == false)
+            {
+                throw new Exception("Start and end tokens were not under the same root context.");
+            }
+
+            return sb.ToString();
+        }
     }
 
     public static class TokenContextInstanceExtensions
@@ -502,9 +559,9 @@ namespace YoggTree
         }
 
         /// <summary>
-        /// Determines if the TokenContextDefintion satisfies the "is" operator for the given type.
+        /// Determines if the TokenContextDefinition satisfies the "is" operator for the given type.
         /// </summary>
-        /// <typeparam name="T">The type of TokenContextDefintion to check against.</typeparam>
+        /// <typeparam name="T">The type of TokenContextDefinition to check against.</typeparam>
         /// <param name="instance"></param>
         /// <returns></returns>
         public static bool Is<T>(this TokenContextInstance instance) where T : TokenContextDefinition
@@ -520,6 +577,13 @@ namespace YoggTree
         public static string GetText(this TokenContextInstance instance)
         {
             return instance?.Contents.ToString();
+        }
+
+        public static TokenContextReader GetReader(this TokenContextInstance instance)
+        {
+            if (instance == null) return null;
+
+            return new TokenContextReader(instance);
         }
     }
 }

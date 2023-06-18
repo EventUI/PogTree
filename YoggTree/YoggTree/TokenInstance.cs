@@ -110,9 +110,9 @@ namespace YoggTree
     /// <summary>
     /// Represents an instance of a token that is a run of text between other tokens.
     /// </summary>
-    public record TextPlacehodlerTokenInstance : TokenInstance
+    public record TextPlaceholderTokenInstance : TokenInstance
     { 
-        internal TextPlacehodlerTokenInstance(TokenContextInstance context, int tokenStartIndex, ReadOnlyMemory<char> value)
+        internal TextPlaceholderTokenInstance(TokenContextInstance context, int tokenStartIndex, ReadOnlyMemory<char> value)
             :base (TextContentToken.Instance, context, tokenStartIndex, value, TokenInstanceType.TextPlaceholder)
         {
 
@@ -255,6 +255,13 @@ namespace YoggTree
             }
 
             return (line, column);
+        }
+
+        public static TokenContextReader GetReader(this TokenInstance instance)
+        {
+            if (instance == null) return null;
+
+            return new TokenContextReader(instance);
         }
     }
 }
