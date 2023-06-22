@@ -7,6 +7,7 @@ using System.Data;
 using System.Diagnostics;
 using System.Reflection.Metadata.Ecma335;
 using System.Text;
+using YoggTree.Core.Enumerators;
 using YoggTree.Core.Exceptions;
 using YoggTree.Core.Spools;
 
@@ -328,7 +329,7 @@ namespace YoggTree
                         childContext.WalkContent();
 
                         //once the child context is done being processed, make a placeholder to put into this context's list of tokens.
-                        var contextPlaceholder = new ChildContextTokenInstance(this, childContext.StartIndex, childContext.Contents, childContext);
+                        var contextPlaceholder = new ContextPlaceholderTokenInstance(this, childContext.StartIndex, childContext.Contents, childContext);
 
                         //insert the context placeholder between the previous and "next" tokens in the token list
                         contextPlaceholder.PreviousToken = previousToken;
@@ -502,7 +503,7 @@ namespace YoggTree
             var reader = highestParent.GetReader();
             reader.Seek(startToken);
 
-            foreach (var token in reader.EnumerateRemainingTokens(true))
+            foreach (var token in reader.GetRemainingTokens(true))
             {
                 if (startFound == false && token == startToken)
                 {
@@ -571,6 +572,20 @@ namespace YoggTree
         }
 
         /// <summary>
+        /// Determines whether or not a context instance is inside of a context instance of the given definition.
+        /// </summary>
+        /// <typeparam name="T">The context definition to check against.</typeparam>
+        /// <param name="instance"></param>
+        /// <returns></returns>
+        public static bool IsIn<T>(this TokenContextInstance instance) where T : TokenContextDefinition
+        {
+            if (instance == null) return false;
+            if (instance.Parent is T) return true;
+
+            return false;
+        }
+
+        /// <summary>
         /// Gets the full text contents of the TokenContextInstance.
         /// </summary>
         /// <param name="instance"></param>
@@ -580,6 +595,11 @@ namespace YoggTree
             return instance?.Contents.ToString();
         }
 
+        /// <summary>
+        /// Gets a TokenContextReader that can be used to iterate through the tokens in this context.
+        /// </summary>
+        /// <param name="instance"></param>
+        /// <returns></returns>
         public static TokenContextReader GetReader(this TokenContextInstance instance)
         {
             if (instance == null) return null;

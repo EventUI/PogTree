@@ -19,8 +19,6 @@ namespace YoggTree
         private TokenContextInstance _rootContext = null;
         private IEnumerator<TokenInstance> _instanceEnumerator = null;
         private TokenInstanceEnumerable _instanceEnumerable = null;
-        private IEnumerator<TokenContextInstance> _contextEnumerator = null;
-        private TokenContextInstanceEnumerable _contextEnumerable = null;
 
         public int Position
         {
@@ -135,12 +133,12 @@ namespace YoggTree
             return previousToken;
         }
 
-        public IEnumerable<TokenInstance> EnumerateAllTokens(bool recursive = false)
+        public IEnumerable<TokenInstance> GetAllTokens(bool recursive = false)
         {
             return new TokenInstanceEnumerable(_rootContext, recursive);
         }
 
-        public IEnumerable<TokenInstance> EnumerateRemainingTokens(bool recursive = false)
+        public IEnumerable<TokenInstance> GetRemainingTokens(bool recursive = false)
         {
             var iterator = new TokenInstanceEnumerable(_rootContext, recursive);
             iterator.Seek(CurrentToken);
@@ -148,12 +146,12 @@ namespace YoggTree
             return iterator;
         }
 
-        public IEnumerable<TokenContextInstance> EnumerateAllTokenContexts(bool recursive = false)
+        public IEnumerable<TokenContextInstance> GetAllTokenContexts(bool recursive = false)
         {
             return new TokenContextInstanceEnumerable(_rootContext, recursive);
         }
 
-        public IEnumerable<TokenContextInstance> EnumerateReaminingTokenContexts(bool recursive = false)
+        public IEnumerable<TokenContextInstance> GetRemainingTokenContexts(bool recursive = false)
         {
             var iterator = new TokenInstanceEnumerable(_rootContext, recursive);
             iterator.Seek(CurrentToken);
@@ -188,15 +186,7 @@ namespace YoggTree
 
         public TokenContextInstance GetNextContext(bool recursive = false)
         {
-            _instanceEnumerable.Direction = SeekDirection.Forwards;
-            _instanceEnumerable.Recursive = recursive;
-
-            if (_contextEnumerator.MoveNext() == false)
-            {
-                _contextEnumerator.Reset();
-                return null;
-            }
-            return _contextEnumerator.Current;
+            
         }
 
         public TokenContextInstance GetNextContext<T>(bool recursive = false) where T : TokenContextDefinition
@@ -212,16 +202,7 @@ namespace YoggTree
 
         public TokenContextInstance GetPreviousContext(bool recursive = false)
         {
-            _instanceEnumerable.Direction = SeekDirection.Backwards;
-            _instanceEnumerable.Recursive = recursive;
-
-            if (_contextEnumerator.MoveNext() == false)
-            {
-                _contextEnumerator.Reset();
-                return null;
-            }
-
-            return _contextEnumerator.Current;
+            
         }
 
         public TokenContextInstance GetPreviousContext<T>(bool recursive = false) where T : TokenContextDefinition

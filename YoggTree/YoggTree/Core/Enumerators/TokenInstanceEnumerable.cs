@@ -8,6 +8,9 @@ using System.Collections;
 
 namespace YoggTree.Core.Enumerators
 {
+    /// <summary>
+    /// An IEnumerable of TokenInstance that iterates through a TokenContextInstance's Tokens with options for recursive seeking and token iteration in both backwards and forward directions.
+    /// </summary>
     public sealed class TokenInstanceEnumerable : IEnumerable<TokenInstance>
     {
         private TokenContextInstance _rootContext = null;
@@ -16,12 +19,29 @@ namespace YoggTree.Core.Enumerators
         private SeekDirection _direction = SeekDirection.Forwards;
         private readonly Stack<TokenContextInstanceLocation> _depthStack = new Stack<TokenContextInstanceLocation>();
           
+        /// <summary>
+        /// The current location of the Enumerable in the context hierarchy.
+        /// </summary>
         internal TokenContextInstanceLocation CurrentLocation { get { return _currentLocation; } }
 
+        /// <summary>
+        /// Whether or not the iterator will recursively dig into or climb out of token context instances as they are encountered or end.
+        /// </summary>
         internal bool Recursive { get { return _recursive; } set { _recursive = value; } }
 
+        /// <summary>
+        /// The direction in which the iterator is iterating: forwards towards the end of the context hierarchy, or backwards towards the beginning of the context hierarchy.
+        /// </summary>
         internal SeekDirection Direction { get { return _direction; } set { _direction = value; } }
 
+        internal bool ReturnContextPlaceholders { get; set; } = false;
+
+        /// <summary>
+        /// Creates a new TokenInstanceEnumerable based on the given root context.
+        /// </summary>
+        /// <param name="rootContext">The context with tokens to iterate through.</param>
+        /// <param name="recursive">Whether or not to recursively walk the context hierarchy.</param>
+        /// <exception cref="ArgumentNullException"></exception>
         internal TokenInstanceEnumerable(TokenContextInstance rootContext, bool recursive)
         {
             if (rootContext == null) throw new ArgumentNullException(nameof(rootContext));
@@ -38,6 +58,14 @@ namespace YoggTree.Core.Enumerators
             _depthStack.Push(_currentLocation);
         }
 
+        /// <summary>
+        /// Creates a new TokenInstanceEnumerable based on the given root context and has been advanced to the given position in the context instance.
+        /// </summary>
+        /// <param name="rootContext">The context with tokens to iterate through.</param>
+        /// <param name="position">The position to start at in the context.</param>
+        /// <param name="recursive">Whether or not to recursively walk the context hierarchy.</param>
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
         internal TokenInstanceEnumerable(TokenContextInstance rootContext, int position, bool recursive)
         {
             if (rootContext == null) throw new ArgumentNullException(nameof(rootContext));
@@ -73,110 +101,118 @@ namespace YoggTree.Core.Enumerators
             return GetEnumerator();
         }
 
+        /// <summary>
+        /// Gets the next token (in the forwards direction).
+        /// </summary>
+        /// <returns></returns>
         private TokenInstance GetNextToken()
         {
-            TokenInstance instance = null;
-
-            if (_currentLocation.ContextInstance.Tokens.Count == _currentLocation.Position) //reached the end of a context, "pop" back up to where we were in the parent stream to keep going.
+            if (_currentLocation.Position >= _currentLocation.ContextInstance.Tokens.Count) //reached the end of a context, "pop" back up to where we were in the parent stream to keep going.
             {
-                if (_currentLocation.Depth == 0)
+                if (_currentLocation.Depth == 0) //we're at the top of the hierarchy and have reached the end of the context. All done.
                 {
-                    _currentLocation = null;
                     return null;
                 }
 
                 _currentLocation = _depthStack.Pop();
-
                 return GetNextToken();
             }
 
-            if (_currentLocation.Position < 0) _currentLocation.Position = 0;
-            instance = _currentLocation.ContextInstance.Tokens[_currentLocation.Position];
-            _currentLocation.Position++;
-
-            if (_recursive == true && instance.TokenInstanceType == TokenInstanceType.ContextPlaceholder)
+            if (_currentLocation.Position < 0)
             {
-                var childContext = instance.GetChildContext();
-                if (childContext == null) return instance;
+                _currentLocation.Position = 0; //seeking backwards can put the Position to -1, so we "advance" implicitly to zero.               
+            }
+            else
+            {
+                _currentLocation.Position++;
+            }
+
+            TokenInstance nextToken = _currentLocation.ContextInstance.Tokens[_currentLocation.Position];
+
+            if (_recursive == true && nextToken.TokenInstanceType == TokenInstanceType.ContextPlaceholder) //recursive means we skip placeholders, so the "next" token is either the first child of the context, or, if the context is null, the next token in current context
+            {
+                var childContext = nextToken.GetChildContext();
+                if (childContext == null) //no child context, advance to the next token
+                {
+                    _currentLocation.Position++;
+                    return GetNextToken();
+                }
 
                 _depthStack.Push(_currentLocation);
 
                 _currentLocation = new TokenContextInstanceLocation()
                 {
-                    ContextInstance = instance.GetChildContext(),
+                    ContextInstance = childContext,
                     Depth = _currentLocation.Depth + 1,
                     Position = 0
                 };
+
+                return GetNextToken();
             }
 
-            return instance;
+            return nextToken;
         }
 
+        /// <summary>
+        /// Gets the previous token (In the backwards direction).
+        /// </summary>
+        /// <returns></returns>
         private TokenInstance GetPreviousToken()
         {
-            if ((_currentLocation.Depth == 0 || Recursive == false) && _currentLocation.Position < 0) return null;
-
-            TokenInstance instance = null;
             if (_currentLocation.Position <= 0)
             {
-                if (_currentLocation.Position == 0)
+                if (_currentLocation.Depth == 0) return null;
+                if (_recursive == false)
                 {
-                    instance = _currentLocation.ContextInstance.Tokens[_currentLocation.Position];
-                    if (_currentLocation.Depth > 0 && Recursive == true)
-                    {
-                        _currentLocation = _depthStack.Pop();
-                        return instance;
-                    }
-                    else
-                    {
-                        _currentLocation.Position--;
-                        return instance;
-                    }
+                    return null;
                 }
                 else
                 {
-                    if (_currentLocation.Depth > 0 && Recursive == true)
-                    {
-                        _currentLocation = _depthStack.Pop();
-                        return _currentLocation.ContextInstance.Tokens[_currentLocation.Position];
-                    }
-                    else
-                    {
-                        return null;
-                    }
+                    _currentLocation = _depthStack.Pop();
+                    return GetPreviousToken();
                 }
             }
-            else
-            {
-                instance = _currentLocation.ContextInstance.Tokens[_currentLocation.Position];
-            }
-            
+
+            var previousToken = _currentLocation.ContextInstance.Tokens[_currentLocation.Position - 1];
             _currentLocation.Position--;
-            return instance;
+
+            if (_recursive == true && previousToken.TokenInstanceType == TokenInstanceType.ContextPlaceholder)
+            {
+                if (ReturnContextPlaceholders == true) return previousToken;
+                return GetPreviousToken();
+            }
+
+            return previousToken;           
         }
 
+        /// <summary>
+        /// Seeks the enumerable to the given location in the context being iterated over (NOT recursive).
+        /// </summary>
+        /// <param name="offset">The amount of move the position by.</param>
+        /// <param name="origin">The relative point from where to seek the enumerable.</param>
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
         internal void Seek(int offset, SeekOrigin origin)
         {
             if (offset < 0)
             {
-                if (origin == SeekOrigin.Begin)
+                if (origin == SeekOrigin.Begin) //falls off the start of the context
                 {
                     throw new ArgumentOutOfRangeException(nameof(offset));
                 }
                 else if (origin == SeekOrigin.End)
                 {
-                    if (_currentLocation.ContextInstance.Tokens.Count + offset < 0) throw new ArgumentOutOfRangeException(nameof(offset));
+                    if (_currentLocation.ContextInstance.Tokens.Count + offset < 0) throw new ArgumentOutOfRangeException(nameof(offset)); //moving backwards to a token that falls off the start of the context.
                     _currentLocation.Position = _currentLocation.ContextInstance.Tokens.Count + offset;
                 }
                 else if (origin == SeekOrigin.Current)
                 {
-                    if (_currentLocation.Position + offset < 0) throw new ArgumentOutOfRangeException(nameof(offset));
+                    if (_currentLocation.Position + offset < 0) throw new ArgumentOutOfRangeException(nameof(offset)); //also moving backwards to a token that falls off the start of the context.
                     _currentLocation.Position = _currentLocation.Position + offset;
                 }
             }
             else if (offset > 0)
             {
-                if (origin == SeekOrigin.End)
+                if (origin == SeekOrigin.End) //falls off the end of the context.
                 {
                     throw new ArgumentOutOfRangeException(nameof(offset));
                 }

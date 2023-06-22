@@ -88,14 +88,14 @@ namespace YoggTree
     /// <summary>
     /// Represents an instance of a token that wraps a child TokenContextInstance.
     /// </summary>
-    public record ChildContextTokenInstance : TokenInstance
+    public record ContextPlaceholderTokenInstance : TokenInstance
     {
         /// <summary>
         /// The context that is being represented by this token.
         /// </summary>
         public TokenContextInstance ChildContext { get; internal init; } = null;
 
-        internal ChildContextTokenInstance(TokenContextInstance context, int tokenStartIndex, ReadOnlyMemory<char> value, TokenContextInstance childContext)
+        internal ContextPlaceholderTokenInstance(TokenContextInstance context, int tokenStartIndex, ReadOnlyMemory<char> value, TokenContextInstance childContext)
             : base(EmptyToken.Instance, context, tokenStartIndex, value, TokenInstanceType.ContextPlaceholder)
         {
             ChildContext = childContext;
@@ -133,7 +133,7 @@ namespace YoggTree
         /// <returns></returns>
         public static TokenContextInstance GetChildContext(this TokenInstance instance)
         {
-            return (instance as ChildContextTokenInstance)?.ChildContext;
+            return (instance as ContextPlaceholderTokenInstance)?.ChildContext;
         }
 
         /// <summary>
@@ -196,7 +196,7 @@ namespace YoggTree
         }
 
         /// <summary>
-        /// Determines if the TokenDefintion of this instance satisfy's the "is" operator as a type check.
+        /// Determines if the TokenDefinition of this instance satisfies the "is" operator as a type check.
         /// </summary>
         /// <typeparam name="T">The type to check against.</typeparam>
         /// <param name="instance"></param>
@@ -204,6 +204,33 @@ namespace YoggTree
         public static bool Is<T>(this TokenInstance instance) where T : TokenDefinition
         {
             return instance?.TokenDefinition is T;
+        }
+
+        /// <summary>
+        /// Determines whether or not a token is inside of a context instance of the given definition.
+        /// </summary>
+        /// <typeparam name="T">The context definition to check against.</typeparam>
+        /// <param name="instance"></param>
+        /// <returns></returns>
+        public static bool IsInContext<T>(this TokenInstance instance) where T : TokenContextDefinition
+        {
+            if (instance == null) return false;
+            if (instance.Context is T) return true;
+
+            return false;
+        }
+
+        /// <summary>
+        /// Determines if the TokenInstance is a ContextPlaceholder that contains a ContextInstance with the given TokenContextDefinition.
+        /// </summary>
+        /// <typeparam name="T">The type of TokenContextDefinition to check for.</typeparam>
+        /// <param name="instance"></param>
+        /// <returns></returns>
+        public static bool HasChildContext<T>(this TokenInstance instance) where T : TokenContextDefinition
+        {
+            if (instance == null || instance.TokenInstanceType != TokenInstanceType.ContextPlaceholder) return false;
+
+            return instance.GetChildContext().Is<T>();
         }
 
         /// <summary>
@@ -257,6 +284,11 @@ namespace YoggTree
             return (line, column);
         }
 
+        /// <summary>
+        /// Gets a TokenContextReader for the this token's Context that starts at the index of this token in it's parent Context.
+        /// </summary>
+        /// <param name="instance"></param>
+        /// <returns></returns>
         public static TokenContextReader GetReader(this TokenInstance instance)
         {
             if (instance == null) return null;

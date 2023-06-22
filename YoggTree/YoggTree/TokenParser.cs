@@ -45,21 +45,21 @@ namespace YoggTree
         /// <summary>
         /// Parses a string of content using the given token context definition as a starting point. Creates an copy of the ContextRegistry to use for this parse session.
         /// </summary>
-        /// <param name="contextDefition">The context definition to use to begin the parsing process. Note that this can be swapped out if the ContextRegistry contains a matching key.</param>
+        /// <param name="contextDefinition">The context definition to use to begin the parsing process. Note that this can be swapped out if the ContextRegistry contains a matching key.</param>
         /// <param name="contents">The string to parse.</param>
         /// <returns></returns>
-        public TokenContextInstance Parse(TokenContextDefinition contextDefition, string contents)
+        public TokenContextInstance Parse(TokenContextDefinition contextDefinition, string contents)
         {
             if (_contextRegistry.IsEmpty == false)
             {
-                var replacement = _contextRegistry.GetContext(contextDefition.GetType());
-                if (replacement != null && contextDefition.GetType() != replacement.GetType())
+                var replacement = _contextRegistry.GetContext(contextDefinition.GetType());
+                if (replacement != null && contextDefinition.GetType() != replacement.GetType())
                 {
-                    contextDefition = replacement;
+                    contextDefinition = replacement;
                 }
             }
 
-            var parseSession = new TokenParseSession(new TokenContextInstance(contextDefition, contents), new TokenContextCollection(_contextRegistry));
+            var parseSession = new TokenParseSession(new TokenContextInstance(contextDefinition, contents), new TokenContextCollection(_contextRegistry));
             parseSession.RootContext.WalkContent();
 
             return parseSession.RootContext;
