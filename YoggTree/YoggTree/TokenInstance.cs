@@ -212,7 +212,7 @@ namespace YoggTree
         /// <typeparam name="T">The context definition to check against.</typeparam>
         /// <param name="instance"></param>
         /// <returns></returns>
-        public static bool IsInContext<T>(this TokenInstance instance) where T : TokenContextDefinition
+        public static bool IsIn<T>(this TokenInstance instance) where T : TokenContextDefinition
         {
             if (instance == null) return false;
             if (instance.Context is T) return true;

@@ -10,7 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace YoggTree
+namespace YoggTree.Core.Enumerators
 {
     internal class TokenContextInstanceLocation
     {

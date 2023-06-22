@@ -127,9 +127,10 @@ namespace YoggTree.Core.Enumerators
                 _currentLocation.Position++;
             }
 
-            TokenInstance nextToken = _currentLocation.ContextInstance.Tokens[_currentLocation.Position];
+            TokenContextInstance previousContext = 
+            TokenContextInstance nextToken = _currentLocation.ContextInstance.ChildContexts[_currentLocation.Position];
 
-            if (_recursive == true && nextToken.TokenInstanceType == TokenInstanceType.ContextPlaceholder) //recursive means we skip placeholders, so the "next" token is either the first child of the context, or, if the context is null, the next token in current context
+            if (_recursive == true && nextToken.ChildContexts.Count > 0) //recursive means we skip placeholders, so the "next" token is either the first child of the context, or, if the context is null, the next token in current context
             {
                 var childContext = nextToken.GetChildContext();
                 if (childContext == null) //no child context, advance to the next token

@@ -34,8 +34,6 @@ namespace YoggTree.Core.Enumerators
         /// </summary>
         internal SeekDirection Direction { get { return _direction; } set { _direction = value; } }
 
-        internal bool ReturnContextPlaceholders { get; set; } = false;
-
         /// <summary>
         /// Creates a new TokenInstanceEnumerable based on the given root context.
         /// </summary>
@@ -178,7 +176,6 @@ namespace YoggTree.Core.Enumerators
 
             if (_recursive == true && previousToken.TokenInstanceType == TokenInstanceType.ContextPlaceholder)
             {
-                if (ReturnContextPlaceholders == true) return previousToken;
                 return GetPreviousToken();
             }
 
