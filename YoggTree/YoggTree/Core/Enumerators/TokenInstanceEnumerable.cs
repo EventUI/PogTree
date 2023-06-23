@@ -50,7 +50,7 @@ namespace YoggTree.Core.Enumerators
             {
                 ContextInstance = rootContext,
                 Depth = 0,
-                Position = 0,
+                Position = -1,
             };
 
             _depthStack.Push(_currentLocation);
@@ -116,14 +116,7 @@ namespace YoggTree.Core.Enumerators
                 return GetNextToken();
             }
 
-            if (_currentLocation.Position < 0)
-            {
-                _currentLocation.Position = 0; //seeking backwards can put the Position to -1, so we "advance" implicitly to zero.               
-            }
-            else
-            {
-                _currentLocation.Position++;
-            }
+             _currentLocation.Position++;
 
             TokenInstance nextToken = _currentLocation.ContextInstance.Tokens[_currentLocation.Position];
 
@@ -142,7 +135,7 @@ namespace YoggTree.Core.Enumerators
                 {
                     ContextInstance = childContext,
                     Depth = _currentLocation.Depth + 1,
-                    Position = 0
+                    Position = -1
                 };
 
                 return GetNextToken();
@@ -286,7 +279,7 @@ namespace YoggTree.Core.Enumerators
                 _currentLocation = new TokenContextInstanceLocation()
                 {
                     ContextInstance = context,
-                    Position = 0,
+                    Position = -1,
                     Depth = 0
                 };
 

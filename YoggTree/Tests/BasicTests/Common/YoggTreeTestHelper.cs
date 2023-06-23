@@ -3,6 +3,7 @@
 This source code is licensed under the MIT license found in the
 LICENSE file in the root directory of this source tree.*/
 
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -55,6 +56,55 @@ namespace YoggTreeTest.Common
             var result = parser.Parse(new T(), parseArgs.ContentToParse);
 
             WalkTokens(result);
+
+            return true;
+        }
+
+        public static bool CompareReaderResults(TestIterationArgs iterationArgs)
+        {
+            var parser = new TokenParser();
+            var parsed = parser.Parse(new TestContext(), iterationArgs.ContentToParse);
+
+            var reader = parsed.GetReader();
+            foreach (var token in iterationArgs.ExpectedTokens)
+            {
+                TokenInstance nextToken = reader.GetNextToken(iterationArgs.Recursive);
+                if (nextToken == null)
+                {
+                    throw new Exception($"Unexpected end of tokens at Position {reader.Position} at Depth {reader.Depth}");
+                }
+
+                if (nextToken.TokenDefinition.GetType() != token.TokenDefinition.GetType())
+                {
+                    throw new Exception($"Token mismatch at Position {reader.Position} at Depth {reader.Depth}. Expected: {token.TokenDefinition} Actual: {nextToken.TokenDefinition}");
+                }
+
+                if (nextToken.TokenInstanceType != token.InstanceType)
+                {
+                    throw new Exception($"Token mismatch at Position {reader.Position} at Depth {reader.Depth}. Expected: {token.InstanceType} Actual: {nextToken.TokenInstanceType}");
+                }
+            }
+
+            reader.Seek(parsed);
+
+            foreach (var context in iterationArgs.ExpectedContexts)
+            {
+                TokenContextInstance nextInstance = reader.GetNextContext(iterationArgs.Recursive);
+                if (nextInstance == null)
+                {
+                    throw new Exception($"Unexpected end of contexts at Position {reader.Position} at Depth {reader.Depth}");
+                }
+
+                if (nextInstance.ContextDefinition.GetType() != context.ContextDefinition.GetType())
+                {
+                    throw new Exception($"Token mismatch at Position {reader.Position} at Depth {reader.Depth}. Expected: {context.ContextDefinition} Actual: {nextInstance.ContextDefinition}");
+                }
+
+                if (nextInstance.Depth != context.Depth)
+                {
+                    throw new Exception($"Token mismatch at Position {reader.Position} at Depth {reader.Depth}. Expected: {context.Depth} Actual: {reader.Depth}");
+                }
+            }
 
             return true;
         }

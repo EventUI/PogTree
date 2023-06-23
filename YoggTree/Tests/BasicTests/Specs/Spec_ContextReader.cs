@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Xunit.Abstractions;
+using YoggTreeTest.Theories;
 
 namespace YoggTreeTest.Specs
 {
@@ -16,10 +17,11 @@ namespace YoggTreeTest.Specs
             _output = output;
         }
 
-        [Fact]
-        public void BasicTest()
+        [Theory]
+        [ClassData(typeof(Theory_ContextReader))]
+        public void BasicReaderTest(TestIterationArgs args)
         {
-
+            YoggTreeTestHelper.CompareReaderResults(args);
         }
     }
 }
