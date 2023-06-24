@@ -483,56 +483,22 @@ namespace YoggTree
         /// Gets all the text between two tokens using the start token's root context.
         /// </summary>
         /// <param name="startToken">The token at which to start getting content.</param>
-        /// <param name="endToken">Optional. The token to stop getting content after. A null value gets the rest of the context's string.</param>
+        /// <param name="endToken">Optional. The token to stop getting content at. A null value gets the rest of the context's string.</param>
         /// <returns></returns>
         /// <exception cref="Exception"></exception>
         public static string GetText(TokenInstance startToken, TokenInstance endToken = null)
         {
             if (startToken == null) throw new ArgumentNullException(nameof(startToken));
 
-            TokenContextInstance highestParent = startToken.Context;
-            while (highestParent != null)
+            if (endToken != null && endToken.Context.ParseSession.RootContext != startToken.Context.ParseSession.RootContext)
             {
-                if (highestParent.Parent == null) break;
-                highestParent = highestParent.Parent;
+                throw new Exception("Start and end tokens do not belong to the same root context.");
             }
 
-            bool endFound = false;
-            bool startFound = false;
-            var sb = new StringBuilder();
-            var reader = highestParent.GetReader();
-            reader.Seek(startToken);
+            int contentStart = startToken.GetContextualStartIndex(startToken.Context.ParseSession.RootContext);
+            int contentEnd = (endToken == null) ? startToken.Context.ParseSession.RootContext.Contents.Length : endToken.GetContextualStartIndex(startToken.Context.ParseSession.RootContext);
 
-            foreach (var token in reader.GetRemainingTokens(true))
-            {
-                if (startFound == false && token == startToken)
-                {
-                    startFound = true;
-                }
-                else
-                {
-                    continue;
-                }
-
-                if (token.TokenInstanceType != TokenInstanceType.ContextPlaceholder) sb.Append(token.GetText());
-                if (token == endToken)
-                {
-                    endFound = true;
-                    break;
-                }
-            }
-
-            if (startFound == false)
-            {
-                throw new Exception("Start token not found.");
-            }
-
-            if (endToken != null && endFound == false)
-            {
-                throw new Exception("Start and end tokens were not under the same root context.");
-            }
-
-            return sb.ToString();
+            return startToken.Context.ParseSession.RootContext.Contents.Slice(contentStart, contentEnd - contentStart).ToString();
         }
     }
 
@@ -566,7 +532,7 @@ namespace YoggTree
         /// <typeparam name="T">The type of TokenContextDefinition to check against.</typeparam>
         /// <param name="instance"></param>
         /// <returns></returns>
-        public static bool Is<T>(this TokenContextInstance instance) where T : TokenContextDefinition
+        public static bool Is<T>(this TokenContextInstance instance) where T : ITokenContextDefinition
         {
             return instance?.ContextDefinition is T;
         }
@@ -577,7 +543,7 @@ namespace YoggTree
         /// <typeparam name="T">The context definition to check against.</typeparam>
         /// <param name="instance"></param>
         /// <returns></returns>
-        public static bool IsIn<T>(this TokenContextInstance instance) where T : TokenContextDefinition
+        public static bool IsIn<T>(this TokenContextInstance instance) where T : ITokenContextDefinition
         {
             if (instance == null) return false;
             if (instance.Parent is T) return true;

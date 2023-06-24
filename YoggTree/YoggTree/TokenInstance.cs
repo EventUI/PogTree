@@ -201,7 +201,7 @@ namespace YoggTree
         /// <typeparam name="T">The type to check against.</typeparam>
         /// <param name="instance"></param>
         /// <returns></returns>
-        public static bool Is<T>(this TokenInstance instance) where T : TokenDefinition
+        public static bool Is<T>(this TokenInstance instance) where T : ITokenDefinition
         {
             return instance?.TokenDefinition is T;
         }
@@ -212,7 +212,7 @@ namespace YoggTree
         /// <typeparam name="T">The context definition to check against.</typeparam>
         /// <param name="instance"></param>
         /// <returns></returns>
-        public static bool IsIn<T>(this TokenInstance instance) where T : TokenContextDefinition
+        public static bool IsIn<T>(this TokenInstance instance) where T : ITokenContextDefinition
         {
             if (instance == null) return false;
             if (instance.Context is T) return true;
@@ -226,7 +226,7 @@ namespace YoggTree
         /// <typeparam name="T">The type of TokenContextDefinition to check for.</typeparam>
         /// <param name="instance"></param>
         /// <returns></returns>
-        public static bool HasChildContext<T>(this TokenInstance instance) where T : TokenContextDefinition
+        public static bool HasChildContext<T>(this TokenInstance instance) where T : ITokenContextDefinition
         {
             if (instance == null || instance.TokenInstanceType != TokenInstanceType.ContextPlaceholder) return false;
 

@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net7.0</TargetFramework>
@@ -11,6 +11,11 @@
 	<Company>Richard Stannard</Company>
 	<Authors>Richard Stannard</Authors>
 	<Title>YoggTree</Title>
+	<Deterministic>false</Deterministic>
+	<Version>1.0.0.16</Version>
+	<PackageLicenseFile>LICENSE</PackageLicenseFile>
+	<SymbolPackageFormat>snupkg</SymbolPackageFormat>
+	<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -26,6 +31,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="..\..\LICENSE">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
     <None Include="C:\Users\richa\source\repos\EventUI\YoggTree\YoggTree\YoggTree\.editorconfig" />
   </ItemGroup>
 

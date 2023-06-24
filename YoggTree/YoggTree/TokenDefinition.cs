@@ -8,7 +8,7 @@ namespace YoggTree
     /// <summary>
     /// Represents the definition of a token found in a string.
     /// </summary>
-    public abstract class TokenDefinition
+    public abstract class TokenDefinition : ITokenDefinition
     {
         private Guid _id = Guid.NewGuid();
 
@@ -133,7 +133,7 @@ namespace YoggTree
 
             _name = name;
             _token = token;
-            _flags = flags;           
+            _flags = flags;
         }
 
         /// <summary>
@@ -177,7 +177,7 @@ namespace YoggTree
         {
             return start.Context.ContextDefinition;
         }
-       
+
         public override string ToString()
         {
             return $"{GetType().Name}-{_name}-({_token.ToString()})";

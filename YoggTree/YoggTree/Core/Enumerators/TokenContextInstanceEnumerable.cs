@@ -119,7 +119,55 @@ namespace YoggTree.Core.Enumerators
                 return GetNextContext();
             }
 
-            var currentContext = (_currentLocation.Position == -1) ? _currentLocation.ContextInstance : _currentLocation.ContextInstance.ChildContexts[_currentLocation.Position];
+            TokenContextInstance currentContext = null;
+
+            if (_currentLocation.Position == -1 && _currentLocation.Depth == 0)
+            {
+                currentContext = _currentLocation.ContextInstance;
+            }
+            else
+            {
+                if (_currentLocation.ContextInstance.ChildContexts.Count > 0)
+                {
+                    if (_currentLocation.Position == -1) _currentLocation.Position++;
+                    currentContext = _currentLocation.ContextInstance.ChildContexts[_currentLocation.Position];
+                }
+                else
+                {
+                    if (_currentLocation.Depth == 0)
+                    {
+                        return null;
+                    }
+                    else
+                    {
+                        _currentLocation = _depthStack.Pop();
+                        return GetNextContext();
+                    }
+                }
+            }
+
+            if (currentContext.Parent == _currentLocation.ContextInstance)
+            {
+                if (_recursive == false)
+                {
+                    _currentLocation.Position++;
+                    return currentContext;
+                }
+
+                _currentLocation.Position++;
+                _depthStack.Push(_currentLocation);
+
+                _currentLocation = new TokenContextInstanceLocation()
+                {
+                    ContextInstance = currentContext,
+                    Depth = _currentLocation.Depth + 1,
+                    Position = -1
+                };
+
+                return currentContext;
+            }
+
+
             if (currentContext.ChildContexts.Count == 0 || _recursive == false)
             {
                 _currentLocation.Position++;
@@ -143,7 +191,7 @@ namespace YoggTree.Core.Enumerators
                     Position = -1
                 };
 
-                return GetNextContext();
+                return currentContext;
             }
         }
 
