@@ -5,6 +5,9 @@ LICENSE file in the root directory of this source tree.*/
 
 using System.Data;
 using System.Diagnostics;
+using System.Reflection.Metadata.Ecma335;
+using System.Text;
+using YoggTree.Core.Enumerators;
 using YoggTree.Core.Exceptions;
 using YoggTree.Core.Spools;
 
@@ -250,7 +253,7 @@ namespace YoggTree
 
             if (textContentStartIndex < textContentEndIndex) //there's a gap - make a text placeholder token
             {
-                var textContentToken = new TextPlacehodlerTokenInstance(this, textContentStartIndex - AbsoluteOffset, ParseSession.Contents.Slice(textContentStartIndex, textContentEndIndex - textContentStartIndex));
+                var textContentToken = new TextPlaceholderTokenInstance(this, textContentStartIndex - AbsoluteOffset, ParseSession.Contents.Slice(textContentStartIndex, textContentEndIndex - textContentStartIndex));
 
                 if (previousToken != null) previousToken.NextToken = textContentToken;
                 textContentToken.PreviousToken = previousToken;
@@ -326,7 +329,7 @@ namespace YoggTree
                         childContext.WalkContent();
 
                         //once the child context is done being processed, make a placeholder to put into this context's list of tokens.
-                        var contextPlaceholder = new ChildContextTokenInstance(this, childContext.StartIndex, childContext.Contents, childContext);
+                        var contextPlaceholder = new ContextPlaceholderTokenInstance(this, childContext.StartIndex, childContext.Contents, childContext);
 
                         //insert the context placeholder between the previous and "next" tokens in the token list
                         contextPlaceholder.PreviousToken = previousToken;
@@ -475,6 +478,28 @@ namespace YoggTree
 
             return $"({contextName}[{Depth}]) " + name;
         }
+
+        /// <summary>
+        /// Gets all the text between two tokens using the start token's root context.
+        /// </summary>
+        /// <param name="startToken">The token at which to start getting content.</param>
+        /// <param name="endToken">Optional. The token to stop getting content at. A null value gets the rest of the context's string.</param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
+        public static string GetText(TokenInstance startToken, TokenInstance endToken = null)
+        {
+            if (startToken == null) throw new ArgumentNullException(nameof(startToken));
+
+            if (endToken != null && endToken.Context.ParseSession.RootContext != startToken.Context.ParseSession.RootContext)
+            {
+                throw new Exception("Start and end tokens do not belong to the same root context.");
+            }
+
+            int contentStart = startToken.GetContextualStartIndex(startToken.Context.ParseSession.RootContext);
+            int contentEnd = (endToken == null) ? startToken.Context.ParseSession.RootContext.Contents.Length : endToken.GetContextualStartIndex(startToken.Context.ParseSession.RootContext);
+
+            return startToken.Context.ParseSession.RootContext.Contents.Slice(contentStart, contentEnd - contentStart).ToString();
+        }
     }
 
     public static class TokenContextInstanceExtensions
@@ -502,14 +527,28 @@ namespace YoggTree
         }
 
         /// <summary>
-        /// Determines if the TokenContextDefintion satisfies the "is" operator for the given type.
+        /// Determines if the TokenContextDefinition satisfies the "is" operator for the given type.
         /// </summary>
-        /// <typeparam name="T">The type of TokenContextDefintion to check against.</typeparam>
+        /// <typeparam name="T">The type of TokenContextDefinition to check against.</typeparam>
         /// <param name="instance"></param>
         /// <returns></returns>
-        public static bool Is<T>(this TokenContextInstance instance) where T : TokenContextDefinition
+        public static bool Is<T>(this TokenContextInstance instance) where T : ITokenContextDefinition
         {
             return instance?.ContextDefinition is T;
+        }
+
+        /// <summary>
+        /// Determines whether or not a context instance is inside of a context instance of the given definition.
+        /// </summary>
+        /// <typeparam name="T">The context definition to check against.</typeparam>
+        /// <param name="instance"></param>
+        /// <returns></returns>
+        public static bool IsIn<T>(this TokenContextInstance instance) where T : ITokenContextDefinition
+        {
+            if (instance == null) return false;
+            if (instance.Parent is T) return true;
+
+            return false;
         }
 
         /// <summary>
@@ -520,6 +559,18 @@ namespace YoggTree
         public static string GetText(this TokenContextInstance instance)
         {
             return instance?.Contents.ToString();
+        }
+
+        /// <summary>
+        /// Gets a TokenContextReader that can be used to iterate through the tokens in this context.
+        /// </summary>
+        /// <param name="instance"></param>
+        /// <returns></returns>
+        public static TokenContextReader GetReader(this TokenContextInstance instance)
+        {
+            if (instance == null) return null;
+
+            return new TokenContextReader(instance);
         }
     }
 }

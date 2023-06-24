@@ -1,4 +1,10 @@
-﻿
+﻿/**Copyright (c) 2023 Richard H Stannard
+
+This source code is licensed under the MIT license found in the
+LICENSE file in the root directory of this source tree.*/
+
+
+
 
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -12,7 +18,7 @@ namespace YoggTree
     /// <summary>
     /// Represents a definition of the rules that apply to tokens found within a segment of a string (a "context").
     /// </summary>
-    public abstract class TokenContextDefinition
+    public abstract class TokenContextDefinition : ITokenContextDefinition
     {
         private Guid _id = Guid.NewGuid();
         private ConcurrentDictionary<Type, TokenDefinition> _validTokens = new ConcurrentDictionary<Type, TokenDefinition>();
@@ -36,12 +42,12 @@ namespace YoggTree
         /// <summary>
         /// All of the token definitions that should be processed in this context.
         /// </summary>
-        public IReadOnlyCollection<TokenDefinition> ValidTokens 
-        { 
-            get 
+        public IReadOnlyCollection<TokenDefinition> ValidTokens
+        {
+            get
             {
                 return (IReadOnlyCollection<TokenDefinition>)_validTokens.Values;
-            } 
+            }
         }
 
         /// <summary>
@@ -140,7 +146,7 @@ namespace YoggTree
         /// </summary>
         /// <typeparam name="TToken"></typeparam>
         /// <returns></returns>
-        public bool HasToken<TToken>() where TToken: TokenDefinition
+        public bool HasToken<TToken>() where TToken : TokenDefinition
         {
             return HasToken(typeof(TToken));
         }
@@ -185,7 +191,7 @@ namespace YoggTree
         /// <summary>
         /// Removes a token definition from this context.
         /// </summary>
-        public void RemoveToken<TToken>() where TToken: TokenDefinition
+        public void RemoveToken<TToken>() where TToken : TokenDefinition
         {
             _validTokens.TryRemove(typeof(TToken), out _);
         }
