@@ -82,6 +82,10 @@ namespace YoggTree.Core.Enumerators
             _depthStack.Push(_currentLocation);
         }
 
+        /// <summary>
+        /// Gets the Enumerator for the Tokens list.
+        /// </summary>
+        /// <returns></returns>
         public IEnumerator<TokenInstance> GetEnumerator()
         {
             TokenInstance nextToken = (Direction == SeekDirection.Forwards) ? GetNextToken() : GetPreviousToken();
@@ -100,7 +104,7 @@ namespace YoggTree.Core.Enumerators
         }
 
         /// <summary>
-        /// Gets the next token (in the forwards direction).
+        /// Gets the next token (in the forwards direction). Token placeholders are skipped over and dug into instead of being returned.
         /// </summary>
         /// <returns></returns>
         private TokenInstance GetNextToken()
