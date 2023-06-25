@@ -109,6 +109,58 @@ namespace YoggTreeTest.Common
             return true;
         }
 
+        public static bool CompareReaderResultsReverse(TestIterationArgs iterationArgs)
+        {
+            var parser = new TokenParser();
+            var parsed = parser.Parse(new TestContext(), iterationArgs.ContentToParse);
+
+            var reader = parsed.GetReader();
+
+            reader.Seek(0, SeekOrigin.End);
+
+            foreach (var token in iterationArgs.ExpectedTokens)
+            {
+                TokenInstance nextToken = reader.GetPreviousToken(iterationArgs.Recursive);
+                if (nextToken == null)
+                {
+                    throw new Exception($"Unexpected end of tokens at Position {reader.Position} at Depth {reader.Depth}");
+                }
+
+                if (nextToken.TokenDefinition.GetType() != token.TokenDefinition.GetType())
+                {
+                    throw new Exception($"Token mismatch at Position {reader.Position} at Depth {reader.Depth}. Expected: {token.TokenDefinition} Actual: {nextToken.TokenDefinition}");
+                }
+
+                if (nextToken.TokenInstanceType != token.InstanceType)
+                {
+                    throw new Exception($"Token mismatch at Position {reader.Position} at Depth {reader.Depth}. Expected: {token.InstanceType} Actual: {nextToken.TokenInstanceType}");
+                }
+            }
+
+            reader.Seek(0, SeekOrigin.End);
+
+            foreach (var context in iterationArgs.ExpectedContexts)
+            {
+                TokenContextInstance nextInstance = reader.GetPreviousContext(iterationArgs.Recursive);
+                if (nextInstance == null)
+                {
+                    throw new Exception($"Unexpected end of contexts at Position {reader.Position} at Depth {reader.Depth}");
+                }
+
+                if (nextInstance.ContextDefinition.GetType() != context.ContextDefinition.GetType())
+                {
+                    throw new Exception($"Token mismatch at Position {reader.Position} at Depth {reader.Depth}. Expected: {context.ContextDefinition} Actual: {nextInstance.ContextDefinition}");
+                }
+
+                if (nextInstance.Depth != context.Depth)
+                {
+                    throw new Exception($"Token mismatch at Position {reader.Position} at Depth {reader.Depth}. Expected: {context.Depth} Actual: {reader.Depth}");
+                }
+            }
+
+            return true;
+        }
+
         private static void WalkTokens(TokenContextInstance contextInstance)
         {
             if (contextInstance.Parent != null)

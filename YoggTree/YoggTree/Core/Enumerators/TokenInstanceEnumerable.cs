@@ -109,7 +109,7 @@ namespace YoggTree.Core.Enumerators
         /// <returns></returns>
         private TokenInstance GetNextToken()
         {
-            if (_currentLocation.Position >= _currentLocation.ContextInstance.Tokens.Count) //reached the end of a context, "pop" back up to where we were in the parent stream to keep going.
+            if (_currentLocation.Position + 1 >= _currentLocation.ContextInstance.Tokens.Count) //reached the end of a context, "pop" back up to where we were in the parent stream to keep going.
             {
                 if (_currentLocation.Depth == 0) //we're at the top of the hierarchy and have reached the end of the context. All done.
                 {
@@ -121,7 +121,6 @@ namespace YoggTree.Core.Enumerators
             }
 
              _currentLocation.Position++;
-
             TokenInstance nextToken = _currentLocation.ContextInstance.Tokens[_currentLocation.Position];
 
             if (_recursive == true && nextToken.TokenInstanceType == TokenInstanceType.ContextPlaceholder) //recursive means we skip placeholders, so the "next" token is either the first child of the context, or, if the context is null, the next token in current context
@@ -221,8 +220,27 @@ namespace YoggTree.Core.Enumerators
                     _currentLocation.Position += offset;
                 }
             }
+            else
+            {
+                if (origin == SeekOrigin.End)
+                {
+                    if (_currentLocation.ContextInstance.Tokens.Count == 0)
+                    {
+                        _currentLocation.Position = 0;
+                    }
+                    else
+                    {
+                        _currentLocation.Position = _currentLocation.ContextInstance.Tokens.Count - 1;
+                    }  
+                }
+            }
         }
 
+        /// <summary>
+        /// Seeks the IEnumerable to the position of the given token.
+        /// </summary>
+        /// <param name="instance">The token to advance to.</param>
+        /// <exception cref="Exception"></exception>
         internal void Seek(TokenInstance instance)
         {
             var contextQueue = new Queue<TokenContextInstanceLocation>();
@@ -317,6 +335,16 @@ namespace YoggTree.Core.Enumerators
             }
 
             return -1;
+        }
+
+        internal static void SeekToEnd()
+        {
+
+        }
+
+        internal static void SeekToBeginning()
+        {
+
         }
     }
 }

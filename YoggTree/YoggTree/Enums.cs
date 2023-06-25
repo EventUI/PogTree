@@ -67,4 +67,13 @@ namespace YoggTree
         /// </summary>
         Unbounded = 1,
     }
+
+    public enum ReaderSeekLocation
+    {
+        None = 0,
+        FirstToken = 1,
+        LastToken = 2,
+        FirstContext = 3,
+        LastContext = 4
+    }
 }

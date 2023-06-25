@@ -116,11 +116,12 @@ namespace YoggTree
             _tokens.Direction = SeekDirection.Forwards;
             _tokens.Recursive = recursive;
 
+            if (_instanceEnumerator == null) _instanceEnumerator = _tokens.GetEnumerator();
             if (_instanceEnumerator.MoveNext() == false)
             {
                 if (_instanceEnumerator.Current == null)
                 {
-                    _instanceEnumerator = _tokens.GetEnumerator();
+                    _instanceEnumerator = null;
                 }
 
                 return null;
@@ -148,11 +149,12 @@ namespace YoggTree
             _tokens.Direction = SeekDirection.Backwards;
             _tokens.Recursive = recursive;
 
+            if (_instanceEnumerator == null) _instanceEnumerator = _tokens.GetEnumerator();
             if (_instanceEnumerator.MoveNext() == false)
             {
                 if (_instanceEnumerator.Current == null)
                 {
-                    _instanceEnumerator = _tokens.GetEnumerator();
+                    _instanceEnumerator = null;
                 }
 
                 return null;
@@ -222,7 +224,39 @@ namespace YoggTree
         public void Seek(int offset, SeekOrigin origin)
         {
             _tokens.Seek(offset, origin);
-            _contexts.Seek(_tokens.CurrentLocation.ContextInstance.Tokens[_tokens.CurrentLocation.Position].Context);
+
+            if (_tokens.CurrentLocation.Position < 0 || _tokens.CurrentLocation.ContextInstance.Tokens.Count == 0)
+            {
+                _contexts.Seek(_tokens.CurrentLocation.ContextInstance);
+            }
+            else
+            {
+                _contexts.Seek(_tokens.CurrentLocation.ContextInstance.Tokens[_tokens.CurrentLocation.Position].Context);
+            }            
+        }
+
+        public void Seek(ReaderSeekLocation location)
+        {
+            if (location == ReaderSeekLocation.FirstToken)
+            {
+
+            }
+            else if (location == ReaderSeekLocation.LastToken)
+            {
+
+            }
+            else if (location == ReaderSeekLocation.FirstContext)
+            {
+
+            }
+            else if (location == ReaderSeekLocation.LastContext)
+            {
+
+            }
+            else
+            {
+                return;
+            }
         }
 
         public void Seek(TokenInstance instance)
@@ -245,11 +279,12 @@ namespace YoggTree
             _contexts.Direction = SeekDirection.Forwards;
             _contexts.Recursive = recursive;
 
+            if (_contextEnumerator == null) _contextEnumerator = _contexts.GetEnumerator();
             if (_contextEnumerator.MoveNext() == false)
             {
                 if (_contextEnumerator.Current == null)
                 {
-                    _contextEnumerator = _contexts.GetEnumerator();
+                    _contextEnumerator = null;
                 }
 
                 return null;
@@ -277,11 +312,12 @@ namespace YoggTree
             _contexts.Direction = SeekDirection.Backwards;
             _contexts.Recursive = recursive;
 
+            if (_contextEnumerator == null) _contextEnumerator = _contexts.GetEnumerator();
             if (_contextEnumerator.MoveNext() == false)
             {
                 if (_contextEnumerator.Current == null)
                 {
-                    _contextEnumerator = _contexts.GetEnumerator();
+                    _contextEnumerator = null;
                 }
 
                 return null;

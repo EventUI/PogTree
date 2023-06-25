@@ -9,7 +9,7 @@ using YoggTreeTest.Common;
 
 namespace YoggTreeTest.Theories
 {
-    internal class Theory_ContextReader : IEnumerable<object[]>
+    internal class Theory_ContextReaderReverse : IEnumerable<object[]>
     {
         public IEnumerator<object[]> GetEnumerator()
         {
@@ -67,7 +67,7 @@ namespace YoggTreeTest.Theories
 
             iterationArgs = new TestIterationArgs()
             {
-                TestName = "Basic Non-Recursive",
+                TestName = "Basic Non-Recursive Reverse",
                 ContentToParse = contents,
                 Recursive = false,
                 ExpectedContexts = new List<TestContextInstance>() { instance1 },

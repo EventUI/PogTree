@@ -214,7 +214,27 @@ namespace YoggTree.Core.Enumerators
         {
             if (_currentLocation.Position <= 0)
             {
-                if (_recursive == true)
+                if (_currentLocation.Position == -1 && _currentLocation.Depth == 0)
+                {
+                    _currentLocation.Position++;
+                    return _currentLocation.ContextInstance;
+                }
+
+                if (_recursive == true && _currentLocation.Depth != 0)
+                {
+                    _currentLocation = _depthStack.Pop();
+                    return GetPreviousContext();
+                }               
+            }
+
+            _currentLocation.Position--;
+            if (_currentLocation.Position < _currentLocation.ContextInstance.ChildContexts.Count)
+            {
+                return _currentLocation.ContextInstance.ChildContexts[_currentLocation.Position];
+            }
+            else
+            {
+                if (_recursive == true && _currentLocation.Depth != 0)
                 {
                     _currentLocation = _depthStack.Pop();
                     return GetPreviousContext();
@@ -222,11 +242,8 @@ namespace YoggTree.Core.Enumerators
                 else
                 {
                     return null;
-                }                
+                }
             }
-
-            _currentLocation.Position--;
-            return _currentLocation.ContextInstance.ChildContexts[_currentLocation.Position];
         }
 
         /// <summary>
@@ -269,6 +286,20 @@ namespace YoggTree.Core.Enumerators
                 {
                     if (_currentLocation.ContextInstance.ChildContexts.Count < offset + _currentLocation.Position) throw new ArgumentOutOfRangeException(nameof(offset));
                     _currentLocation.Position += offset;
+                }
+            }
+            else
+            {
+                if (origin == SeekOrigin.End)
+                {
+                    if (_currentLocation.ContextInstance.Tokens.Count == 0)
+                    {
+                        _currentLocation.Position = 0;
+                    }
+                    else
+                    {
+                        _currentLocation.Position = _currentLocation.ContextInstance.Tokens.Count - 1;
+                    }
                 }
             }
         }
@@ -371,6 +402,16 @@ namespace YoggTree.Core.Enumerators
             }
 
             return -1;
+        }
+
+        internal static void SeekToEnd()
+        {
+
+        }
+
+        internal static void SeekToBeginning()
+        {
+
         }
     }
 }
