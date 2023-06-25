@@ -11,6 +11,8 @@ namespace YoggTreeTest.Theories
 {
     internal class Theory_ContextReader : IEnumerable<object[]>
     {
+        protected bool _reverse = false;
+
         public IEnumerator<object[]> GetEnumerator()
         {
             return GetTestArgs().GetEnumerator();
@@ -21,7 +23,7 @@ namespace YoggTreeTest.Theories
             return GetEnumerator();
         }
 
-        private List<object[]> GetTestArgs()
+        protected List<object[]> GetTestArgs()
         {
             List<object[]> args = new List<object[]>();
 
@@ -31,7 +33,7 @@ namespace YoggTreeTest.Theories
             return args;
         }
 
-        private static void GetSimpleIteration(List<object[]> args)
+        private void GetSimpleIteration(List<object[]> args)
         {
             string contents = "";
             var iterationArgs = new TestIterationArgs()
@@ -70,6 +72,7 @@ namespace YoggTreeTest.Theories
                 TestName = "Basic Non-Recursive",
                 ContentToParse = contents,
                 Recursive = false,
+                Reverse = _reverse,
                 ExpectedContexts = new List<TestContextInstance>() { instance1 },
                 ExpectedTokens = new List<TestTokenInstance>() { instance1.Tokens[0] }
             };
@@ -80,6 +83,7 @@ namespace YoggTreeTest.Theories
             {
                 TestName = "Basic Recursive",
                 Recursive = true,
+                Reverse = _reverse,
                 ExpectedContexts = new List<TestContextInstance>() { instance1, instance2 },
                 ExpectedTokens = new List<TestTokenInstance>() { instance2.Tokens[0], instance2.Tokens[1], instance2.Tokens[2] }
             };
@@ -87,7 +91,7 @@ namespace YoggTreeTest.Theories
             args.Add(YoggTreeTestHelper.ToObjArray(iterationArgs));
         }
 
-        private static void GetRecursiveIteration(List<object[]> args)
+        private void GetRecursiveIteration(List<object[]> args)
         {
             string contentToParse = "[]{}";
 
@@ -133,6 +137,7 @@ namespace YoggTreeTest.Theories
                 TestName = "Two Contexts",
                 ContentToParse = contentToParse,
                 Recursive = true,
+                Reverse = _reverse,
                 ExpectedContexts = new List<TestContextInstance>() { parent, child1, child2 },
                 ExpectedTokens = new List<TestTokenInstance>() { TestTokens.OpenBracket, TestTokens.CloseBracket, TestTokens.OpenBrace, TestTokens.CloseBrace }
 
@@ -241,6 +246,7 @@ namespace YoggTreeTest.Theories
                 TestName = "Deep Recursion",
                 ContentToParse = contentToParse,
                 Recursive = true,
+                Reverse = _reverse,
                 ExpectedContexts = new List<TestContextInstance>() { child, child_1_1, child_1_2, child_1_3, child_1_4, child_1_5 },
                 ExpectedTokens = new List<TestTokenInstance>()
                 {

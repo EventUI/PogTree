@@ -220,17 +220,34 @@ namespace YoggTree.Core.Enumerators
                     return _currentLocation.ContextInstance;
                 }
 
-                if (_recursive == true && _currentLocation.Depth != 0)
+                if (_currentLocation.ContextInstance.ChildContexts.Count == 0)
                 {
-                    _currentLocation = _depthStack.Pop();
-                    return GetPreviousContext();
-                }               
+                    if (_recursive == true && _currentLocation.Depth != 0)
+                    {
+                        _currentLocation = _depthStack.Pop();
+                        return GetPreviousContext();
+                    }
+                    else
+                    {
+                        return null;
+                    }
+                }
             }
 
-            _currentLocation.Position--;
+
             if (_currentLocation.Position < _currentLocation.ContextInstance.ChildContexts.Count)
             {
-                return _currentLocation.ContextInstance.ChildContexts[_currentLocation.Position];
+                if (_currentLocation.Position == -1 || _recursive == false)
+                {
+                    return _currentLocation.ContextInstance;
+                }
+                else
+                {
+                    var context = _currentLocation.ContextInstance.ChildContexts[_currentLocation.Position];
+                    _currentLocation.Position--;
+
+                    return context;
+                }
             }
             else
             {
@@ -326,6 +343,8 @@ namespace YoggTree.Core.Enumerators
                         Position = -1
                     };
 
+                    _depthStack.Push(_currentLocation);
+
                     return;
                 }
                 else //if we went "above" our root context, we have made a mistake.
@@ -335,11 +354,11 @@ namespace YoggTree.Core.Enumerators
             }
 
             var contextQueue = new Queue<TokenContextInstanceLocation>();
-            TokenContextInstance parent = instance.Parent;
+            TokenContextInstance parent = instance;
 
             var initialLocation = new TokenContextInstanceLocation();
             initialLocation.ContextInstance = parent;
-            initialLocation.Position = GetContextIndex(instance);
+            initialLocation.Position = -1;
 
             contextQueue.Enqueue(initialLocation);
             bool isUnderRoot = false;
@@ -404,14 +423,95 @@ namespace YoggTree.Core.Enumerators
             return -1;
         }
 
-        internal static void SeekToEnd()
+        internal void SeekToEnd(bool recursive)
         {
+            if (recursive == false)
+            {
+                _currentLocation.Position = (_currentLocation.ContextInstance.Tokens.Count == 0) ? 0 : _currentLocation.ContextInstance.Tokens.Count - 1;
+            }
+            else
+            {
 
+                if (_rootContext.Tokens.Count == 0)
+                {
+                    _depthStack.Clear();
+                    _currentLocation = new TokenContextInstanceLocation()
+                    {
+                        ContextInstance = _rootContext,
+                        Depth = 0,
+                        Position = 0
+                    };
+
+                    _depthStack.Push(_currentLocation);
+                }
+                else
+                {
+                    TokenContextInstance parentContext = _rootContext;
+                    TokenInstance lastToken = _rootContext.Tokens[_rootContext.Tokens.Count - 1];
+                    while (lastToken != null && lastToken.TokenInstanceType == TokenInstanceType.ContextPlaceholder)
+                    {
+                        bool foundToken = false;
+                        bool foundChildContext = false;
+
+                        if (parentContext.Tokens.Count == 0)
+                        {
+                            break;
+                        }
+
+                        for (int x = parentContext.Tokens.Count - 1; x >= 0; x--)
+                        {
+                            lastToken = parentContext.Tokens[x];
+                            if (lastToken.TokenInstanceType == TokenInstanceType.ContextPlaceholder)
+                            {
+                                parentContext = lastToken.GetChildContext();
+                                foundChildContext = true;
+                                break;
+                            }
+                            else
+                            {
+                                foundToken = true;
+                                break;
+                            }
+                        }
+
+                        if (foundToken == true)
+                        {
+
+                            break;
+                        }
+                        else if (foundChildContext == true)
+                        {
+                            continue;
+                        }
+                    }
+
+                    if (lastToken != null)
+                    {
+                        Seek(lastToken.Context);
+                        Seek(0, SeekOrigin.End);
+                    }
+                }
+            }
         }
 
-        internal static void SeekToBeginning()
+        internal void SeekToBeginning(bool recursive)
         {
+            if (_recursive == false)
+            {
+                _currentLocation.Position = -1;
+            }
+            else
+            {
+                _depthStack.Clear();
+                _currentLocation = new TokenContextInstanceLocation()
+                {
+                    ContextInstance = _rootContext,
+                    Depth = 0,
+                    Position = -1
+                };
 
+                _depthStack.Push(_currentLocation);
+            }
         }
     }
 }

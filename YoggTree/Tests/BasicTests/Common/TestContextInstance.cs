@@ -134,14 +134,16 @@ namespace YoggTreeTest.Common
 
     public record TestIterationArgs
     {
-        public string TestName { get; init; }
+        public string TestName { get; set; }
 
-        public string ContentToParse { get; init; }
+        public string ContentToParse { get; set; }
 
-        public bool Recursive { get; init; } = false;
+        public bool Recursive { get; set; } = false;
 
-        public List<TestTokenInstance> ExpectedTokens { get; init; } = new List<TestTokenInstance>();
+        public bool Reverse { get; set; } = false; 
 
-        public List<TestContextInstance> ExpectedContexts { get; init; } = new List<TestContextInstance>();
+        public List<TestTokenInstance> ExpectedTokens { get; set; } = new List<TestTokenInstance>();
+
+        public List<TestContextInstance> ExpectedContexts { get; set; } = new List<TestContextInstance>();
     }
 }

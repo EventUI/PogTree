@@ -32,7 +32,9 @@ namespace YoggTree
             get 
             {
                 if (_enumeratedContextLast == true) UpdateTokenInstancePosition();
-                int position = _tokens.CurrentLocation.Position + 1; 
+                int position = _tokens.CurrentLocation.Position; 
+                if (position < 0) position = 0;
+
                 return position;
             }
         }
@@ -235,23 +237,35 @@ namespace YoggTree
             }            
         }
 
-        public void Seek(ReaderSeekLocation location)
+        public void Seek(ReaderSeekLocation location, bool recursive = false)
         {
             if (location == ReaderSeekLocation.FirstToken)
             {
+                UpdateTokenInstancePosition();
 
+                _tokens.SeekToBeginning(recursive);
+                _enumeratedTokenLast = true;
             }
             else if (location == ReaderSeekLocation.LastToken)
             {
+                UpdateTokenInstancePosition();
 
+                _tokens.SeekToEnd(recursive);
+                _enumeratedTokenLast = true;
             }
             else if (location == ReaderSeekLocation.FirstContext)
             {
+                UpdateTokenContextInstancePosition();
 
+                _contexts.SeekToBeginning(recursive);
+                _enumeratedContextLast = true;
             }
             else if (location == ReaderSeekLocation.LastContext)
             {
+                UpdateTokenContextInstancePosition();
 
+                _contexts.SeekToEnd(recursive);
+                _enumeratedContextLast = true;
             }
             else
             {
@@ -343,7 +357,7 @@ namespace YoggTree
             if (_enumeratedContextLast == false) return;
 
             TokenInstance referenceToken = null;
-            TokenContextInstance lastContext = _contexts.CurrentLocation.ContextInstance.ChildContexts[_contexts.CurrentLocation.Position];
+            TokenContextInstance lastContext = _contexts.CurrentLocation.Position < 0 ? _contexts.CurrentLocation.ContextInstance : _contexts.CurrentLocation.ContextInstance.ChildContexts[_contexts.CurrentLocation.Position];
                 
             if (_contextEnumerator.Current == null)
             {
@@ -372,7 +386,7 @@ namespace YoggTree
             }
             else
             {
-                referenceToken = _contexts.Direction == SeekDirection.Forwards ? lastContext.StartToken : lastContext.EndToken;
+                referenceToken = _contexts.Direction == SeekDirection.Forwards ? lastContext.Tokens[0] : lastContext.Tokens[lastContext.Tokens.Count - 1];
             }
 
             _tokens.Seek(referenceToken);
@@ -385,9 +399,15 @@ namespace YoggTree
             if (_enumeratedTokenLast == false) return;
 
             int position = _tokens.CurrentLocation.Position == -1 ? 0 : _tokens.CurrentLocation.Position;
-            TokenInstance lastToken = _tokens.CurrentLocation.ContextInstance.Tokens[position];
-
-            _contexts.Seek(lastToken.Context);
+            if (_tokens.CurrentLocation.ContextInstance.Tokens.Count == 0)
+            {
+                _contexts.Seek(_tokens.CurrentLocation.ContextInstance);
+            }
+            else
+            {
+                TokenInstance lastToken = _tokens.CurrentLocation.ContextInstance.Tokens[position];
+                _contexts.Seek(lastToken.Context);
+            }
             _enumeratedTokenLast = false;
         }
     }

@@ -112,7 +112,7 @@ namespace YoggTree
         /// <param name="name">The human readable name of the token.</param>
         /// <param name="spoolSize">The size of the spool of results to build. Large spools are more performant, smaller spools use less memory.</param>
         /// <param name="contextKey">If this token starts or ends a context, this is the matching "key" to the corresponding start or end token.</param>
-        /// <param name="flags">Flags for indicating special behavior of this token defintion.</param>
+        /// <param name="flags">Flags for indicating special behavior of this token definition.</param>
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="ArgumentException"></exception>
         public TokenDefinition(Regex token, string name, TokenDefinitionFlags flags, string contextKey = null, int? spoolSize = null)

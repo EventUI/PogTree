@@ -25,7 +25,7 @@ namespace YoggTreeTest.Specs
         }
 
         [Theory]
-        [ClassData(typeof(Theory_ContextReader))]
+        [ClassData(typeof(Theory_ContextReaderReverse))]
         public void BasicReaderTestReverse(TestIterationArgs args)
         {
             YoggTreeTestHelper.CompareReaderResultsReverse(args);

@@ -114,13 +114,26 @@ namespace YoggTreeTest.Common
             var parser = new TokenParser();
             var parsed = parser.Parse(new TestContext(), iterationArgs.ContentToParse);
 
+            iterationArgs.ExpectedContexts.Reverse();
+            iterationArgs.ExpectedTokens.Reverse();
+
             var reader = parsed.GetReader();
-
-            reader.Seek(0, SeekOrigin.End);
-
+            reader.Seek(ReaderSeekLocation.LastToken, iterationArgs.Recursive);
+            bool first = true;
             foreach (var token in iterationArgs.ExpectedTokens)
             {
-                TokenInstance nextToken = reader.GetPreviousToken(iterationArgs.Recursive);
+                TokenInstance nextToken = null;
+
+                if (first == true)
+                {
+                    nextToken = reader.CurrentToken;
+                    first = false;
+                }
+                else
+                {
+                    nextToken = reader.GetPreviousToken(iterationArgs.Recursive);
+                }
+
                 if (nextToken == null)
                 {
                     throw new Exception($"Unexpected end of tokens at Position {reader.Position} at Depth {reader.Depth}");
@@ -137,7 +150,7 @@ namespace YoggTreeTest.Common
                 }
             }
 
-            reader.Seek(0, SeekOrigin.End);
+            reader.Seek(ReaderSeekLocation.LastContext, iterationArgs.Recursive);
 
             foreach (var context in iterationArgs.ExpectedContexts)
             {

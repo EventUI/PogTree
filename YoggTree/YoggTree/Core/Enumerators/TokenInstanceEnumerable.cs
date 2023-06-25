@@ -153,29 +153,73 @@ namespace YoggTree.Core.Enumerators
         /// <returns></returns>
         private TokenInstance GetPreviousToken()
         {
+            TokenInstance previousToken = null;
+
             if (_currentLocation.Position <= 0)
             {
-                if (_currentLocation.Depth == 0) return null;
-                if (_recursive == false)
+                if (_currentLocation.Position == 0)
                 {
-                    return null;
+                    if (_currentLocation.ContextInstance.Tokens.Count > 0)
+                    {
+                        previousToken = _currentLocation.ContextInstance.Tokens[_currentLocation.Position];
+                        _currentLocation.Position--;
+                    }
                 }
-                else
+                else if (_currentLocation.Position < 0)
+                {
+
+                }
+
+                if (previousToken == null && _recursive == true && _currentLocation.Depth != 0)
                 {
                     _currentLocation = _depthStack.Pop();
                     return GetPreviousToken();
                 }
             }
-
-            var previousToken = _currentLocation.ContextInstance.Tokens[_currentLocation.Position - 1];
-            _currentLocation.Position--;
-
-            if (_recursive == true && previousToken.TokenInstanceType == TokenInstanceType.ContextPlaceholder)
+            else
             {
-                return GetPreviousToken();
+                _currentLocation.Position--;
+                if (_currentLocation.Position < _currentLocation.ContextInstance.Tokens.Count)
+                {
+                    if (_currentLocation.Position == -1 && _currentLocation.Depth > 0)
+                    {
+                        if (_recursive == true)
+                        {
+                            _currentLocation = _depthStack.Pop();
+                            return GetPreviousToken();
+                        }
+
+                        return null;
+                    }
+                    else
+                    {
+                        previousToken =_currentLocation.ContextInstance.Tokens[_currentLocation.Position];
+                    }
+                }
+                else
+                {
+                    if (_recursive == true && _currentLocation.Depth != 0)
+                    {
+                        _currentLocation = _depthStack.Pop();
+                        return GetPreviousToken();
+                    }
+                    else
+                    {
+                        return null;
+                    }
+                }
             }
 
-            return previousToken;           
+            if (previousToken != null && previousToken.TokenInstanceType == TokenInstanceType.ContextPlaceholder && _recursive == true)
+            {
+                _currentLocation.Position--;
+                _currentLocation = _depthStack.Pop();
+                return GetPreviousToken();
+            }
+            else
+            {
+                return previousToken;
+            }
         }
 
         /// <summary>
@@ -226,7 +270,7 @@ namespace YoggTree.Core.Enumerators
                 {
                     if (_currentLocation.ContextInstance.Tokens.Count == 0)
                     {
-                        _currentLocation.Position = 0;
+                        _currentLocation.Position = -1;
                     }
                     else
                     {
@@ -282,7 +326,7 @@ namespace YoggTree.Core.Enumerators
             _depthStack.Clear();
 
             int depthCounter = contextQueue.Count;
-            while (depthCounter >= 0)
+            while (depthCounter > 0)
             {
                 var nextLocation = contextQueue.Dequeue();
                 nextLocation.Depth = depthCounter;
@@ -337,14 +381,94 @@ namespace YoggTree.Core.Enumerators
             return -1;
         }
 
-        internal static void SeekToEnd()
+        internal void SeekToEnd(bool recursive)
         {
+            if (recursive == false)
+            {
+                _currentLocation.Position = (_currentLocation.ContextInstance.Tokens.Count == 0) ? 0 : _currentLocation.ContextInstance.Tokens.Count - 1;
+            }
+            else
+            {
 
+                if (_rootContext.Tokens.Count == 0)
+                {
+                    _depthStack.Clear();
+                    _currentLocation = new TokenContextInstanceLocation()
+                    {
+                        ContextInstance = _rootContext,
+                        Depth = 0,
+                        Position = 0
+                    };
+
+                    _depthStack.Push(_currentLocation);
+                }
+                else
+                {                        
+                    TokenContextInstance parentContext = _rootContext;
+                    TokenInstance lastToken = _rootContext.Tokens[_rootContext.Tokens.Count - 1];
+                    while (lastToken != null && lastToken.TokenInstanceType == TokenInstanceType.ContextPlaceholder)
+                    {
+                        bool foundToken = false;
+                        bool foundChildContext = false;
+
+                        if (parentContext.Tokens.Count == 0)
+                        {
+                            break;
+                        }
+
+                        for (int x = parentContext.Tokens.Count - 1; x >= 0; x--)
+                        {
+                            lastToken = parentContext.Tokens[x];
+                            if (lastToken.TokenInstanceType == TokenInstanceType.ContextPlaceholder)
+                            {
+                                parentContext = lastToken.GetChildContext();
+                                foundChildContext = true;
+                                break;
+                            }
+                            else
+                            {
+                                foundToken = true;
+                                break;
+                            }
+                        }
+
+                        if (foundToken == true)
+                        {
+                            
+                            break;
+                        }
+                        else if (foundChildContext == true)
+                        {
+                            continue;
+                        }
+                    }
+
+                    if (lastToken != null)
+                    {
+                        Seek(lastToken);
+                    }
+                }
+            }
         }
 
-        internal static void SeekToBeginning()
+        internal void SeekToBeginning(bool recursive)
         {
+            if (_recursive == false)
+            {
+                _currentLocation.Position = -1;
+            }
+            else
+            {
+                _depthStack.Clear();
+                _currentLocation = new TokenContextInstanceLocation()
+                {
+                    ContextInstance = _rootContext,
+                    Depth = 0,
+                    Position = -1
+                };
 
+                _depthStack.Push(_currentLocation);
+            }
         }
     }
 }
