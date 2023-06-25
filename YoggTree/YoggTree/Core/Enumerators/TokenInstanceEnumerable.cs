@@ -350,6 +350,7 @@ namespace YoggTree.Core.Enumerators
                 };
 
                 _depthStack.Clear();
+                _depthStack.Push(_currentLocation);
             }
             else
             {
