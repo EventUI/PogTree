@@ -6,6 +6,7 @@ LICENSE file in the root directory of this source tree.*/
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -30,11 +31,11 @@ namespace YoggTreeTest.Common
             var result = parser.Parse(new T(), parseArgs.ContentToParse);
 
             int tokenWalkCount = 0;
-            var token = result.Tokens.FirstOrDefault()?.GetNextToken();
+            var token = result.Tokens.FirstOrDefault()?.PeekNextToken();
             while (token != null)
             {
                 tokenWalkCount++;
-                var nextToken = token.GetNextToken();
+                var nextToken = token.PeekNextToken();
                 if (nextToken == null)
                 {
                     var possibleEndToken = token?.GetAbsoluteInstance();
@@ -124,7 +125,7 @@ namespace YoggTreeTest.Common
             {
                 TokenInstance nextToken = null;
 
-                if (first == true)
+                if (first == true) //the first token when going in reverse is the very last token, calling get previous token will get the one before it if you are at the end.
                 {
                     nextToken = reader.CurrentToken;
                     first = false;
@@ -150,11 +151,21 @@ namespace YoggTreeTest.Common
                 }
             }
 
+            reader.Seek(ReaderSeekLocation.FirstToken, true);
             reader.Seek(ReaderSeekLocation.LastContext, iterationArgs.Recursive);
 
+            first = true;
             foreach (var context in iterationArgs.ExpectedContexts)
             {
-                TokenContextInstance nextInstance = reader.GetPreviousContext(iterationArgs.Recursive);
+                TokenContextInstance nextInstance = null;
+                if (first == true) //the first item in the reversed array of contexts will never match due to the asymmetric way recursion works in reverse for contexts.
+                {
+                    first = false;
+                    continue;
+                }
+
+                nextInstance = reader.GetPreviousContext(iterationArgs.Recursive);                
+
                 if (nextInstance == null)
                 {
                     throw new Exception($"Unexpected end of contexts at Position {reader.Position} at Depth {reader.Depth}");
@@ -180,14 +191,14 @@ namespace YoggTreeTest.Common
             {
                 if (contextInstance.Tokens.Count == 0)
                 {
-                    if (contextInstance.StartToken.GetNextToken() != contextInstance.EndToken)
+                    if (contextInstance.StartToken.PeekNextToken() != contextInstance.EndToken)
                     {
-                        throw new Exception($"Token mismatch: StartToken's nect token for empty context {contextInstance} did not match EndToken. Expected: {contextInstance.EndToken} Actual: {contextInstance.StartToken.GetNextToken()}");
+                        throw new Exception($"Token mismatch: StartToken's nect token for empty context {contextInstance} did not match EndToken. Expected: {contextInstance.EndToken} Actual: {contextInstance.StartToken.PeekNextToken()}");
                     }
 
-                    if (contextInstance.EndToken.GetPreviousToken() != contextInstance.StartToken)
+                    if (contextInstance.EndToken.PeekPreviousToken() != contextInstance.StartToken)
                     {
-                        throw new Exception($"Token mismatch: EndToken's previous token for empty context {contextInstance} did not match StartToken. Expected: {contextInstance.StartToken} Actual: {contextInstance.EndToken.GetPreviousToken()}");
+                        throw new Exception($"Token mismatch: EndToken's previous token for empty context {contextInstance} did not match StartToken. Expected: {contextInstance.StartToken} Actual: {contextInstance.EndToken.PeekPreviousToken()}");
                     }
                 }
                 if (contextInstance.Tokens.Count > 0 && contextInstance.Parent != null) //this check doesn't apply to the root context
@@ -211,7 +222,7 @@ namespace YoggTreeTest.Common
                 {
                     if (contextInstance.Parent == null)
                     {
-                        if (curToken.GetPreviousToken() != null) throw new Exception("Starting token in root context had a previous token.");
+                        if (curToken.PeekPreviousToken() != null) throw new Exception("Starting token in root context had a previous token.");
                     }
                     else
                     {
@@ -222,24 +233,24 @@ namespace YoggTreeTest.Common
 
                         if (index == 0 && contextInstance.Parent.Depth == 0)
                         {
-                            if (placeholder.GetPreviousToken() != null) throw new Exception("Starting token in first child context had a previous token.");
+                            if (placeholder.PeekPreviousToken() != null) throw new Exception("Starting token in first child context had a previous token.");
                         }
                         else
                         {
-                            if (placeholder.GetChildContext().StartToken != curToken) throw new Exception($"Token mismatch: Starting token for context {contextInstance} did not match placeholder's preceding token at index {x}. Expected: {contextInstance.StartToken} Actual: {placeholder.GetPreviousToken()}");
+                            if (placeholder.GetChildContext().StartToken != curToken) throw new Exception($"Token mismatch: Starting token for context {contextInstance} did not match placeholder's preceding token at index {x}. Expected: {contextInstance.StartToken} Actual: {placeholder.PeekPreviousToken()}");
                         }
                     }
                 }
                 else if (x < contextInstance.Tokens.Count - 1) //token in middle of context
                 {
-                    if (curToken.GetPreviousToken() != contextInstance.Tokens[x -1]) throw new Exception($"Token mismatch: Token for context {contextInstance} did not match the context's preceding token at index {x - 1}. Expected: {contextInstance.Tokens[x - 1]} Actual: {curToken.GetPreviousToken()}");
-                    if (curToken.GetNextToken() != contextInstance.Tokens[x + 1]) throw new Exception($"Token mismatch: Token for context {contextInstance} did not match the context's preceding token at index {x + 1}. Expected: {contextInstance.Tokens[x + 1]} Actual: {curToken.GetNextToken()}");
+                    if (curToken.PeekPreviousToken() != contextInstance.Tokens[x -1]) throw new Exception($"Token mismatch: Token for context {contextInstance} did not match the context's preceding token at index {x - 1}. Expected: {contextInstance.Tokens[x - 1]} Actual: {curToken.PeekPreviousToken()}");
+                    if (curToken.PeekNextToken() != contextInstance.Tokens[x + 1]) throw new Exception($"Token mismatch: Token for context {contextInstance} did not match the context's preceding token at index {x + 1}. Expected: {contextInstance.Tokens[x + 1]} Actual: {curToken.PeekNextToken()}");
                 }
                 else
                 {
                     if (contextInstance.Parent == null)
                     {
-                        if (curToken.GetNextToken() != null) throw new Exception("Ending token in root context had a following token.");
+                        if (curToken.PeekNextToken() != null) throw new Exception("Ending token in root context had a following token.");
                     }
                     else
                     {

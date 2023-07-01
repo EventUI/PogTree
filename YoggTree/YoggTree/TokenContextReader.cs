@@ -154,11 +154,7 @@ namespace YoggTree
             if (_instanceEnumerator == null) _instanceEnumerator = _tokens.GetEnumerator();
             if (_instanceEnumerator.MoveNext() == false)
             {
-                if (_instanceEnumerator.Current == null)
-                {
-                    _instanceEnumerator = null;
-                }
-
+                _instanceEnumerator = null;
                 return null;
             }
 
@@ -276,13 +272,13 @@ namespace YoggTree
         public void Seek(TokenInstance instance)
         {
             _tokens.Seek(instance);
-            _contexts.Seek(instance.Context);
+            _enumeratedTokenLast = true;
         }
 
         public void Seek(TokenContextInstance context)
         {
-            _tokens.Seek(context);
             _contexts.Seek(context);
+            _enumeratedContextLast = true;
         }
 
         public TokenContextInstance GetNextContext(bool recursive = false)
@@ -329,11 +325,7 @@ namespace YoggTree
             if (_contextEnumerator == null) _contextEnumerator = _contexts.GetEnumerator();
             if (_contextEnumerator.MoveNext() == false)
             {
-                if (_contextEnumerator.Current == null)
-                {
-                    _contextEnumerator = null;
-                }
-
+                _contextEnumerator = null;
                 return null;
             }
 
@@ -357,8 +349,9 @@ namespace YoggTree
             if (_enumeratedContextLast == false) return;
 
             TokenInstance referenceToken = null;
-            TokenContextInstance lastContext = _contexts.CurrentLocation.Position < 0 ? _contexts.CurrentLocation.ContextInstance : _contexts.CurrentLocation.ContextInstance.ChildContexts[_contexts.CurrentLocation.Position];
-                
+            TokenContextInstance lastContext = _contextEnumerator?.Current; //
+            if (lastContext == null) lastContext = _contexts.CurrentLocation.Position < 0 ? _contexts.CurrentLocation.ContextInstance : _contexts.CurrentLocation.ContextInstance.ChildContexts[_contexts.CurrentLocation.Position];
+            
             if (_contextEnumerator.Current == null)
             {
                 if (_contexts.Recursive == true)

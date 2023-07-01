@@ -172,11 +172,15 @@ namespace YoggTree
         }
 
         /// <summary>
-        /// Gets the token that follows this one.
+        /// Gets the token that follows this one. 
+        /// 
+        /// If peeking ahead during a parse operation, this will get the next token using the current token's ContextDefinition even if the next peeked token extends beyond the closing token of the Context of this token. 
+        /// If peeking ahead after a parse operation, this will get the next token found in the same context as the current token. If there are no more tokens in the token's context, null is returned.
+        /// 
         /// </summary>
         /// <param name="instance"></param>
         /// <returns></returns>
-        public static TokenInstance GetNextToken(this TokenInstance instance)
+        public static TokenInstance PeekNextToken(this TokenInstance instance)
         {
             if (instance == null) return null;
             if (instance.NextToken != null && instance.NextToken.Context == instance.Context) return instance.NextToken;
@@ -189,7 +193,7 @@ namespace YoggTree
         /// </summary>
         /// <param name="instance"></param>
         /// <returns></returns>
-        public static TokenInstance GetPreviousToken(this TokenInstance instance)
+        public static TokenInstance PeekPreviousToken(this TokenInstance instance)
         {
             if (instance == null) return null;
             return instance.PreviousToken;
