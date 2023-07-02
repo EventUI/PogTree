@@ -10,17 +10,27 @@ namespace YoggTree.Core.Tokens
     /// </summary>
     public sealed class TextContentToken : TokenDefinition
     {
+        /// <summary>
+        /// A singleton instance of the TextContentToken.
+        /// </summary>
         public static TextContentToken Instance { get; } = new TextContentToken();
 
+        /// <summary>
+        /// Creates a new TextContextToken.
+        /// </summary>
         public TextContentToken()
             : base(new Regex(".+"), "<text content>")
         {
 
         }
 
+        /// <summary>
+        /// Gets a string that identifies this token as StringContentToken.
+        /// </summary>
+        /// <returns></returns>
         public override string ToString()
         {
-            return $"{GetType().Name}-{_name})";
+            return $"{GetType().Name}-{Name})";
         }
     }
 }

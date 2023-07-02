@@ -39,7 +39,7 @@ namespace YoggTreeTest.Common
                 typeof(WhitespaceHorizontalToken),
                 typeof(WhitespaceVerticalToken),
                 typeof(BackslashToken),
-                typeof(ForwardslashToken),
+                typeof(ForwardSlashToken),
                 typeof(CloseParenthesisToken),
                 typeof(OpenParenthesisToken)
             });

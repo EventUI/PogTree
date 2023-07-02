@@ -8,22 +8,28 @@ LICENSE file in the root directory of this source tree.*/
 
 namespace YoggTree
 {
+    /// <summary>
+    /// Interface extracted from the TokenContextDefinition class - this interface is intended to be inherited by other interfaces to create "marker" interfaces to flag TokenContextDefinition-derived types with rather than serve as the foundation for a new type that does not inherit from TokenContextDefinition.
+    /// </summary>
     public interface ITokenContextDefinition
     {
+        /// <summary>
+        /// Flags indicating special behavior to be taken when encountering this context definition.
+        /// </summary>
         ContextDefinitionFlags Flags { get; }
+        /// <summary>
+        /// The unique ID of this ContextDefinition.
+        /// </summary>
         Guid ID { get; }
-        string Name { get; }
-        IReadOnlyCollection<TokenDefinition> ValidTokens { get; }
 
-        void AddToken(Type tokenType);
-        void AddToken<TToken>() where TToken : TokenDefinition, new();
-        void AddToken<TToken>(Func<TToken> factory) where TToken : TokenDefinition;
-        void AddTokens(IEnumerable<Type> tokenTypes);
-        bool EndsCurrentContext(TokenInstance tokenInstance);
-        bool HasToken(TokenInstance token);
-        bool HasToken(Type tokenDefinitionType);
-        bool HasToken<TToken>() where TToken : TokenDefinition;
-        void RemoveToken<TToken>() where TToken : TokenDefinition;
-        bool StartsNewContext(TokenInstance tokenInstance);
+        /// <summary>
+        /// The human-readable name describing this context.
+        /// </summary>
+        string Name { get; }
+
+        /// <summary>
+        /// All of the token definitions that should be processed in this context.
+        /// </summary>
+        IReadOnlyCollection<TokenDefinition> ValidTokens { get; }
     }
 }

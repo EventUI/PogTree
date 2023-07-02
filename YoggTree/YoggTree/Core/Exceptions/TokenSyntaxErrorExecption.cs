@@ -14,7 +14,7 @@ namespace YoggTree.Core.Exceptions
     /// <summary>
     /// Exception thrown when a token identifies that is has come before or after a token that is determined to be invalid.
     /// </summary>
-    public class TokenSyntaxErrorExecption : Exception
+    public class TokenSyntaxErrorException : Exception
     {
         /// <summary>
         /// The line number where the exception occurred. The line number is relative to the entire content string being parsed.
@@ -26,7 +26,13 @@ namespace YoggTree.Core.Exceptions
         /// </summary>
         public int ContentColumnNumber { get; } = -1;
 
-        public TokenSyntaxErrorExecption(string message, int contentLineNumber, int contentColumnNumber)
+        /// <summary>
+        /// Creates  a new TokenSyntaxErrorException.
+        /// </summary>
+        /// <param name="message">The message for the error.</param>
+        /// <param name="contentLineNumber">The line number in the source being parsed of where the parse error was.</param>
+        /// <param name="contentColumnNumber">The column number in the source being parsed of where the parse error was.</param>
+        public TokenSyntaxErrorException(string message, int contentLineNumber, int contentColumnNumber)
             : base(message)
         {
             ContentLineNumber = contentLineNumber;

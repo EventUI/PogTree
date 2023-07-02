@@ -73,22 +73,22 @@ namespace YoggTreeTest.Common
 
                 if (nextToken == null)
                 {
-                    throw new Exception($"Unexpected end of tokens at Position {reader.Position} at Depth {reader.Depth}");
+                    throw new Exception($"Unexpected end of tokens at Position {reader.TokenPosition} at Depth {reader.Depth}");
                 }
 
                 if (nextToken != reader.CurrentToken)
                 {
-                    throw new Exception($"CurrentToken/GetNextToken mismatch Position {reader.Position} at Depth {reader.Depth}. Expected: {token} Actual: {nextToken}");
+                    throw new Exception($"CurrentToken/GetNextToken mismatch Position {reader.TokenPosition} at Depth {reader.Depth}. Expected: {token} Actual: {nextToken}");
                 }
 
                 if (nextToken.TokenDefinition.GetType() != token.TokenDefinition.GetType())
                 {
-                    throw new Exception($"Token mismatch at Position {reader.Position} at Depth {reader.Depth}. Expected: {token.TokenDefinition} Actual: {nextToken.TokenDefinition}");
+                    throw new Exception($"Token mismatch at Position {reader.TokenPosition} at Depth {reader.Depth}. Expected: {token.TokenDefinition} Actual: {nextToken.TokenDefinition}");
                 }
 
                 if (nextToken.TokenInstanceType != token.InstanceType)
                 {
-                    throw new Exception($"Token mismatch at Position {reader.Position} at Depth {reader.Depth}. Expected: {token.InstanceType} Actual: {nextToken.TokenInstanceType}");
+                    throw new Exception($"Token mismatch at Position {reader.TokenPosition} at Depth {reader.Depth}. Expected: {token.InstanceType} Actual: {nextToken.TokenInstanceType}");
                 }
             }
 
@@ -99,22 +99,22 @@ namespace YoggTreeTest.Common
                 TokenContextInstance nextInstance = reader.GetNextContext(iterationArgs.Recursive);
                 if (nextInstance == null)
                 {
-                    throw new Exception($"Unexpected end of contexts at Position {reader.Position} at Depth {reader.Depth}");
+                    throw new Exception($"Unexpected end of contexts at Position {reader.TokenPosition} at Depth {reader.Depth}");
                 }
 
                 if (nextInstance != reader.CurrentContext)
                 {
-                    throw new Exception($"CurrentToken/GetNextToken mismatch Position {reader.Position} at Depth {reader.Depth}. Expected: {nextInstance} Actual: {reader.CurrentContext}");
+                    throw new Exception($"CurrentToken/GetNextToken mismatch Position {reader.TokenPosition} at Depth {reader.Depth}. Expected: {nextInstance} Actual: {reader.CurrentContext}");
                 }
 
                 if (nextInstance.ContextDefinition.GetType() != context.ContextDefinition.GetType())
                 {
-                    throw new Exception($"Token mismatch at Position {reader.Position} at Depth {reader.Depth}. Expected: {context.ContextDefinition} Actual: {nextInstance.ContextDefinition}");
+                    throw new Exception($"Token mismatch at Position {reader.TokenPosition} at Depth {reader.Depth}. Expected: {context.ContextDefinition} Actual: {nextInstance.ContextDefinition}");
                 }
 
                 if (nextInstance.Depth != context.Depth)
                 {
-                    throw new Exception($"Token mismatch at Position {reader.Position} at Depth {reader.Depth}. Expected: {context.Depth} Actual: {reader.Depth}");
+                    throw new Exception($"Token mismatch at Position {reader.TokenPosition} at Depth {reader.Depth}. Expected: {context.Depth} Actual: {reader.Depth}");
                 }
             }
 
@@ -148,22 +148,22 @@ namespace YoggTreeTest.Common
 
                 if (nextToken == null)
                 {
-                    throw new Exception($"Unexpected end of tokens at Position {reader.Position} at Depth {reader.Depth}");
+                    throw new Exception($"Unexpected end of tokens at Position {reader.TokenPosition} at Depth {reader.Depth}");
                 }
 
                 if (nextToken != reader.CurrentToken)
                 {
-                    throw new Exception($"CurrentToken/GetNextToken mismatch Position {reader.Position} at Depth {reader.Depth}. Expected: {token} Actual: {nextToken}");
+                    throw new Exception($"CurrentToken/GetNextToken mismatch Position {reader.TokenPosition} at Depth {reader.Depth}. Expected: {token} Actual: {nextToken}");
                 }
 
                 if (nextToken.TokenDefinition.GetType() != token.TokenDefinition.GetType())
                 {
-                    throw new Exception($"Token mismatch at Position {reader.Position} at Depth {reader.Depth}. Expected: {token.TokenDefinition} Actual: {nextToken.TokenDefinition}");
+                    throw new Exception($"Token mismatch at Position {reader.TokenPosition} at Depth {reader.Depth}. Expected: {token.TokenDefinition} Actual: {nextToken.TokenDefinition}");
                 }
 
                 if (nextToken.TokenInstanceType != token.InstanceType)
                 {
-                    throw new Exception($"Token mismatch at Position {reader.Position} at Depth {reader.Depth}. Expected: {token.InstanceType} Actual: {nextToken.TokenInstanceType}");
+                    throw new Exception($"Token mismatch at Position {reader.TokenPosition} at Depth {reader.Depth}. Expected: {token.InstanceType} Actual: {nextToken.TokenInstanceType}");
                 }
             }
 
@@ -184,22 +184,22 @@ namespace YoggTreeTest.Common
 
                 if (nextInstance == null)
                 {
-                    throw new Exception($"Unexpected end of contexts at Position {reader.Position} at Depth {reader.Depth}");
+                    throw new Exception($"Unexpected end of contexts at Position {reader.TokenPosition} at Depth {reader.Depth}");
                 }
 
                 if (nextInstance != reader.CurrentContext)
                 {
-                    throw new Exception($"CurrentToken/GetNextToken mismatch Position {reader.Position} at Depth {reader.Depth}. Expected: {nextInstance} Actual: {reader.CurrentContext}");
+                    throw new Exception($"CurrentToken/GetNextToken mismatch Position {reader.TokenPosition} at Depth {reader.Depth}. Expected: {nextInstance} Actual: {reader.CurrentContext}");
                 }
 
                 if (nextInstance.ContextDefinition.GetType() != context.ContextDefinition.GetType())
                 {
-                    throw new Exception($"Token mismatch at Position {reader.Position} at Depth {reader.Depth}. Expected: {context.ContextDefinition} Actual: {nextInstance.ContextDefinition}");
+                    throw new Exception($"Token mismatch at Position {reader.TokenPosition} at Depth {reader.Depth}. Expected: {context.ContextDefinition} Actual: {nextInstance.ContextDefinition}");
                 }
 
                 if (nextInstance.Depth != context.Depth)
                 {
-                    throw new Exception($"Token mismatch at Position {reader.Position} at Depth {reader.Depth}. Expected: {context.Depth} Actual: {reader.Depth}");
+                    throw new Exception($"Token mismatch at Position {reader.TokenPosition} at Depth {reader.Depth}. Expected: {context.Depth} Actual: {reader.Depth}");
                 }
             }
 

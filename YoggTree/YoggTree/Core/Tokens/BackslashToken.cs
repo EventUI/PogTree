@@ -10,6 +10,9 @@ namespace YoggTree.Core.Tokens
     /// </summary>
     public class BackslashToken : TokenDefinition
     {
+        /// <summary>
+        /// Makes a new BackslashToken.
+        /// </summary>
         public BackslashToken() 
             : base(TokenRegexStore.Backslash, "\\")
         {

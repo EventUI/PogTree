@@ -153,89 +153,16 @@ namespace YoggTree.Core.Enumerators
         /// <returns></returns>
         private TokenInstance GetPreviousToken()
         {
-            return GetPreviousToken2();
-
-            TokenInstance previousToken = null;
-
-            if (_currentLocation.Position <= 0)
-            {
-                if (_currentLocation.Position == 0)
-                {
-                    if (_currentLocation.ContextInstance.Tokens.Count > 0)
-                    {
-                        previousToken = _currentLocation.ContextInstance.Tokens[_currentLocation.Position];
-                        _currentLocation.Position--;
-                    }
-                }
-                else if (_currentLocation.Position < 0)
-                {
-
-                }
-
-                if (previousToken == null && _recursive == true && _currentLocation.Depth != 0)
-                {
-                    _currentLocation = _depthStack.Pop();
-                    return GetPreviousToken();
-                }
-            }
-            else
-            {
-                _currentLocation.Position--;
-                if (_currentLocation.Position < _currentLocation.ContextInstance.Tokens.Count)
-                {
-                    if (_currentLocation.Position == -1 && _currentLocation.Depth > 0)
-                    {
-                        if (_recursive == true)
-                        {
-                            _currentLocation = _depthStack.Pop();
-                            return GetPreviousToken();
-                        }
-
-                        return null;
-                    }
-                    else
-                    {
-                        previousToken =_currentLocation.ContextInstance.Tokens[_currentLocation.Position];
-                    }
-                }
-                else
-                {
-                    if (_recursive == true && _currentLocation.Depth != 0)
-                    {
-                        _currentLocation = _depthStack.Pop();
-                        return GetPreviousToken();
-                    }
-                    else
-                    {
-                        return null;
-                    }
-                }
-            }
-
-            if (previousToken != null && previousToken.TokenInstanceType == TokenInstanceType.ContextPlaceholder && _recursive == true)
-            {
-                _currentLocation.Position--;
-                _currentLocation = _depthStack.Pop();
-                return GetPreviousToken();
-            }
-            else
-            {
-                return previousToken;
-            }
-        }
-
-        private TokenInstance GetPreviousToken2()
-        {
             if (_currentLocation.Position == -1)
             {
                 if (_currentLocation.Depth == 0 || _recursive == false) return null;
                 _currentLocation = _depthStack.Pop();
 
-                return GetPreviousToken2();
+                return GetPreviousToken();
             }
 
             _currentLocation.Position--;
-            if (_currentLocation.Position == -1) return GetPreviousToken2();
+            if (_currentLocation.Position == -1) return GetPreviousToken();
 
             TokenInstance previousToken = _currentLocation.ContextInstance.Tokens[_currentLocation.Position];
             if (_recursive == true && previousToken.TokenInstanceType == TokenInstanceType.ContextPlaceholder)
@@ -244,7 +171,7 @@ namespace YoggTree.Core.Enumerators
                 if (childContext == null || childContext.Tokens.Count == 0)
                 {
                     _currentLocation.Position--;
-                    return GetPreviousToken2();
+                    return GetPreviousToken();
                 }
 
                 _depthStack.Push(_currentLocation);
@@ -256,7 +183,7 @@ namespace YoggTree.Core.Enumerators
                     Position = childContext.Tokens.Count
                 };
 
-                return GetPreviousToken2();
+                return GetPreviousToken();
             }
 
             return previousToken;

@@ -10,8 +10,14 @@ namespace YoggTree.Core.Tokens
     /// </summary>
     public sealed class EmptyToken : TokenDefinition
     {
+        /// <summary>
+        /// Singleton instance of the EmptyToken.
+        /// </summary>
         public static EmptyToken Instance { get; } = new EmptyToken();
 
+        /// <summary>
+        /// Creates a new EmptyToken.
+        /// </summary>
         public EmptyToken()
             :base(new Regex(""), "<empty>")
         {

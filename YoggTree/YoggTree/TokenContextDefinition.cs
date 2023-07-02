@@ -9,6 +9,7 @@ LICENSE file in the root directory of this source tree.*/
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Reflection.Metadata;
 /**Copyright (c) 2023 Richard H Stannard
 
 This source code is licensed under the MIT license found in the
@@ -25,7 +26,7 @@ namespace YoggTree
         private ContextDefinitionFlags _flags = ContextDefinitionFlags.None;
 
         /// <summary>
-        /// The unique ID of this Context.
+        /// The unique ID of this ContextDefinition.
         /// </summary>
         public Guid ID { get { return _id; } }
 
@@ -132,7 +133,7 @@ namespace YoggTree
         /// <summary>
         /// Adds an IEnumerable of Types as Tokens. Each Type must be of an object derived from TokenDefinition.
         /// </summary>
-        /// <param name="tokenTypes"></param>
+        /// <param name="tokenTypes">A list of token types to add.</param>
         public void AddTokens(IEnumerable<Type> tokenTypes)
         {
             foreach (var token in tokenTypes)
@@ -164,7 +165,7 @@ namespace YoggTree
         /// <summary>
         /// Determines whether or not the definition of the token instance is included in this context.
         /// </summary>
-        /// <param name="token"></param>
+        /// <param name="token">A token instance to check HasToken with it's definition type.</param>
         /// <returns></returns>
         public bool HasToken(TokenInstance token)
         {
@@ -194,6 +195,17 @@ namespace YoggTree
         public void RemoveToken<TToken>() where TToken : TokenDefinition
         {
             _validTokens.TryRemove(typeof(TToken), out _);
+        }
+
+        /// <summary>
+        /// Removes a token definition from this context.
+        /// </summary>
+        ///<param name="tokenType">The type of token to remove.</param>
+        public void RemoveToken(Type tokenType)
+        {
+            if (tokenType == null) throw new ArgumentNullException(nameof(tokenType));
+
+            _validTokens.TryRemove(tokenType, out _);
         }
 
         /// <summary>

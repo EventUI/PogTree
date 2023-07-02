@@ -13,9 +13,9 @@ using System.Threading.Tasks;
 namespace YoggTree.Core.Tokens.Interfaces
 {
     /// <summary>
-    /// Represents a token that contains either horizontal or vertical white space.
+    /// Represents a token that marks the start or end of a string literal.
     /// </summary>
-   public interface IWhitespaceToken : ITokenDefinition
+    public interface IStringStartEndToken : ITokenDefinition
     {
     }
 }

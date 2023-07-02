@@ -68,12 +68,30 @@ namespace YoggTree
         Unbounded = 1,
     }
 
+    /// <summary>
+    /// The location to where the TokenReader should seek to in the current context. If seeking recursively, this will seek towards the start/end of the entire context hierarchy.
+    /// </summary>
     public enum ReaderSeekLocation
     {
+        /// <summary>
+        /// Default.
+        /// </summary>
         None = 0,
+        /// <summary>
+        /// Seek to the first TokenInstance in the current context (or context hierarchy if seeking recursively).
+        /// </summary>
         FirstToken = 1,
+        /// <summary>
+        /// Seek to the last TokenInstance in the current context (or context hierarchy if seeking recursively).
+        /// </summary>
         LastToken = 2,
+        /// <summary>
+        /// Seek to the first TokenContextInstance in the current context (or context hierarchy if seeking recursively).
+        /// </summary>
         FirstContext = 3,
+        /// <summary>
+        /// Seek to the last TokenContextInstance in the current context (or context hierarchy if seeking recursively).
+        /// </summary>
         LastContext = 4
     }
 }

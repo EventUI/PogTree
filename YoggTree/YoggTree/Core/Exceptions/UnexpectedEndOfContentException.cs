@@ -16,6 +16,10 @@ namespace YoggTree.Core.Exceptions
     /// </summary>
     public class UnexpectedEndOfContentException : Exception
     {
+        /// <summary>
+        /// Creates a new UnexpectedEndOfContentException.
+        /// </summary>
+        /// <param name="message">The message to give the exception.</param>
         public UnexpectedEndOfContentException(string message) 
             : base(message)
         {

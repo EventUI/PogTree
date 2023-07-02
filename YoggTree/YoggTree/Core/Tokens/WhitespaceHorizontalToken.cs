@@ -12,6 +12,9 @@ namespace YoggTree.Core.Tokens
     /// </summary>
     public class WhitespaceHorizontalToken : TokenDefinition, IWhitespaceToken
     {
+        /// <summary>
+        /// Makes a new WhitespaceHorizontalToken.
+        /// </summary>
         public WhitespaceHorizontalToken() 
             : base(TokenRegexStore.Whitespace_Horizontal, "<horizontal whitespace>", 100)
         {

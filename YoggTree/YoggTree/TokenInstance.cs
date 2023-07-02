@@ -79,6 +79,10 @@ namespace YoggTree
             TokenInstanceType = instanceType;
         }        
 
+        /// <summary>
+        /// Gets a string representing the data bout this TokenInstance.
+        /// </summary>
+        /// <returns></returns>
         public override string ToString()
         {
             return $"{TokenDefinition.GetType().Name} @:{StartIndex}=\"{Contents}\"";
@@ -101,6 +105,10 @@ namespace YoggTree
             ChildContext = childContext;
         }
 
+        /// <summary>
+        /// Gets a string representing the data bout this TokenInstance.
+        /// </summary>
+        /// <returns></returns>
         public override string ToString()
         {
             return $"<context placeholder> @:{StartIndex}=\"{Contents}\"";
@@ -118,12 +126,19 @@ namespace YoggTree
 
         }
 
+        /// <summary>
+        /// Gets a string representing the data bout this TokenInstance.
+        /// </summary>
+        /// <returns></returns>
         public override string ToString()
         {
             return $"<text placeholder> @:{StartIndex}=\"{Contents}\"";
         }
     }
 
+    /// <summary>
+    /// Extension methods for TokenInstances.
+    /// </summary>
     public static class TokenInstanceExtensions
     {
         /// <summary>

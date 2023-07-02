@@ -11,12 +11,11 @@ namespace YoggTree
     public abstract class TokenDefinition : ITokenDefinition
     {
         private Guid _id = Guid.NewGuid();
-
-        protected readonly string _name = null;
-        protected readonly Regex _token = null;
-        protected readonly TokenDefinitionFlags _flags = TokenDefinitionFlags.None;
-        protected readonly string _contextKey = null;
-        protected readonly int _spoolSize = 25;
+        private readonly string _name = null;
+        private readonly Regex _token = null;
+        private readonly TokenDefinitionFlags _flags = TokenDefinitionFlags.None;
+        private readonly string _contextKey = null;
+        private readonly int _spoolSize = 25;
 
         /// <summary>
         /// The unique ID of this token definition.
@@ -178,6 +177,10 @@ namespace YoggTree
             return start.Context.ContextDefinition;
         }
 
+        /// <summary>
+        /// Gets a string version of this TokenDefinition's metadata.
+        /// </summary>
+        /// <returns></returns>
         public override string ToString()
         {
             return $"{GetType().Name}-{_name}-({_token.ToString()})";

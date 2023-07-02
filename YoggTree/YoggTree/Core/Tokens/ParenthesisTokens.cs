@@ -10,6 +10,9 @@ namespace YoggTree.Core.Tokens
     /// </summary>
     public class OpenParenthesisToken : TokenDefinition
     {
+        /// <summary>
+        /// Creates a new OpenParenthesisToken.
+        /// </summary>
         public OpenParenthesisToken()
             :base(TokenRegexStore.Parenthesis_Open, "(", TokenDefinitionFlags.ContextStarter, "Parenthesis")
         {
@@ -22,6 +25,9 @@ namespace YoggTree.Core.Tokens
     /// </summary>
     public class CloseParenthesisToken : TokenDefinition
     {
+        /// <summary>
+        /// Creates a new CloseParenthesisToken.
+        /// </summary>
         public CloseParenthesisToken()
             : base(TokenRegexStore.Parenthesis_Close, ")", TokenDefinitionFlags.ContextEnder, "Parenthesis")
         {

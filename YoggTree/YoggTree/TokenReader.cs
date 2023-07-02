@@ -14,8 +14,25 @@ using YoggTree.Core.Enumerators;
 
 namespace YoggTree
 {
+    /// <summary>
+    /// Utility class for searching through a TokenContextInstance hierarchy. It is intended to be used on a TokenContextInstance that has been completed, using it on an unfinished parse operation could result in odd behavior.
+    /// </summary>
     public sealed class TokenReader
     {
+        /*Note: This class is intended to seek backwards and forwards in both the Tokens and ChildContexts arrays of a single TokenContextInstance, but each required it's own IEnumerable implementation.
+        So we sync them lazily when the consumer of the API needs a value that came from whatever source they did not use last. For example, if the tokens list is advanced,
+        and the user uses the CurrentContext property, we need to advance the context position to point at whatever context the token currently resides in. This could cause performance problems and 
+        might merit a refactoring to keep both in sync in a more performant fashion.
+        
+        It is also important to note that the recursive behavior of contexts and token is different: 
+
+        Tokens which are Placeholders are not included in recursive walking of the hierarchy for tokens - they are drilled into instead. The result of reading the tokens backwards is exactly the reverse of reading them forwards.
+            This is because token placeholders are not "real" tokens that have actual content associated with them, but instead they are wrappers for other tokens - recursion does NOT include the wrapper in this case.
+        
+        Contexts follow a different pattern in recursive mode where the parent context comes first, then its children. This is also true for reverse recursive walking of the hierarchy, so the result of reading the contexts backwards is NOT the same as reading forwards.
+            This is because token instances are all containers for other instances, so in order to walk the hierarchy without missing a context, they must all be returned in order of occurrence.*/
+
+
         private TokenContextInstance _rootContext = null;
 
         private IEnumerator<TokenInstance> _instanceEnumerator = null;
@@ -27,7 +44,10 @@ namespace YoggTree
         private bool _enumeratedTokenLast = false;
         private bool _enumeratedContextLast = false;
 
-        public int Position
+        /// <summary>
+        /// The current index of the CurrentContext in its Tokens list.
+        /// </summary>
+        public int TokenPosition
         {
             get 
             {
@@ -39,7 +59,10 @@ namespace YoggTree
             }
         }
 
-        public int Length
+        /// <summary>
+        /// The total number of tokens in the CurrentContext in its Tokens list.
+        /// </summary>
+        public int TokenLength
         {
             get 
             {
@@ -47,12 +70,45 @@ namespace YoggTree
                 return _tokens.CurrentLocation.ContextInstance.Tokens.Count; 
             }
         }
-        
+
+        /// <summary>
+        /// The current index of the CurrentContext in its ChildContexts list.
+        /// </summary>
+        public int ContextPosition
+        {
+            get
+            {
+                if (_enumeratedTokenLast == true) UpdateTokenContextInstancePosition();
+                int position = _contexts.CurrentLocation.Position;
+                if (position < 0) position = 0;
+
+                return position;
+            }
+        }
+
+        /// <summary>
+        /// The total number of TokenContextInstances in the CurrentContext in its Tokens list.
+        /// </summary>
+        public int ContextLength
+        {
+            get
+            {
+                if (_enumeratedTokenLast == true) UpdateTokenContextInstancePosition();
+                return _contexts.CurrentLocation.ContextInstance.ChildContexts.Count;
+            }
+        }
+
+        /// <summary>
+        /// The TokenContextInstance 
+        /// </summary>
         public TokenContextInstance RootContext
         {
             get { return _rootContext; }
         }
 
+        /// <summary>
+        /// The context that the current token is contained by.
+        /// </summary>
         public TokenContextInstance CurrentContext
         {
             get 
@@ -62,6 +118,9 @@ namespace YoggTree
             }
         }
 
+        /// <summary>
+        /// The number of contexts deep the TokenReader is relative to the RootContext of the TokenReader.
+        /// </summary>
         public int Depth
         {
             get 
@@ -71,15 +130,23 @@ namespace YoggTree
             }
         }
 
+        /// <summary>
+        /// The current token in the list of tokens in the CurrentContext.
+        /// </summary>
         public TokenInstance CurrentToken
         {
             get 
             {
                 if (_enumeratedContextLast == true) UpdateTokenInstancePosition();
-                return CurrentContext.Tokens[Position]; 
+                return CurrentContext.Tokens[TokenPosition]; 
             }
         }
 
+        /// <summary>
+        /// Creates a new instance of the TokenReader class with the provided TokenContextInstance as the RootContext.
+        /// </summary>
+        /// <param name="context">THe root context of the reader.</param>
+        /// <exception cref="ArgumentNullException"></exception>
         public TokenReader(TokenContextInstance context)
         {
             if (context == null) throw new ArgumentNullException(nameof(context));
@@ -92,6 +159,11 @@ namespace YoggTree
             _contextEnumerator = _contexts.GetEnumerator();
         }
 
+        /// <summary>
+        /// Creates a new instance of the TokenReader class with the provided TokenInstance's Context as the RootContext.
+        /// </summary>
+        /// <param name="instance">The token with the root context of the reader</param>
+        /// <exception cref="ArgumentNullException"></exception>
         public TokenReader(TokenInstance instance)
         {
             if (instance == null) throw new ArgumentNullException(nameof(instance));
@@ -110,6 +182,11 @@ namespace YoggTree
             _contexts.Seek(instance.Context);
         }
 
+        /// <summary>
+        /// Gets the next token in the current context, including placeholders. If recursive is true, placeholder tokens are dug into and have their first token returned instead.
+        /// </summary>
+        /// <param name="recursive">Whether or not to perform a recursive operation or stay in the same context. False by default.</param>
+        /// <returns></returns>
         public TokenInstance GetNextToken(bool recursive = false)
         {
             UpdateTokenInstancePosition();
@@ -121,17 +198,19 @@ namespace YoggTree
             if (_instanceEnumerator == null) _instanceEnumerator = _tokens.GetEnumerator();
             if (_instanceEnumerator.MoveNext() == false)
             {
-                if (_instanceEnumerator.Current == null)
-                {
-                    _instanceEnumerator = null;
-                }
-
+                _instanceEnumerator = null;
                 return null;
             }
 
             return _instanceEnumerator.Current;
         }
 
+        /// <summary>
+        /// Gets the next token in the current context, including placeholders, that have the given context definition. If recursive is true, placeholder tokens are dug into and have their first matching token returned instead.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="recursive"></param>
+        /// <returns></returns>
         public TokenInstance GetNextToken<T>(bool recursive = false) where T : ITokenDefinition
         {
             TokenInstance nextToken = GetNextToken(recursive);

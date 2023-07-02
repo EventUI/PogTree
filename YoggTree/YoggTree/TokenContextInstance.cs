@@ -292,13 +292,13 @@ namespace YoggTree
                     if (nextToken.TokenDefinition.CanComeAfter(previousToken, nextToken) == false)
                     {
                         var lineAndCol = nextToken.GetLineAndColumn();
-                        throw new TokenSyntaxErrorExecption($"{nextToken} cannot come after {previousToken}.\nLine: {lineAndCol.LineNumber} Column: {lineAndCol.ColumnNumber}", lineAndCol.LineNumber, lineAndCol.ColumnNumber);                       
+                        throw new TokenSyntaxErrorException($"{nextToken} cannot come after {previousToken}.\nLine: {lineAndCol.LineNumber} Column: {lineAndCol.ColumnNumber}", lineAndCol.LineNumber, lineAndCol.ColumnNumber);                       
                     }
 
                     if (previousToken.TokenDefinition.CanComeBefore(nextToken, previousToken) == false) 
                     {
                         var lineAndCol = nextToken.GetLineAndColumn();
-                        throw new TokenSyntaxErrorExecption($"{previousToken} cannot come before {nextToken}.\nLine: {lineAndCol.LineNumber} Column: {lineAndCol.ColumnNumber}", lineAndCol.LineNumber, lineAndCol.ColumnNumber);
+                        throw new TokenSyntaxErrorException($"{previousToken} cannot come before {nextToken}.\nLine: {lineAndCol.LineNumber} Column: {lineAndCol.ColumnNumber}", lineAndCol.LineNumber, lineAndCol.ColumnNumber);
                     }
                 }
 
@@ -306,7 +306,7 @@ namespace YoggTree
                 if (nextToken.TokenDefinition.IsValidInstance(nextToken) == false)
                 {
                     var lineAndCol = nextToken.GetLineAndColumn();
-                    throw new TokenSyntaxErrorExecption($"{nextToken} is not valid in context {this}.\nLine: {lineAndCol.LineNumber} Column: {lineAndCol.ColumnNumber}", lineAndCol.LineNumber, lineAndCol.ColumnNumber);
+                    throw new TokenSyntaxErrorException($"{nextToken} is not valid in context {this}.\nLine: {lineAndCol.LineNumber} Column: {lineAndCol.ColumnNumber}", lineAndCol.LineNumber, lineAndCol.ColumnNumber);
                 }
 
                 //if this token meets the context's criteria for starting a new sub-context, make the context and walk its contents starting at the start token.
@@ -502,6 +502,9 @@ namespace YoggTree
         }
     }
 
+    /// <summary>
+    /// Extension methods for TokenContextInstances.
+    /// </summary>
     public static class TokenContextInstanceExtensions
     {
         /// <summary>
@@ -546,7 +549,7 @@ namespace YoggTree
         public static bool IsIn<T>(this TokenContextInstance instance) where T : ITokenContextDefinition
         {
             if (instance == null) return false;
-            if (instance.Parent is T) return true;
+            if (instance.Parent.ContextDefinition is T) return true;
 
             return false;
         }
