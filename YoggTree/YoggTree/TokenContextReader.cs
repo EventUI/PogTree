@@ -291,12 +291,8 @@ namespace YoggTree
 
             if (_contextEnumerator == null) _contextEnumerator = _contexts.GetEnumerator();
             if (_contextEnumerator.MoveNext() == false)
-            {
-                if (_contextEnumerator.Current == null)
-                {
-                    _contextEnumerator = null;
-                }
-
+            {                    
+                _contextEnumerator = null;
                 return null;
             }
 

@@ -115,6 +115,8 @@ namespace YoggTree.Core.Enumerators
         /// <returns></returns>
         private TokenContextInstance GetNextContext()
         {
+            return GetNextContext2();
+
             if (_currentLocation.Position >= _currentLocation.ContextInstance.ChildContexts.Count)
             {
                 if (_currentLocation.Depth == 0) //we're at the top of the hierarchy and have reached the end of the context. All done.
@@ -204,6 +206,48 @@ namespace YoggTree.Core.Enumerators
                 };
 
                 return currentContext;
+            }
+        }
+
+        private TokenContextInstance GetNextContext2()
+        {
+            if (_currentLocation.Position == -2) _currentLocation.Position = -1;
+            if (_currentLocation.Position == -1)
+            {
+                _currentLocation.Position++;
+                return _currentLocation.ContextInstance;
+            }
+
+            if (_currentLocation.ContextInstance.ChildContexts.Count > _currentLocation.Position)
+            {
+                var contextInstance = _currentLocation.ContextInstance.ChildContexts[_currentLocation.Position];
+                if (contextInstance.ChildContexts.Count > 0 && _recursive == true)
+                {
+                    _currentLocation.Position++;
+                    _currentLocation = new TokenContextInstanceLocation()
+                    {
+                        ContextInstance = contextInstance,
+                        Depth = _currentLocation.Depth + 1,
+                        Position = -1
+                    };
+
+                    return GetNextContext2();
+                }
+                else
+                {
+                    _currentLocation.Position++;
+                    return contextInstance;
+                }
+            }
+            else
+            {
+                if (_recursive == false || _currentLocation.Depth == 0)
+                {
+                    return null;
+                }
+
+                _currentLocation = _depthStack.Pop();
+                return GetNextContext2();
             }
         }
 
