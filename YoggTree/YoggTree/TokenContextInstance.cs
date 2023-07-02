@@ -566,11 +566,11 @@ namespace YoggTree
         /// </summary>
         /// <param name="instance"></param>
         /// <returns></returns>
-        public static TokenContextReader GetReader(this TokenContextInstance instance)
+        public static TokenReader GetReader(this TokenContextInstance instance)
         {
             if (instance == null) return null;
 
-            return new TokenContextReader(instance);
+            return new TokenReader(instance);
         }
     }
 }

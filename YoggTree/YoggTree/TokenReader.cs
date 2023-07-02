@@ -14,7 +14,7 @@ using YoggTree.Core.Enumerators;
 
 namespace YoggTree
 {
-    public sealed class TokenContextReader
+    public sealed class TokenReader
     {
         private TokenContextInstance _rootContext = null;
 
@@ -57,8 +57,8 @@ namespace YoggTree
         {
             get 
             {
-                if (_enumeratedContextLast == true) UpdateTokenInstancePosition();
-                return _tokens.CurrentLocation.ContextInstance; 
+                if (_enumeratedTokenLast == true) UpdateTokenContextInstancePosition();
+                return (_contexts.CurrentLocation.Position < 0 ? _contexts.CurrentLocation.ContextInstance : _contexts.CurrentLocation.ContextInstance.ChildContexts[_contexts.CurrentLocation.Position]);
             }
         }
 
@@ -80,7 +80,7 @@ namespace YoggTree
             }
         }
 
-        public TokenContextReader(TokenContextInstance context)
+        public TokenReader(TokenContextInstance context)
         {
             if (context == null) throw new ArgumentNullException(nameof(context));
 
@@ -92,7 +92,7 @@ namespace YoggTree
             _contextEnumerator = _contexts.GetEnumerator();
         }
 
-        public TokenContextReader(TokenInstance instance)
+        public TokenReader(TokenInstance instance)
         {
             if (instance == null) throw new ArgumentNullException(nameof(instance));
             if (instance.Context == null) throw new ArgumentNullException("Instance's Context cannot be null.");

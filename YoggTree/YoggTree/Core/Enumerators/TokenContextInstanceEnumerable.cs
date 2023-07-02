@@ -56,7 +56,7 @@ namespace YoggTree.Core.Enumerators
             {
                 ContextInstance = rootContext,
                 Depth = 0,
-                Position = -1,
+                Position = -2,
             };
 
             _depthStack.Push(_currentLocation);
@@ -112,109 +112,11 @@ namespace YoggTree.Core.Enumerators
         /// <summary>
         /// Gets the next context (in the forwards direction). This loop returns the parent context and then its children recursively. 
         /// </summary>
-        /// <returns></returns>
         private TokenContextInstance GetNextContext()
         {
-            return GetNextContext2();
-
-            if (_currentLocation.Position >= _currentLocation.ContextInstance.ChildContexts.Count)
-            {
-                if (_currentLocation.Depth == 0) //we're at the top of the hierarchy and have reached the end of the context. All done.
-                {
-                    return null;
-                }
-
-                //otherwise go back up the stack and pick up where we left off
-                _currentLocation = _depthStack.Pop();
-                return GetNextContext();
-            }
-
-            if (_currentLocation.Position < -1) _currentLocation.Position = -1;
-            TokenContextInstance currentContext = null;
-
-            //if we're at -1 with a depth of 0, we are at the root context
-            if (_currentLocation.Position < 0 && _currentLocation.Depth == 0)
-            {
-                currentContext = _currentLocation.ContextInstance;
-            }
-            else //otherwise we're looking at a child context
-            {
-                if (_currentLocation.ContextInstance.ChildContexts.Count > 0) //we have child contexts, get the next one
-                {
-                    if (_currentLocation.Position == -1) _currentLocation.Position++; //sometimes the position defaults to -1, so we skip forward to 0 so we pick up the first child. Otherwise we'd return the same context twice in a row.
-                    currentContext = _currentLocation.ContextInstance.ChildContexts[_currentLocation.Position];
-                }
-                else //no child contexts
-                {
-                    if (_currentLocation.Depth == 0) //at the top of the hierarchy, all done
-                    {
-                        return null;
-                    }
-                    else //go back up the stack and continue where we left off
-                    {
-                        _currentLocation = _depthStack.Pop();
-                        return GetNextContext();
-                    }
-                }
-            }
-
-            if (currentContext.Parent == _currentLocation.ContextInstance) //if we have a child context as our current context
-            {
-                if (_recursive == false) //if not recursive advance the position and return the current context.
-                {
-                    _currentLocation.Position++;
-                    return currentContext;
-                }
-
-                //move forward one slot so we pick up AFTER the current context and then dig deeper into the hierarchy.
-                _currentLocation.Position++;
-                _depthStack.Push(_currentLocation);
-
-                _currentLocation = new TokenContextInstanceLocation()
-                {
-                    ContextInstance = currentContext,
-                    Depth = _currentLocation.Depth + 1,
-                    Position = -1 //-1 is the special value that means "at the parent"
-                };
-
-                return currentContext;
-            }
-
-
-            if (currentContext.ChildContexts.Count == 0 || _recursive == false) //if we have no contexts or are not recursive, just go forward one slot
-            {
-                _currentLocation.Position++;
-                return currentContext;
-            }
-            else
-            {
-                if (_recursive == false) //move forward one slot - if recursive is false then we had more than one child context, so return the next one
-                {
-                    _currentLocation.Position++;
-                    return _currentLocation.ContextInstance.ChildContexts[_currentLocation.Position];
-                }
-
-                //if we are recursive we dig in deeper and advance the current position to the next slot so when we bubble back up we're sitting at the next context and not the one about to be returned.
-                _currentLocation.Position++;
-                _depthStack.Push(_currentLocation);
-
-                _currentLocation = new TokenContextInstanceLocation()
-                {
-                    ContextInstance = currentContext,
-                    Depth = _currentLocation.Depth + 1,
-                    Position = -1
-                };
-
-                return currentContext;
-            }
-        }
-
-        private TokenContextInstance GetNextContext2()
-        {
-            if (_currentLocation.Position == -2) _currentLocation.Position = -1;
+            _currentLocation.Position++;
             if (_currentLocation.Position == -1)
             {
-                _currentLocation.Position++;
                 return _currentLocation.ContextInstance;
             }
 
@@ -223,19 +125,17 @@ namespace YoggTree.Core.Enumerators
                 var contextInstance = _currentLocation.ContextInstance.ChildContexts[_currentLocation.Position];
                 if (contextInstance.ChildContexts.Count > 0 && _recursive == true)
                 {
-                    _currentLocation.Position++;
                     _currentLocation = new TokenContextInstanceLocation()
                     {
                         ContextInstance = contextInstance,
                         Depth = _currentLocation.Depth + 1,
-                        Position = -1
+                        Position = -2
                     };
 
-                    return GetNextContext2();
+                    return GetNextContext();
                 }
                 else
                 {
-                    _currentLocation.Position++;
                     return contextInstance;
                 }
             }
@@ -247,7 +147,7 @@ namespace YoggTree.Core.Enumerators
                 }
 
                 _currentLocation = _depthStack.Pop();
-                return GetNextContext2();
+                return GetNextContext();
             }
         }
 
@@ -256,61 +156,6 @@ namespace YoggTree.Core.Enumerators
         /// </summary>
         /// <returns></returns>
         private TokenContextInstance GetPreviousContext()
-        {
-            return GetPreviousContext2();
-
-            if (_currentLocation.Position <= 0)
-            {
-                if (_currentLocation.Position == -1 && _currentLocation.Depth == 0)
-                {
-                    _currentLocation.Position++;
-                    return _currentLocation.ContextInstance;
-                }
-
-                if (_currentLocation.ContextInstance.ChildContexts.Count == 0)
-                {
-                    if (_recursive == true && _currentLocation.Depth != 0)
-                    {
-                        _currentLocation = _depthStack.Pop();
-                        return GetPreviousContext();
-                    }
-                    else
-                    {
-                        return null;
-                    }
-                }
-            }
-
-
-            if (_currentLocation.Position < _currentLocation.ContextInstance.ChildContexts.Count)
-            {
-                if (_currentLocation.Position == -1 || _recursive == false)
-                {
-                    return _currentLocation.ContextInstance;
-                }
-                else
-                {
-                    var context = _currentLocation.ContextInstance.ChildContexts[_currentLocation.Position];
-                    _currentLocation.Position--;
-
-                    return context;
-                }
-            }
-            else
-            {
-                if (_recursive == true && _currentLocation.Depth != 0)
-                {
-                    _currentLocation = _depthStack.Pop();
-                    return GetPreviousContext();
-                }
-                else
-                {
-                    return null;
-                }
-            }
-        }
-
-        private TokenContextInstance GetPreviousContext2()
         {
             if (_currentLocation.Position < 0)
             {
@@ -325,15 +170,15 @@ namespace YoggTree.Core.Enumerators
                 }
 
                 _currentLocation = _depthStack.Pop();
-                return GetPreviousContext2();
+                return GetPreviousContext();
             }
 
             _currentLocation.Position--;
-            if (_currentLocation.Position == -1) return GetPreviousContext2();
+            if (_currentLocation.Position == -1) return GetPreviousContext();
             if (_currentLocation.ContextInstance.ChildContexts.Count == 0)
             {
                 _currentLocation.Position--;
-                return GetPreviousContext2();
+                return GetPreviousContext();
             }
 
             var previousContext = _currentLocation.ContextInstance.ChildContexts[_currentLocation.Position];
@@ -347,7 +192,7 @@ namespace YoggTree.Core.Enumerators
                     Position = previousContext.ChildContexts.Count
                 };
 
-                return GetPreviousContext2();
+                return GetPreviousContext();
             }
 
             return previousContext;
@@ -430,7 +275,7 @@ namespace YoggTree.Core.Enumerators
                     {
                         ContextInstance = instance,
                         Depth = 0,
-                        Position = GetContextIndex(instance)
+                        Position = -2
                     };
 
                     _depthStack.Push(_currentLocation);
@@ -530,7 +375,7 @@ namespace YoggTree.Core.Enumerators
                     {
                         ContextInstance = _rootContext,
                         Depth = 0,
-                        Position = -1
+                        Position = -2
                     };
 
                     _depthStack.Push(_currentLocation);
@@ -587,7 +432,7 @@ namespace YoggTree.Core.Enumerators
         {
             if (_recursive == false)
             {
-                _currentLocation.Position = -1;
+                _currentLocation.Position = -2;
             }
             else
             {
@@ -596,7 +441,7 @@ namespace YoggTree.Core.Enumerators
                 {
                     ContextInstance = _rootContext,
                     Depth = 0,
-                    Position = -1
+                    Position = -2
                 };
 
                 _depthStack.Push(_currentLocation);
