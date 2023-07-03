@@ -1,0 +1,53 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+    <AssemblyName>PogTree</AssemblyName>
+    <RootNamespace>PogTree</RootNamespace>
+    <IncludeSymbols>True</IncludeSymbols>
+	<GenerateDocumentationFile>true</GenerateDocumentationFile>
+	<Company>Richard Stannard</Company>
+	<Authors>Richard Stannard</Authors>
+	<Title>PogTree</Title>
+	<Deterministic>false</Deterministic>
+	<Version>1.0.1.0</Version>
+	<PackageLicenseFile>LICENSE</PackageLicenseFile>
+	<SymbolPackageFormat>snupkg</SymbolPackageFormat>
+	<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+	<PackageReadmeFile>README.md</PackageReadmeFile>
+	<PackageProjectUrl>https://github.com/EventUI/PogTree</PackageProjectUrl>
+	<Description>Strongly-typed text/code file parser.</Description>
+	<Copyright>Copyright (c) 2023 Richard H Stannard</Copyright>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <NoWarn>1701;1702;1587</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <NoWarn>1701;1702;1587</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <EditorConfigFiles Remove="C:\Users\richa\source\repos\EventUI\YoggTree\YoggTree\YoggTree\.editorconfig" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\LICENSE">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Include="..\..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Include="C:\Users\richa\source\repos\EventUI\YoggTree\YoggTree\YoggTree\.editorconfig" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="PogTree.Core" />
+  </ItemGroup>
+
+</Project>
