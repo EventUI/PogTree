@@ -10,9 +10,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
-using YoggTree.Core.Enumerators;
+using PogTree.Core.Enumerators;
 
-namespace YoggTree
+namespace PogTree
 {
     /// <summary>
     /// Utility class for searching through a TokenContextInstance hierarchy. It is intended to be used on a TokenContextInstance that has been completed, using it on an unfinished parse operation could result in odd behavior.

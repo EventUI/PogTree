@@ -8,9 +8,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using YoggTree.Core.Tokens;
+using PogTree.Core.Tokens;
 
-namespace YoggTreeTest.Common
+namespace PogTreeTest.Common
 {
     public static class TestTokens
     {

@@ -11,7 +11,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace YoggTreeTest.Theories
+namespace PogTreeTest.Theories
 {
     internal class Theory_Sparse_Parse<T, TChild> : IEnumerable<Object[]> where T : SparseContext<TChild>, new() where TChild : TestContext, new()
     {
@@ -52,7 +52,7 @@ namespace YoggTreeTest.Theories
                 TestName = "Empty String Test"
             };
 
-            args.Add(YoggTreeTestHelper.ToObjArray(testArgs));
+            args.Add(PogTreeTestHelper.ToObjArray(testArgs));
 
             /************************************************************************************/
 
@@ -75,7 +75,7 @@ namespace YoggTreeTest.Theories
                 TestName = "Single space."
             };
 
-            args.Add(YoggTreeTestHelper.ToObjArray(testArgs));
+            args.Add(PogTreeTestHelper.ToObjArray(testArgs));
 
             /************************************************************************************/
 
@@ -98,7 +98,7 @@ namespace YoggTreeTest.Theories
                 TestName = "Random text."
             };
 
-            args.Add(YoggTreeTestHelper.ToObjArray(testArgs));
+            args.Add(PogTreeTestHelper.ToObjArray(testArgs));
         }
 
         private static void MakeGapArgs(List<object[]> args)
@@ -134,7 +134,7 @@ namespace YoggTreeTest.Theories
                 TestName = "Empty brackets."
             };
 
-            args.Add(YoggTreeTestHelper.ToObjArray(testArgs));
+            args.Add(PogTreeTestHelper.ToObjArray(testArgs));
 
             /************************************************************************************/
 
@@ -173,7 +173,7 @@ namespace YoggTreeTest.Theories
                 TestName = "Brackets with noise."
             };
 
-            args.Add(YoggTreeTestHelper.ToObjArray(testArgs));
+            args.Add(PogTreeTestHelper.ToObjArray(testArgs));
 
             /************************************************************************************/
 
@@ -213,7 +213,7 @@ namespace YoggTreeTest.Theories
                 TestName = "Brackets with noise and leading text."
             };
 
-            args.Add(YoggTreeTestHelper.ToObjArray(testArgs));
+            args.Add(PogTreeTestHelper.ToObjArray(testArgs));
 
             /************************************************************************************/
 
@@ -254,7 +254,7 @@ namespace YoggTreeTest.Theories
                 TestName = "Brackets with noise and lagging text."
             };
 
-            args.Add(YoggTreeTestHelper.ToObjArray(testArgs));
+            args.Add(PogTreeTestHelper.ToObjArray(testArgs));
 
             /************************************************************************************/
 
@@ -295,7 +295,7 @@ namespace YoggTreeTest.Theories
                 TestName = "Brackets with noise, leading and lagging text."
             };
 
-            args.Add(YoggTreeTestHelper.ToObjArray(testArgs));
+            args.Add(PogTreeTestHelper.ToObjArray(testArgs));
         }
 
         private static void MakeAdvancedArgs(List<object[]> args)
@@ -370,7 +370,7 @@ namespace YoggTreeTest.Theories
                 TestName = "Peers with noise"
             };
 
-            args.Add(YoggTreeTestHelper.ToObjArray(testArgs));
+            args.Add(PogTreeTestHelper.ToObjArray(testArgs));
         }
     }
 }

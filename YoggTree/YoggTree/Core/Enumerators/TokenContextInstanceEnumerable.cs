@@ -12,7 +12,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Transactions;
 
-namespace YoggTree.Core.Enumerators
+namespace PogTree.Core.Enumerators
 {
     /// <summary>
     /// IEnumerable for iterating over a collection of TokenContextInstances belonging to a parent TokenContextInstance.

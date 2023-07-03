@@ -10,7 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace YoggTree.Core.Tokens.Interfaces
+namespace PogTree.Core.Tokens.Interfaces
 {
     /// <summary>
     /// Represents a token that marks the start or end of a string literal.

@@ -9,7 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace YoggTree.Core.Exceptions
+namespace PogTree.Core.Exceptions
 {
     /// <summary>
     /// Exception thrown when a token identifies that is has come before or after a token that is determined to be invalid.

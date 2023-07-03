@@ -7,11 +7,11 @@ using System.Data;
 using System.Diagnostics;
 using System.Reflection.Metadata.Ecma335;
 using System.Text;
-using YoggTree.Core.Enumerators;
-using YoggTree.Core.Exceptions;
-using YoggTree.Core.Spools;
+using PogTree.Core.Enumerators;
+using PogTree.Core.Exceptions;
+using PogTree.Core.Spools;
 
-namespace YoggTree
+namespace PogTree
 {
     /// <summary>
     /// Represents a section or sub-section of a file being parsed for tokens.

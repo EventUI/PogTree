@@ -11,9 +11,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Xunit.Abstractions;
-using YoggTreeTest.Theories;
+using PogTreeTest.Theories;
 
-namespace YoggTreeTest.Specs
+namespace PogTreeTest.Specs
 {
     public class Spec_Sparse_Parse
     {
@@ -30,7 +30,7 @@ namespace YoggTreeTest.Specs
         {
             _output.WriteLine($"Testing: {testParseArgs.TestName}");
 
-            YoggTreeTestHelper.CompareParseResults(testParseArgs);
+            PogTreeTestHelper.CompareParseResults(testParseArgs);
         }
 
         [Theory(DisplayName = "Seek ahead sparse parse tests.")]
@@ -39,7 +39,7 @@ namespace YoggTreeTest.Specs
         {
             _output.WriteLine($"Testing: {testParseArgs.TestName}");
 
-            YoggTreeTestHelper.CompareParseResults(testParseArgs);
+            PogTreeTestHelper.CompareParseResults(testParseArgs);
         }
     }
 }

@@ -1,11 +1,11 @@
 ﻿
 
-using YoggTree.Core.Tokens.Interfaces;
+using PogTree.Core.Tokens.Interfaces;
 /**Copyright (c) 2023 Richard H Stannard
 
 This source code is licensed under the MIT license found in the
 LICENSE file in the root directory of this source tree.*/
-namespace YoggTree.Core.Tokens
+namespace PogTree.Core.Tokens
 {
     /// <summary>
     /// Token for finding all "horizontal" (non-line breaking) whitespace characters that are not separated by a non-whitespace character.

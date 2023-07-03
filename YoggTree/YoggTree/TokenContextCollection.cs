@@ -6,7 +6,7 @@ LICENSE file in the root directory of this source tree.*/
 
 using System.Collections.Concurrent;
 
-namespace YoggTree
+namespace PogTree
 {
     /// <summary>
     /// A container for a list of TokenContextDefinitions that can be used to swap out one TokenContextDefinition for another at runtime automatically.

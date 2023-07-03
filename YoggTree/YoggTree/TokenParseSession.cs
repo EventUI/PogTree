@@ -3,9 +3,9 @@
 This source code is licensed under the MIT license found in the
 LICENSE file in the root directory of this source tree.*/
 
-using YoggTree.Core.Spools;
+using PogTree.Core.Spools;
 
-namespace YoggTree
+namespace PogTree
 {
     /// <summary>
     /// Represents the containing unit for parsing a body of text.

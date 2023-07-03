@@ -6,5 +6,5 @@ LICENSE file in the root directory of this source tree.*/
 
 using System.Runtime.CompilerServices;
 
-[assembly: InternalsVisibleTo("YoggTreeTest")]
+[assembly: InternalsVisibleTo("PogTreeTest")]
 

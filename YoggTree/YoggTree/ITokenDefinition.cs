@@ -3,7 +3,7 @@
 This source code is licensed under the MIT license found in the
 LICENSE file in the root directory of this source tree.*/
 
-namespace YoggTree
+namespace PogTree
 {
     /// <summary>
     /// Interface extracted from the TokenDefinition class - this interface is intended to be inherited by other interfaces to create "marker" interfaces to flag TokenDefinition-derived types with rather than serve as the foundation for a new type that does not inherit from TokenDefinition.

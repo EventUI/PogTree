@@ -9,7 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace YoggTree.Core.Exceptions
+namespace PogTree.Core.Exceptions
 {
     /// <summary>
     /// Exception that is thrown when the end of content is reached outside of a context which does not have the Unbounded flag set and is not the root context.

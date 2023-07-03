@@ -6,7 +6,7 @@ LICENSE file in the root directory of this source tree.*/
 
 using System.Collections;
 
-namespace YoggTree.Core.Enumerators
+namespace PogTree.Core.Enumerators
 {
     /// <summary>
     /// An IEnumerable of TokenInstance that iterates through a TokenContextInstance's Tokens with options for recursive seeking and token iteration in both backwards and forward directions.

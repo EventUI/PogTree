@@ -14,7 +14,7 @@ using System.Reflection.Metadata;
 
 This source code is licensed under the MIT license found in the
 LICENSE file in the root directory of this source tree.*/
-namespace YoggTree
+namespace PogTree
 {
     /// <summary>
     /// Represents a definition of the rules that apply to tokens found within a segment of a string (a "context").

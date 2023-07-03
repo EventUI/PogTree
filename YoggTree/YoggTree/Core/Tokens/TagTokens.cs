@@ -10,7 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace YoggTree.Core.Tokens
+namespace PogTree.Core.Tokens
 {
     /// <summary>
     /// Token for finding "&lt;" characters (intended for XML-like markup languages).

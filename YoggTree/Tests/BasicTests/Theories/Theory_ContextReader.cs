@@ -4,10 +4,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using YoggTree.Core.Tokens;
-using YoggTreeTest.Common;
+using PogTree.Core.Tokens;
+using PogTreeTest.Common;
 
-namespace YoggTreeTest.Theories
+namespace PogTreeTest.Theories
 {
     internal class Theory_ContextReader : IEnumerable<object[]>
     {
@@ -42,7 +42,7 @@ namespace YoggTreeTest.Theories
                 TestName = "Empty string"
             };
 
-            args.Add(YoggTreeTestHelper.ToObjArray(iterationArgs));
+            args.Add(PogTreeTestHelper.ToObjArray(iterationArgs));
 
             contents = "[text]";
             var instance2 = new TestContextInstance(new TestContext())
@@ -77,7 +77,7 @@ namespace YoggTreeTest.Theories
                 ExpectedTokens = new List<TestTokenInstance>() { instance1.Tokens[0] }
             };
 
-            args.Add(YoggTreeTestHelper.ToObjArray(iterationArgs));
+            args.Add(PogTreeTestHelper.ToObjArray(iterationArgs));
 
             iterationArgs = iterationArgs with
             {
@@ -88,7 +88,7 @@ namespace YoggTreeTest.Theories
                 ExpectedTokens = new List<TestTokenInstance>() { instance2.Tokens[0], instance2.Tokens[1], instance2.Tokens[2] }
             };
 
-            args.Add(YoggTreeTestHelper.ToObjArray(iterationArgs));
+            args.Add(PogTreeTestHelper.ToObjArray(iterationArgs));
         }
 
         private void GetRecursiveIteration(List<object[]> args)
@@ -143,7 +143,7 @@ namespace YoggTreeTest.Theories
 
             };
 
-            args.Add(YoggTreeTestHelper.ToObjArray(iterationArgs));
+            args.Add(PogTreeTestHelper.ToObjArray(iterationArgs));
 
             /***************************************************************************/
 
@@ -263,7 +263,7 @@ namespace YoggTreeTest.Theories
                 }
             };
 
-            args.Add(YoggTreeTestHelper.ToObjArray(iterationArgs));
+            args.Add(PogTreeTestHelper.ToObjArray(iterationArgs));
         }
     }
 }

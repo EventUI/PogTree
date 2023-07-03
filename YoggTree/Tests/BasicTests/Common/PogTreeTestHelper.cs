@@ -11,11 +11,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Transactions;
-using YoggTree.Core.Tokens;
+using PogTree.Core.Tokens;
 
-namespace YoggTreeTest.Common
+namespace PogTreeTest.Common
 {
-    public static class YoggTreeTestHelper
+    public static class PogTreeTestHelper
     {
         public static bool CompareParseResults<T>(TestParseArgs<T> parseArgs) where T : TokenContextDefinition, new()
         {

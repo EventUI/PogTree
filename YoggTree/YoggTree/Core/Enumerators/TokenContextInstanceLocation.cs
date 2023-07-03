@@ -10,7 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace YoggTree.Core.Enumerators
+namespace PogTree.Core.Enumerators
 {
     /// <summary>
     /// Holds the position and context one of the token/context enumerables is currently at. 

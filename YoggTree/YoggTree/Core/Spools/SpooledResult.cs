@@ -3,7 +3,7 @@
 This source code is licensed under the MIT license found in the
 LICENSE file in the root directory of this source tree.*/
 
-namespace YoggTree.Core.Spools
+namespace PogTree.Core.Spools
 {
     /// <summary>
     /// Represents the index and length of a Regex find result in a string.

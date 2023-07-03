@@ -3,7 +3,7 @@
 This source code is licensed under the MIT license found in the
 LICENSE file in the root directory of this source tree.*/
 
-namespace YoggTree.Core.Spools
+namespace PogTree.Core.Spools
 {
     /// <summary>
     /// Class for containing the results of Regex.ValueMatchEnumerators in an array of SpooledResult instances that are created, populated, and reused lazily. 

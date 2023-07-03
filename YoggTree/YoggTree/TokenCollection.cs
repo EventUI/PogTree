@@ -11,7 +11,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace YoggTree
+namespace PogTree
 {
     /// <summary>
     /// Represents the registry of tokens that are available to be used by the TokenParser.

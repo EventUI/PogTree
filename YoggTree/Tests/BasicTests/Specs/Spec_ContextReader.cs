@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Xunit.Abstractions;
-using YoggTreeTest.Theories;
+using PogTreeTest.Theories;
 
-namespace YoggTreeTest.Specs
+namespace PogTreeTest.Specs
 {
     public class Spec_ContextReader
     {
@@ -21,14 +21,14 @@ namespace YoggTreeTest.Specs
         [ClassData(typeof(Theory_ContextReader))]
         public void BasicReaderTest(TestIterationArgs args)
         {
-            YoggTreeTestHelper.CompareReaderResults(args);
+            PogTreeTestHelper.CompareReaderResults(args);
         }
 
         [Theory]
         [ClassData(typeof(Theory_ContextReaderReverse))]
         public void BasicReaderTestReverse(TestIterationArgs args)
         {
-            YoggTreeTestHelper.CompareReaderResultsReverse(args);
+            PogTreeTestHelper.CompareReaderResultsReverse(args);
         }
     }
 }

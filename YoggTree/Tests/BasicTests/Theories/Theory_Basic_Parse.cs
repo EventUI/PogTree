@@ -9,8 +9,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using YoggTree.Core.Tokens;
-using YoggTreeTest.Common;
+using PogTree.Core.Tokens;
+using PogTreeTest.Common;
 
 namespace BasicTests.Theories
 {
@@ -52,7 +52,7 @@ namespace BasicTests.Theories
                 TestName = "Empty String Test"
             };
 
-            args.Add(YoggTreeTestHelper.ToObjArray(testArgs));
+            args.Add(PogTreeTestHelper.ToObjArray(testArgs));
 
             contentToParse = " ";
             expected = expected with
@@ -75,7 +75,7 @@ namespace BasicTests.Theories
                 TestName = "Single Space Test"
             };
 
-            args.Add(YoggTreeTestHelper.ToObjArray(testArgs));
+            args.Add(PogTreeTestHelper.ToObjArray(testArgs));
 
             contentToParse = "a";
             expected = expected with
@@ -95,7 +95,7 @@ namespace BasicTests.Theories
                 TestName = "Single character"
             };
 
-            args.Add(YoggTreeTestHelper.ToObjArray(testArgs));                
+            args.Add(PogTreeTestHelper.ToObjArray(testArgs));                
         }
 
         private static void AddSimpleHierarchyTests(List<object[]> args)
@@ -134,7 +134,7 @@ namespace BasicTests.Theories
                 TestName = "Hierarchy One Layer Test"
             };
 
-            args.Add(YoggTreeTestHelper.ToObjArray(testArgs));
+            args.Add(PogTreeTestHelper.ToObjArray(testArgs));
 
             /*****************************************************************************************/
 
@@ -184,7 +184,7 @@ namespace BasicTests.Theories
                 TestName = "Hierarchy Two Peers One Layer Test"
             };
 
-            args.Add(YoggTreeTestHelper.ToObjArray(testArgs));
+            args.Add(PogTreeTestHelper.ToObjArray(testArgs));
 
             /*****************************************************************************************/
 
@@ -239,7 +239,7 @@ namespace BasicTests.Theories
                 TestName = "Two layers of the same hierarchy."
             };
 
-            args.Add(YoggTreeTestHelper.ToObjArray(testArgs));
+            args.Add(PogTreeTestHelper.ToObjArray(testArgs));
         }
 
         private static void AddComplexHierarchyTests(List<object[]> args)
@@ -345,7 +345,7 @@ namespace BasicTests.Theories
                 TestName = "Hierarchy Many Different Layers"
             };
 
-            args.Add(YoggTreeTestHelper.ToObjArray(testArgs));
+            args.Add(PogTreeTestHelper.ToObjArray(testArgs));
 
             /****************************************************************************************/
 
@@ -448,7 +448,7 @@ namespace BasicTests.Theories
                 TestName = "Hierarchy Many Different Layers with random text noise."
             };
 
-            args.Add(YoggTreeTestHelper.ToObjArray(testArgs));
+            args.Add(PogTreeTestHelper.ToObjArray(testArgs));
         }
     }
 }

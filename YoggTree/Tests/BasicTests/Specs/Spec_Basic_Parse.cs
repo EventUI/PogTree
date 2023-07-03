@@ -10,9 +10,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Xunit.Abstractions;
-using YoggTreeTest.Common;
+using PogTreeTest.Common;
 
-namespace YoggTreeTest.Specs
+namespace PogTreeTest.Specs
 {
     public class Spec_Basic_Parse
     {
@@ -29,7 +29,7 @@ namespace YoggTreeTest.Specs
         {
             _output.WriteLine($"Testing: {testParseArgs.TestName}");
 
-            YoggTreeTestHelper.CompareParseResults(testParseArgs);
+            PogTreeTestHelper.CompareParseResults(testParseArgs);
         }
 
         [Theory(DisplayName = "Token seek tests.")]
@@ -38,7 +38,7 @@ namespace YoggTreeTest.Specs
         {
             _output.WriteLine($"Testing: {testParseArgs.TestName}");
 
-            YoggTreeTestHelper.CompareSeekResults(testParseArgs);
+            PogTreeTestHelper.CompareSeekResults(testParseArgs);
         }
 
         [Theory(DisplayName = "Token list matching tests.")]
@@ -47,7 +47,7 @@ namespace YoggTreeTest.Specs
         {
             _output.WriteLine($"Testing: {testParseArgs.TestName}");
 
-            YoggTreeTestHelper.ValidateSeekResults(testParseArgs);
+            PogTreeTestHelper.ValidateSeekResults(testParseArgs);
         }
 
         [Theory(DisplayName = "Token lazy seeking tests.")]
@@ -56,7 +56,7 @@ namespace YoggTreeTest.Specs
         {
             _output.WriteLine($"Testing: {testParseArgs.TestName}");
 
-            YoggTreeTestHelper.CompareParseResults(testParseArgs);
+            PogTreeTestHelper.CompareParseResults(testParseArgs);
         }
 
         [Theory(DisplayName = "Token list matching lazy seeking behavior tests.")]
@@ -65,7 +65,7 @@ namespace YoggTreeTest.Specs
         {
             _output.WriteLine($"Testing: {testParseArgs.TestName}");
 
-            YoggTreeTestHelper.ValidateSeekResults(testParseArgs);
+            PogTreeTestHelper.ValidateSeekResults(testParseArgs);
         }
 
         [Theory(DisplayName = "Lazy token seek tests.")]
@@ -74,7 +74,7 @@ namespace YoggTreeTest.Specs
         {
             _output.WriteLine($"Testing: {testParseArgs.TestName}");
 
-            YoggTreeTestHelper.CompareSeekResults(testParseArgs);
+            PogTreeTestHelper.CompareSeekResults(testParseArgs);
         }
 
     }
