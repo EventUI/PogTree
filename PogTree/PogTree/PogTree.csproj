@@ -12,14 +12,15 @@
 	<Authors>Richard Stannard</Authors>
 	<Title>PogTree</Title>
 	<Deterministic>false</Deterministic>
-	<Version>1.0.1.0</Version>
+	<Version>1.0.1.1</Version>
 	<PackageLicenseFile>LICENSE</PackageLicenseFile>
 	<SymbolPackageFormat>snupkg</SymbolPackageFormat>
 	<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 	<PackageReadmeFile>README.md</PackageReadmeFile>
-	<PackageProjectUrl>https://github.com/EventUI/PogTree</PackageProjectUrl>
+	<PackageProjectUrl></PackageProjectUrl>
 	<Description>Strongly-typed text/code file parser.</Description>
 	<Copyright>Copyright (c) 2023 Richard H Stannard</Copyright>
+	<RepositoryUrl>https://github.com/EventUI/PogTree</RepositoryUrl>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
