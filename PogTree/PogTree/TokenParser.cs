@@ -43,7 +43,7 @@ namespace PogTree
         }
 
         /// <summary>
-        /// Parses a string of content using the given token context definition as a starting point. Creates an copy of the ContextRegistry to use for this parse session.
+        /// Parses a string of content using the given token context definition as a starting point. 
         /// </summary>
         /// <param name="contextDefinition">The context definition to use to begin the parsing process. Note that this can be swapped out if the ContextRegistry contains a matching key.</param>
         /// <param name="contents">The string to parse.</param>
@@ -59,14 +59,14 @@ namespace PogTree
                 }
             }
 
-            var parseSession = new TokenParseSession(new TokenContextInstance(contextDefinition, contents), new TokenContextCollection(_contextRegistry));
+            var parseSession = new TokenParseSession(new TokenContextInstance(contextDefinition, contents), _contextRegistry);
             parseSession.RootContext.WalkContent();
 
             return parseSession.RootContext;
         }
 
         /// <summary>
-        /// Parses a string of content using the given token context definition as a starting point. Creates an copy of the ContextRegistry to use for this parse session.
+        /// Parses a string of content using the given token context definition as a starting point.
         /// </summary>
         /// <typeparam name="T">>The type of context definition to use to begin the parsing process. Note that this can be swapped out if the ContextRegistry contains a matching key. Must have a parameterless constructor.</typeparam>
         /// <param name="contents">The string to parse.</param>

@@ -19,7 +19,7 @@ namespace PogTree
     /// </summary>
     public sealed class TokenReader
     {
-        /*Note: This class is intended to seek backwards and forwards in both the Tokens and ChildContexts arrays of a single TokenContextInstance, but each required it's own IEnumerable implementation.
+        /*Note: This class is intended to seek backwards and forwards in both the Tokens and ChildContexts arrays of a single TokenContextInstance, but each required its own IEnumerable implementation.
         So we sync them lazily when the consumer of the API needs a value that came from whatever source they did not use last. For example, if the tokens list is advanced,
         and the user uses the CurrentContext property, we need to advance the context position to point at whatever context the token currently resides in. This could cause performance problems and 
         might merit a refactoring to keep both in sync in a more performant fashion.
