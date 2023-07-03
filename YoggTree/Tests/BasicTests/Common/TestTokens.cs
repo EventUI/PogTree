@@ -45,7 +45,7 @@ namespace YoggTreeTest.Common
 
         public static TestTokenInstance ChildContext(string contextContent, TestContextInstance childContext)
         {
-            return new TestTokenInstance(new EmptyToken(), contextContent, TokenInstanceType.ContextPlaceholder)
+            return new TestTokenInstance(new ContextPlaceholderToken(), contextContent, TokenInstanceType.ContextPlaceholder)
             {
                 TestContextInstance = childContext
             };

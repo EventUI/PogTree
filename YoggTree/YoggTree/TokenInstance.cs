@@ -100,7 +100,7 @@ namespace YoggTree
         public TokenContextInstance ChildContext { get; internal init; } = null;
 
         internal ContextPlaceholderTokenInstance(TokenContextInstance context, int tokenStartIndex, ReadOnlyMemory<char> value, TokenContextInstance childContext)
-            : base(EmptyToken.Instance, context, tokenStartIndex, value, TokenInstanceType.ContextPlaceholder)
+            : base(ContextPlaceholderToken.Instance, context, tokenStartIndex, value, TokenInstanceType.ContextPlaceholder)
         {
             ChildContext = childContext;
         }

@@ -52,8 +52,11 @@ namespace YoggTree
             get 
             {
                 if (_enumeratedContextLast == true) UpdateTokenInstancePosition();
+
+                //doing a bit of hackery to make some of the exception cases from the enumerable not case an out of range exception.
                 int position = _tokens.CurrentLocation.Position; 
                 if (position < 0) position = 0;
+                if (position != 0 && position >= _tokens.CurrentLocation.ContextInstance.Tokens.Count) position = _tokens.CurrentLocation.ContextInstance.Tokens.Count - 1;
 
                 return position;
             }
@@ -79,8 +82,11 @@ namespace YoggTree
             get
             {
                 if (_enumeratedTokenLast == true) UpdateTokenContextInstancePosition();
+
+                //doing a bit of hackery to make some of the exception cases from the enumerable not case an out of range exception.
                 int position = _contexts.CurrentLocation.Position;
-                if (position < 0) position = 0;
+                if (position < 0) position = -1;
+                if (position != 0 && position >= _contexts.CurrentLocation.ContextInstance.ChildContexts.Count) position = _contexts.CurrentLocation.ContextInstance.ChildContexts.Count - 1;
 
                 return position;
             }
@@ -114,7 +120,7 @@ namespace YoggTree
             get 
             {
                 if (_enumeratedTokenLast == true) UpdateTokenContextInstancePosition();
-                return (_contexts.CurrentLocation.Position < 0 ? _contexts.CurrentLocation.ContextInstance : _contexts.CurrentLocation.ContextInstance.ChildContexts[_contexts.CurrentLocation.Position]);
+                return (_contexts.CurrentLocation.Position < 0 ? _contexts.CurrentLocation.ContextInstance : _contexts.CurrentLocation.ContextInstance.ChildContexts[ContextPosition]);
             }
         }
 
@@ -138,7 +144,7 @@ namespace YoggTree
             get 
             {
                 if (_enumeratedContextLast == true) UpdateTokenInstancePosition();
-                return CurrentContext.Tokens[TokenPosition]; 
+                return _tokens.CurrentLocation.ContextInstance.Tokens[TokenPosition]; 
             }
         }
 
@@ -206,10 +212,10 @@ namespace YoggTree
         }
 
         /// <summary>
-        /// Gets the next token in the current context, including placeholders, that have the given context definition. If recursive is true, placeholder tokens are dug into and have their first matching token returned instead.
+        /// Gets the next token in the current context, including placeholders, that have the given TokenDefinition. If recursive is true, placeholder tokens are dug into and have their first matching token returned instead.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="recursive"></param>
+        /// <typeparam name="T">The type of token to find.</typeparam>
+        /// <param name="recursive">Whether or not to perform a recursive operation or stay in the same context. False by default.</param>
         /// <returns></returns>
         public TokenInstance GetNextToken<T>(bool recursive = false) where T : ITokenDefinition
         {
@@ -222,6 +228,11 @@ namespace YoggTree
             return nextToken;
         }
 
+        /// <summary>
+        /// Gets the previous token in the current context, including placeholders. If recursive is true, placeholder tokens are dug into and have their last token returned instead.
+        /// </summary>
+        /// <param name="recursive">Whether or not to perform a recursive operation or stay in the same context. False by default.</param>
+        /// <returns></returns>
         public TokenInstance GetPreviousToken(bool recursive = false)
         {
             UpdateTokenInstancePosition();
@@ -240,6 +251,12 @@ namespace YoggTree
             return _instanceEnumerator.Current;
         }
 
+        /// <summary>
+        /// Gets the previous token in the current context, including placeholders, that have the given TokenDefinition. If recursive is true, placeholder tokens are dug into and have their last matching token returned instead.
+        /// </summary>
+        /// <typeparam name="T">The type of token to find.</typeparam>
+        /// <param name="recursive">Whether or not to perform a recursive operation or stay in the same context. False by default.</param>
+        /// <returns></returns>
         public TokenInstance GetPreviousToken<T>(bool recursive = false) where T : ITokenDefinition
         {
             TokenInstance previousToken = GetPreviousToken(recursive);
@@ -251,67 +268,124 @@ namespace YoggTree
             return previousToken;
         }
 
+        /// <summary>
+        /// Gets an IEnumerable for all the TokenInstances contained in this reader, starting at the root context. If recursive is set to true this will skip placeholder tokens and recursively follow the hierarchy of contexts.
+        /// </summary>
+        /// <param name="recursive">Whether or not to perform a recursive operation or stay in the same context. False by default.</param>
+        /// <returns></returns>
         public IEnumerable<TokenInstance> GetAllTokens(bool recursive = false)
         {
             return new TokenInstanceEnumerable(_rootContext, recursive);
         }
 
+        /// <summary>
+        /// Gets an IEnumerable for all the TokenInstances that come after the current token. If recursive is set to true this will skip placeholder tokens and recursively follow the hierarchy of contexts.
+        /// </summary>
+        /// <param name="recursive">Whether or not to perform a recursive operation or stay in the same context. False by default.</param>
+        /// <returns></returns>
         public IEnumerable<TokenInstance> GetRemainingTokens(bool recursive = false)
         {
-            var iterator = new TokenInstanceEnumerable(_rootContext, recursive);
+            var iterator = new TokenInstanceEnumerable(CurrentContext, recursive);
             iterator.Seek(CurrentToken);
 
             return iterator;
         }
 
+        /// <summary>
+        /// Gets an IEnumerable for all the TokenContextInstances contained in this reader, starting at the root context.
+        /// </summary>
+        /// <param name="recursive">Whether or not to perform a recursive operation or stay in the same context. False by default.</param>
+        /// <returns></returns>
         public IEnumerable<TokenContextInstance> GetAllTokenContexts(bool recursive = false)
         {
             return new TokenContextInstanceEnumerable(_rootContext, recursive);
         }
 
+        /// <summary>
+        /// Gets an IEnumerable for all the TokenContextInstances that come after the current context.
+        /// </summary>
+        /// <param name="recursive">Whether or not to perform a recursive operation or stay in the same context. False by default.</param>
+        /// <returns></returns>
         public IEnumerable<TokenContextInstance> GetRemainingTokenContexts(bool recursive = false)
         {
 
-            var iterator = new TokenContextInstanceEnumerable(_rootContext, recursive);
+            var iterator = new TokenContextInstanceEnumerable(CurrentContext, recursive);
             iterator.Seek(CurrentContext);
 
             return iterator;
         }
 
+        /// <summary>
+        /// Gets an IEnumerable of all TokenInstances (starting at the RootContext) that is filtered by the predicate. If recursive is set to true this will skip placeholder tokens and recursively follow the hierarchy of contexts.
+        /// </summary>
+        /// <param name="predicate">A filtering function used to select TokenInstances.</param>
+        /// <param name="recursive">Whether or not to perform a recursive operation or stay in the same context. False by default.</param>
+        /// <returns></returns>
         public IEnumerable<TokenInstance> SearchAll(Func<TokenInstance, bool> predicate, bool recursive = false)
         {
             return GetAllTokens(recursive).Where(predicate);
         }
 
+        /// <summary>
+        /// Gets an IEnumerable of TokenContextInstances (starting at the RootContext) that is filtered by the predicate. If recursive is set to true this will skip placeholder tokens and recursively follow the hierarchy of contexts.
+        /// </summary>
+        /// <param name="predicate">A filtering function used to select TokenContextInstances.</param>
+        /// <param name="recursive">Whether or not to perform a recursive operation or stay in the same context. False by default.</param>
+        /// <returns></returns>
         public IEnumerable<TokenContextInstance> SearchAll(Func<TokenContextInstance, bool> predicate, bool recursive = false)
         {
-            return GetAllTokenContexts().Where(predicate);
+            return GetAllTokenContexts(recursive).Where(predicate);
         }
 
+        /// <summary>
+        /// Gets an IEnumerable of all TokenInstances (starting at the CurrentToken) that is filtered by the predicate. If recursive is set to true this will skip placeholder tokens and recursively follow the hierarchy of contexts.
+        /// </summary>
+        /// <param name="predicate">A filtering function used to select TokenInstances.</param>
+        /// <param name="recursive">Whether or not to perform a recursive operation or stay in the same context. False by default.</param>
+        /// <returns></returns>
         public IEnumerable<TokenInstance> Search(Func<TokenInstance, bool> predicate, bool recursive = false)
         {
             return GetRemainingTokens(recursive).Where(predicate);
         }
 
+        /// <summary>
+        /// Gets an IEnumerable of TokenContextInstances (starting at the CurrentContext) that is filtered by the predicate. If recursive is set to true this will skip placeholder tokens and recursively follow the hierarchy of contexts.
+        /// </summary>
+        /// <param name="predicate">A filtering function used to select TokenContextInstances.</param>
+        /// <param name="recursive">Whether or not to perform a recursive operation or stay in the same context. False by default.</param>
+        /// <returns></returns>
         public IEnumerable<TokenContextInstance> Search(Func<TokenContextInstance, bool> predicate, bool recursive = false)
         {
-            return GetRemainingTokenContexts().Where(predicate);
+            return GetRemainingTokenContexts(recursive).Where(predicate);
         }
 
-        public void Seek(int offset, SeekOrigin origin)
+        /// <summary>
+        /// Seeks the TokenReader to a new position within the CurrentContext.
+        /// </summary>
+        /// <param name="offset">The offset from the SeekOrigin.</param>
+        /// <param name="origin">The point of reference to Seek from.</param>
+        public void SeekTokens(int offset, SeekOrigin origin)
         {
             _tokens.Seek(offset, origin);
-
-            if (_tokens.CurrentLocation.Position < 0 || _tokens.CurrentLocation.ContextInstance.Tokens.Count == 0)
-            {
-                _contexts.Seek(_tokens.CurrentLocation.ContextInstance);
-            }
-            else
-            {
-                _contexts.Seek(_tokens.CurrentLocation.ContextInstance.Tokens[_tokens.CurrentLocation.Position].Context);
-            }            
+            _enumeratedTokenLast = true;                    
         }
 
+        /// <summary>
+        /// Seeks the TokenReader to a new position within the CurrentContext.
+        /// </summary>
+        /// <param name="offset">The offset from the SeekOrigin.</param>
+        /// <param name="origin">The point of reference to Seek from.</param>
+        public void SeekContexts(int offset, SeekOrigin origin)
+        {
+            _contexts.Seek(offset, origin);
+            _enumeratedContextLast = true;
+        }
+
+        /// <summary>
+        /// Seeks the TokenReader to a new position within the CurrentContext or the hierarchy of tokens and contexts under the RootContext if performing a recursive operation.
+        /// </summary>
+        /// <param name="location">The location to seek to in the TokenReader.</param>
+        /// <param name="recursive">Whether or not to perform a recursive operation or stay in the same context. False by default.</param>
         public void Seek(ReaderSeekLocation location, bool recursive = false)
         {
             if (location == ReaderSeekLocation.FirstToken)
@@ -348,18 +422,31 @@ namespace YoggTree
             }
         }
 
+        /// <summary>
+        /// Seeks the TokenReader to the given token instance.
+        /// </summary>
+        /// <param name="instance"></param>
         public void Seek(TokenInstance instance)
         {
             _tokens.Seek(instance);
             _enumeratedTokenLast = true;
         }
 
+        /// <summary>
+        /// Seeks the TokenReader to the FirstToken given context instance.
+        /// </summary>
+        /// <param name="context"></param>
         public void Seek(TokenContextInstance context)
         {
             _contexts.Seek(context);
             _enumeratedContextLast = true;
         }
 
+        /// <summary>
+        /// Gets the next context in the CurrentContext's ChildContexts list. Returns the parent context before its children if recursion is enabled.
+        /// </summary>
+        /// <param name="recursive">Whether or not to perform a recursive operation or stay in the same context. False by default.</param>
+        /// <returns></returns>
         public TokenContextInstance GetNextContext(bool recursive = false)
         {
             UpdateTokenContextInstancePosition();
@@ -378,6 +465,12 @@ namespace YoggTree
             return _contextEnumerator.Current;
         }
 
+        /// <summary>
+        /// Gets the next context in the CurrentContext's ChildContexts list that has the given TokenContextDefinition. Returns the parent context before its children if recursion is enabled.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="recursive">Whether or not to perform a recursive operation or stay in the same context. False by default.</param>
+        /// <returns></returns>
         public TokenContextInstance GetNextContext<T>(bool recursive = false) where T : ITokenContextDefinition
         {
             TokenContextInstance nextContext = GetNextContext(recursive);
@@ -389,6 +482,11 @@ namespace YoggTree
             return nextContext;
         }
 
+        /// <summary>
+        /// Gets the previous context in the CurrentContext's ChildContexts list. Returns the parent context after its children if recursion is enabled.
+        /// </summary>
+        /// <param name="recursive">Whether or not to perform a recursive operation or stay in the same context. False by default.</param>
+        /// <returns></returns>
         public TokenContextInstance GetPreviousContext(bool recursive = false)
         {
             UpdateTokenContextInstancePosition();
@@ -407,6 +505,12 @@ namespace YoggTree
             return _contextEnumerator.Current;
         }
 
+        /// <summary>
+        /// Gets the previous context in the CurrentContext's ChildContexts list that has the given TokenContextDefinition. Returns the parent context before its children if recursion is enabled.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="recursive">Whether or not to perform a recursive operation or stay in the same context. False by default.</param>
+        /// <returns></returns>
         public TokenContextInstance GetPreviousContext<T>(bool recursive = false) where T : ITokenContextDefinition
         {
             TokenContextInstance previousInstance = GetPreviousContext(recursive);
@@ -418,6 +522,12 @@ namespace YoggTree
             return previousInstance;
         }
 
+        /// <summary>
+        /// One of two annoying little syncing functions that need to be called when the user switches from iterating TokenInstances to something requiring the current position of the CurrentContext.
+        /// We need to do this because we have two separate Enumerators - one for Tokens, one for Contexts, and advancing one does not advance the other, so they need to be synced, but done in a "lazy" way
+        /// so we're not syncing after every operation.
+        /// </summary>
+
         private void UpdateTokenInstancePosition()
         {
             if (_enumeratedTokenLast == true) return;
@@ -425,42 +535,45 @@ namespace YoggTree
 
             TokenInstance referenceToken = null;
             TokenContextInstance lastContext = _contextEnumerator?.Current; //
-            if (lastContext == null) lastContext = _contexts.CurrentLocation.Position < 0 ? _contexts.CurrentLocation.ContextInstance : _contexts.CurrentLocation.ContextInstance.ChildContexts[_contexts.CurrentLocation.Position];
             
-            if (_contextEnumerator.Current == null)
+            //if (lastContext == null) lastContext = _contexts.CurrentLocation.Position < 0 ? _contexts.CurrentLocation.ContextInstance : _contexts.CurrentLocation.ContextInstance.ChildContexts[_contexts.CurrentLocation.Position];
+
+            if (lastContext == null)
             {
-                if (_contexts.Recursive == true)
+                if (_contexts.CurrentLocation.Position < 0)
                 {
-                    if (_contexts.Direction == SeekDirection.Forwards)
-                    {
-                        referenceToken = lastContext.Tokens[lastContext.Tokens.Count - 1];
-                    }
-                    else
-                    {
-                        referenceToken = _rootContext.Tokens[0];
-                    }
+                    lastContext = _contexts.CurrentLocation.ContextInstance;
                 }
                 else
                 {
-                    if (_contexts.Direction == SeekDirection.Forwards)
+                    if (_contexts.CurrentLocation.Position > _contexts.CurrentLocation.ContextInstance.ChildContexts.Count)
                     {
-                        referenceToken = lastContext.Tokens[lastContext.Tokens.Count - 1];
+                        lastContext = _contexts.CurrentLocation.ContextInstance.ChildContexts[_contexts.CurrentLocation.ContextInstance.ChildContexts.Count - 1];
                     }
                     else
                     {
-                        referenceToken = lastContext.Tokens[0];
+                        lastContext = _contexts.CurrentLocation.ContextInstance.ChildContexts[_contexts.CurrentLocation.Position];
                     }
                 }
             }
-            else
+
+
+            if (_tokens.CurrentLocation.ContextInstance == lastContext)
             {
-                referenceToken = _contexts.Direction == SeekDirection.Forwards ? lastContext.Tokens[0] : lastContext.Tokens[lastContext.Tokens.Count - 1];
+                _enumeratedContextLast = false;
+                return;
             }
+
+            referenceToken = lastContext.StartToken;
 
             _tokens.Seek(referenceToken);
             _enumeratedContextLast = false;
         }
-
+        /// <summary>
+        /// One of two annoying little syncing functions that need to be called when the user switches from iterating TokenContextInstances to something requiring the current position of the CurrentToken.
+        /// We need to do this because we have two separate Enumerators - one for Tokens, one for Contexts, and advancing one does not advance the other, so they need to be synced, but done in a "lazy" way
+        /// so we're not syncing after every operation.
+        /// </summary>
         private void UpdateTokenContextInstancePosition()
         {
             if (_enumeratedContextLast == true) return;
@@ -473,9 +586,20 @@ namespace YoggTree
             }
             else
             {
-                TokenInstance lastToken = _tokens.CurrentLocation.ContextInstance.Tokens[position];
+                TokenInstance lastToken = null;
+
+                if (position >= _tokens.CurrentLocation.ContextInstance.Tokens.Count)
+                {
+                    lastToken = _tokens.CurrentLocation.ContextInstance.Tokens[_tokens.CurrentLocation.ContextInstance.Tokens.Count - 1];
+                }
+                else
+                {
+                    lastToken = _tokens.CurrentLocation.ContextInstance.Tokens[position];
+                }
+
                 _contexts.Seek(lastToken.Context);
             }
+
             _enumeratedTokenLast = false;
         }
     }

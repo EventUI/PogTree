@@ -134,17 +134,7 @@ namespace YoggTreeTest.Common
             bool first = true;
             foreach (var token in iterationArgs.ExpectedTokens)
             {
-                TokenInstance nextToken = null;
-
-                if (first == true) //the first token when going in reverse is the very last token, calling get previous token will get the one before it if you are at the end.
-                {
-                    nextToken = reader.CurrentToken;
-                    first = false;
-                }
-                else
-                {
-                    nextToken = reader.GetPreviousToken(iterationArgs.Recursive);
-                }
+                TokenInstance nextToken = reader.GetPreviousToken(iterationArgs.Recursive);
 
                 if (nextToken == null)
                 {
@@ -174,11 +164,11 @@ namespace YoggTreeTest.Common
             foreach (var context in iterationArgs.ExpectedContexts)
             {
                 TokenContextInstance nextInstance = null;
-                if (first == true) //the first item in the reversed array of contexts will never match due to the asymmetric way recursion works in reverse for contexts.
-                {
-                    first = false;
-                    continue;
-                }
+                //if (first == true) //the first item in the reversed array of contexts will never match due to the asymmetric way recursion works in reverse for contexts.
+                //{
+                //    first = false;
+                //    continue;
+                //}
 
                 nextInstance = reader.GetPreviousContext(iterationArgs.Recursive);                
 

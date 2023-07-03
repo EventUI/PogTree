@@ -153,7 +153,7 @@ namespace YoggTree.Core.Enumerators
         /// <returns></returns>
         private TokenInstance GetPreviousToken()
         {
-            if (_currentLocation.Position == -1)
+            if (_currentLocation.Position == -1) //-1 means we're past the beginning of the first token
             {
                 if (_currentLocation.Depth == 0 || _recursive == false) return null;
                 _currentLocation = _depthStack.Pop();
@@ -248,7 +248,7 @@ namespace YoggTree.Core.Enumerators
         }
 
         /// <summary>
-        /// Seeks the IEnumerable to the position of the given token.
+        /// Seeks the IEnumerable to the position of the given token by walking backwards up the hierarchy starting at the token instance.
         /// </summary>
         /// <param name="instance">The token to advance to.</param>
         /// <exception cref="Exception"></exception>
@@ -305,6 +305,11 @@ namespace YoggTree.Core.Enumerators
 
             _currentLocation = initialLocation;
         }
+
+        /// <summary>
+        /// Seeks the IEnumerable to the provided context's start token.
+        /// </summary>
+        /// <param name="context"></param>
         internal void Seek(TokenContextInstance context)
         {
             if (context.StartToken == null)
@@ -325,6 +330,11 @@ namespace YoggTree.Core.Enumerators
             }
         }
         
+        /// <summary>
+        /// Gets the index of a Token in it's context.
+        /// </summary>
+        /// <param name="instance">The TokenInstance to find the index of.</param>
+        /// <returns></returns>
         internal static int GetTokenIndex(TokenInstance instance)
         {
             if (instance == null || instance.Context == null) return -1;
@@ -336,6 +346,11 @@ namespace YoggTree.Core.Enumerators
             return -1;            
         }
 
+        /// <summary>
+        /// Gets the index of the ContextPlaceholder token in the context instance's Parent's Tokens list that contains the given context.
+        /// </summary>
+        /// <param name="instance">The TokenContextInstance to get the index of its ContextPlaceholder token in its Parent's Tokens list. </param>
+        /// <returns></returns>
         internal static int GetTokenIndex(TokenContextInstance instance)
         {
             if (instance == null || instance.Parent == null) return -1;
@@ -349,15 +364,18 @@ namespace YoggTree.Core.Enumerators
             return -1;
         }
 
+        /// <summary>
+        /// Seeks the IEnumerable to the last token in the hierarchy.
+        /// </summary>
+        /// <param name="recursive">Whether or not to stay in the same context or traverse the context hierarchy to find the very last token.</param>
         internal void SeekToEnd(bool recursive)
         {
             if (recursive == false)
             {
-                _currentLocation.Position = (_currentLocation.ContextInstance.Tokens.Count == 0) ? 0 : _currentLocation.ContextInstance.Tokens.Count - 1;
+                _currentLocation.Position = (_currentLocation.ContextInstance.Tokens.Count == 0) ? 0 : _currentLocation.ContextInstance.Tokens.Count; //we get the index that is one over the indexable range so getting the previous token returns the last token.
             }
             else
             {
-
                 if (_rootContext.Tokens.Count == 0)
                 {
                     _depthStack.Clear();
@@ -370,7 +388,7 @@ namespace YoggTree.Core.Enumerators
 
                     _depthStack.Push(_currentLocation);
                 }
-                else
+                else //walk backwards from the last token in the _rootContext and find the first one recursively that is not a ContextPlaceholder.
                 {                        
                     TokenContextInstance parentContext = _rootContext;
                     TokenInstance lastToken = _rootContext.Tokens[_rootContext.Tokens.Count - 1];
@@ -413,11 +431,16 @@ namespace YoggTree.Core.Enumerators
                     if (lastToken != null)
                     {
                         Seek(lastToken);
+                        _currentLocation.Position++; //so getting the "previous" token actually returns the last token and not the second to last token.
                     }
                 }
             }
         }
 
+        /// <summary>
+        /// Seeks to the beginning of the current context or context hierarchy.
+        /// </summary>
+        /// <param name="recursive"></param>
         internal void SeekToBeginning(bool recursive)
         {
             if (recursive == false)

@@ -19,6 +19,11 @@ namespace YoggTree.Core.Enumerators
     /// </summary>
     public sealed class TokenContextInstanceEnumerable : IEnumerable<TokenContextInstance>
     {
+        /*A note about this enumerator: in recursive mode it returns both the parent context (first) then it's children recursively. To make this all sync up properly the Position of the _currentLocation
+        always starts at -2, this is because a Position of -1 says "return yourself" and we always increment the Position of the _currentLocation BEFORE getting a context so that the index lines up with
+        the token that was just returned.*/
+
+
         private TokenContextInstance _rootContext = null;
         private bool _recursive = false;
         private TokenContextInstanceLocation _currentLocation = null;
@@ -114,17 +119,19 @@ namespace YoggTree.Core.Enumerators
         /// </summary>
         private TokenContextInstance GetNextContext()
         {
-            _currentLocation.Position++;
-            if (_currentLocation.Position == -1)
+            _currentLocation.Position++; //always increment counter first so that the Position is always the index of the CurrentContext. 
+            if (_currentLocation.Position == -1) //-1 is the magic number for "return yourself" and this is why we start at -2.
             {
                 return _currentLocation.ContextInstance;
             }
 
-            if (_currentLocation.ContextInstance.ChildContexts.Count > _currentLocation.Position)
+ 
+            if (_currentLocation.ContextInstance.ChildContexts.Count > _currentLocation.Position) //we have more contexts to iterate over
             {
                 var contextInstance = _currentLocation.ContextInstance.ChildContexts[_currentLocation.Position];
-                if (contextInstance.ChildContexts.Count > 0 && _recursive == true)
+                if (contextInstance.ChildContexts.Count > 0 && _recursive == true) //we're in recursive mode and it has children, dig into it and have it return itself next.
                 {
+                    _depthStack.Push(_currentLocation);
                     _currentLocation = new TokenContextInstanceLocation()
                     {
                         ContextInstance = contextInstance,
@@ -134,55 +141,57 @@ namespace YoggTree.Core.Enumerators
 
                     return GetNextContext();
                 }
-                else
+                else //not recursive, just return what's at the index
                 {
                     return contextInstance;
                 }
             }
-            else
+            else //out of tokens in this context
             {
-                if (_recursive == false || _currentLocation.Depth == 0)
+                if (_recursive == false || _currentLocation.Depth == 0) //we're at the top, or not recursively walking the hierarchy, so return null to signal "all done"
                 {
                     return null;
                 }
 
+                //otherwise, we walk back up in the hierarchy and perform the same logic again.
                 _currentLocation = _depthStack.Pop();
                 return GetNextContext();
             }
         }
 
         /// <summary>
-        /// Gets the previous token (In the backwards direction). Moving backwards never returns the parent itself.
+        /// Gets the previous token (in the backwards direction). Moving backwards never returns the parent itself.
         /// </summary>
         /// <returns></returns>
         private TokenContextInstance GetPreviousContext()
         {
-            if (_currentLocation.Position < 0)
+            if (_currentLocation.Position < 0) //we're either returning the _currentLocation.ContextInstance or walking back up the hierarchy
             {
-                if (_currentLocation.Position == -1)
+                if (_currentLocation.Position == -1) //-1 is the magic number for "return yourself"
                 {
                     _currentLocation.Position--;
                     return _currentLocation.ContextInstance;
                 }
-                else
+                else //if the position is less than -1 and we're either at the top or not recursively walking up, return null to signal "all done"
                 {
                     if (_recursive == false || _currentLocation.Depth == 0) return null;
                 }
 
+                //otherwise pop back up in the hierarchy and perform the same logic again.
                 _currentLocation = _depthStack.Pop();
                 return GetPreviousContext();
             }
 
             _currentLocation.Position--;
             if (_currentLocation.Position == -1) return GetPreviousContext();
-            if (_currentLocation.ContextInstance.ChildContexts.Count == 0)
+            if (_currentLocation.ContextInstance.ChildContexts.Count == 0 || _recursive == false)
             {
-                _currentLocation.Position--;
+                _currentLocation.Position--; //this should leave us at -1. Call ourselves again and it will return the correct thing.
                 return GetPreviousContext();
             }
 
             var previousContext = _currentLocation.ContextInstance.ChildContexts[_currentLocation.Position];
-            if (previousContext.ChildContexts.Count > 0 && _recursive == true)
+            if (previousContext.ChildContexts.Count > 0 && _recursive == true) //we have children to do into recursively
             {
                 _depthStack.Push(_currentLocation);
                 _currentLocation = new TokenContextInstanceLocation()
@@ -250,14 +259,14 @@ namespace YoggTree.Core.Enumerators
                     }
                     else
                     {
-                        _currentLocation.Position = _currentLocation.ContextInstance.Tokens.Count - 1;
+                        _currentLocation.Position = _currentLocation.ContextInstance.Tokens.Count;
                     }
                 }
             }
         }
 
         /// <summary>
-        /// Seeks to the StartToken of the context instance.
+        /// Seeks to the StartToken of the context instance by walking backwards up the hierarchy from the context parameter to the root.
         /// </summary>
         /// <param name="instance"></param>
         /// <exception cref="ArgumentNullException"></exception>
@@ -359,16 +368,20 @@ namespace YoggTree.Core.Enumerators
             return -1;
         }
 
+        /// <summary>
+        /// Seeks the enumerable to the last context with optional recursion.
+        /// </summary>
+        /// <param name="recursive">Whether or not to get the very last child context in the entire hierarchy or just the last one in the current context.</param>
         internal void SeekToEnd(bool recursive)
         {
             if (recursive == false)
             {
-                _currentLocation.Position = (_currentLocation.ContextInstance.ChildContexts.Count == 0) ? -1 : _currentLocation.ContextInstance.ChildContexts.Count - 1;
+                _currentLocation.Position = (_currentLocation.ContextInstance.ChildContexts.Count == 0) ? -2 : _currentLocation.ContextInstance.ChildContexts.Count;
             }
             else
             {
 
-                if (_rootContext.ChildContexts.Count == 0)
+                if (_rootContext.ChildContexts.Count == 0) //we have no hierarchy to traverse, so just return the _rootContext the next time a context is requested.
                 {
                     _depthStack.Clear();
                     _currentLocation = new TokenContextInstanceLocation()
@@ -380,16 +393,17 @@ namespace YoggTree.Core.Enumerators
 
                     _depthStack.Push(_currentLocation);
                 }
-                else
+                else //the root context has children, we walk through them backwards recursively, starting at the END of the context's ChildContexts array, to find the deepest child context to return.
                 {
                     TokenContextInstance parentContext = _rootContext;
                     TokenContextInstance lastContext = _rootContext.ChildContexts[_rootContext.ChildContexts.Count - 1];
+                    
                     while (lastContext != null)
                     {
                         bool foundToken = false;
                         bool foundChildContext = false;
 
-                        if (lastContext.ChildContexts.Count == 0)
+                        if (lastContext.ChildContexts.Count == 0) //no more children, we're as deep as we can go.
                         {
                             break;
                         }
@@ -397,13 +411,13 @@ namespace YoggTree.Core.Enumerators
                         for (int x = parentContext.ChildContexts.Count - 1; x >= 0; x--)
                         {
                             lastContext = parentContext.ChildContexts[x];
-                            if (lastContext.ChildContexts.Count > 0)
+                            if (lastContext.ChildContexts.Count > 0) //walk down into the child context
                             {
                                 parentContext = lastContext;
                                 foundChildContext = true;
                                 break;
                             }
-                            else
+                            else //found someone with no contexts, we're as deep as we can go.
                             {
                                 foundToken = true;
                                 break;
@@ -420,14 +434,20 @@ namespace YoggTree.Core.Enumerators
                         }
                     }
 
+                    //if we found a context, seek to it (this is slightly redundant/inefficient, but it builds the _depthStack needed for walking the contexts in either direction and we don't want to duplicate that logic)
                     if (lastContext != null)
                     {
                         Seek(lastContext);
+                        _currentLocation.Position++; //so getting the previous context returns the right thing.
                     }
                 }
             }
         }
 
+        /// <summary>
+        /// Seeks to the beginning of the current context or, if recursive, to the beginning of the _rootContext.
+        /// </summary>
+        /// <param name="recursive">Whether or not to stay in the current context or move to the root.</param>
         internal void SeekToBeginning(bool recursive)
         {
             if (_recursive == false)
