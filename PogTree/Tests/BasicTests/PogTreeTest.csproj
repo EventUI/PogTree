@@ -7,7 +7,7 @@
 
     <IsPackable>false</IsPackable>
 
-    <AssemblyName>YoggTreeTest</AssemblyName>
+    <AssemblyName>PogTreeTest</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>
@@ -24,15 +24,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\YoggTree\PogTree.csproj" />
+    <ProjectReference Include="..\..\PogTree\PogTree.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <EditorConfigFiles Remove="C:\Users\richa\source\repos\EventUI\YoggTree\YoggTree\Tests\BasicTests\.editorconfig" />
+    <EditorConfigFiles Remove="C:\Users\richa\source\repos\EventUI\PogTree\PogTree\Tests\BasicTests\.editorconfig" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="C:\Users\richa\source\repos\EventUI\YoggTree\YoggTree\Tests\BasicTests\.editorconfig" />
+    <None Include="C:\Users\richa\source\repos\EventUI\PogTree\PogTree\Tests\BasicTests\.editorconfig" />
   </ItemGroup>
 
 </Project>
