@@ -122,4 +122,4 @@ It is because contexts spawn child contexts that the raw text content can be bro
     }
 
 
-In this example the parser was told to only look for the 'start/end string' characters of ", ', and `. - when any of those characters were encountered, the parser would create a new StingContext which continue until it meet an unescaped QuotedStringToken whose value is the same as the token that triggered the creation of the StringContext.There should be 4 StringContexts under the resulting TokenContextInstance from the parse operation, and each TokenContextInstance contains the full text of the 
+In this example the parser was told to only look for the 'start/end string' characters of ", ', and `. - when any of those characters were encountered, the parser would create a new StingContext which continue until it meet an unescaped QuotedStringToken whose value is the same as the token that triggered the creation of the StringContext.There should be 4 StringContexts under the resulting TokenContextInstance from the parse operation, and each TokenContextInstance with a definition of StringContext contains the full text of the quoted string (including the quotes).

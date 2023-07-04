@@ -93,7 +93,7 @@ namespace PogTreeTest.Examples
             var parser = new TokenParser();
             TokenContextInstance rootContext = parser.Parse<QuotedTextFileContext>(code);
 
-            //use the reader to get the child contexts that will contain the strings from the code block above
+            //use the reader to get the child contexts that will contain the strings from the code block above.
             TokenReader reader = rootContext.GetReader();
             TokenContextInstance quotedText = reader.GetNextContext<StringContext>();
             TokenContextInstance graveText = reader.GetNextContext<StringContext>();
