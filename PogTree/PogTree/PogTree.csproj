@@ -12,7 +12,7 @@
 	<Authors>Richard Stannard</Authors>
 	<Title>PogTree</Title>
 	<Deterministic>false</Deterministic>
-	<Version>1.0.1.1</Version>
+	<Version>1.0.1.2</Version>
 	<PackageLicenseFile>LICENSE</PackageLicenseFile>
 	<SymbolPackageFormat>snupkg</SymbolPackageFormat>
 	<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
