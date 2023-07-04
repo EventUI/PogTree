@@ -1,5 +1,5 @@
 # PogTree
-Regex-based parser for decomposing text or code files into a strongly-typed object model.
+Regex-based parser for decomposing code files into a strongly-typed object model.
 
 ### Summary
 PogTree is a utility designed to use Regex's to search and find patterns in code files to produce an object graph that can be traversed to interpret the contents of the file.
@@ -20,7 +20,7 @@ It is because contexts spawn child contexts that the raw text content can be bro
 
 ### Simple Example
 
-#### Finding all quoted strings in a block of text.
+#### Finding all quoted strings in a block of code.
 
     public class TestQuotedStrings
     {
@@ -89,22 +89,37 @@ It is because contexts spawn child contexts that the raw text content can be bro
         [Fact]
         public void TestQuotedString()
         {
-            string text = """
-            "Hello, \"World\"." said the programmer
-            as he got his demo code to technically 'work'.
+            string code = """
+            function HelloWord()
+            {
+                var string1 = "A string in quotes";
+                var string2 = `A string in graves`;
+                var string3 = 'A string in single quotes';
+
+                console.log("Hello World!");
+                console.log(string1);
+                console.log(string2);
+                console.log(string3);
+            }
             """;
 
+            //turn the string into a hierarchy of the contexts and tokens defined above
             var parser = new TokenParser();
-            TokenContextInstance parsed = parser.Parse<QuotedTextFileContext>(text);
+            TokenContextInstance rootContext = parser.Parse<QuotedTextFileContext>(code);
 
-            TokenReader reader = parsed.GetReader();
-            var firstQuotedText = reader.GetNextContext<StringContext>();
-            var secondSingleQuotedText = reader.GetNextContext<StringContext>();
+            //use the reader to get the child contexts that will contain the strings from the code block above.
+            TokenReader reader = rootContext.GetReader();
+            TokenContextInstance quotedText = reader.GetNextContext<StringContext>();
+            TokenContextInstance graveText = reader.GetNextContext<StringContext>();
+            TokenContextInstance singleQuotedText = reader.GetNextContext<StringContext>();
+            TokenContextInstance helloWorld = reader.GetNextContext<StringContext>();
 
-            if (firstQuotedText.GetText() != "\"Hello, \\\"World\\\".\"") throw new Exception("First quoted text was not correct.");
-            if (secondSingleQuotedText.GetText() != "'work'") throw new Exception("second quoted text was not correct.");
+            Assert.Equal("\"A string in quotes\"", quotedText.GetText());
+            Assert.Equal("`A string in graves`", graveText.GetText());
+            Assert.Equal("'A string in single quotes'", singleQuotedText.GetText());
+            Assert.Equal("\"Hello World!\"", helloWorld.GetText());
         }
     }
 
 
-In this example the parser was told to only look for the 'start/end string' characters of ", ', and `. - when any of those characters were encountered, the parser would create a new StingContext which continue until it meet an unescaped QuotedStringToken whose value is the same as the token that triggered the creation of the StringContext. This is why both strings wrapped in "" and '' were captured, and the rule against ending the context upon encountering an escaped QuotedStringToken prevented the first quoted string from ending early.
+In this example the parser was told to only look for the 'start/end string' characters of ", ', and `. - when any of those characters were encountered, the parser would create a new StingContext which continue until it meet an unescaped QuotedStringToken whose value is the same as the token that triggered the creation of the StringContext.There should be 4 StringContexts under the resulting TokenContextInstance from the parse operation, and each TokenContextInstance with a definition of StringContext contains the full text of the quoted string (including the quotes).

@@ -512,7 +512,7 @@ namespace PogTree
         /// </summary>
         /// <param name="instance"></param>
         /// <returns></returns>
-        public static TokenContextInstance GetNextContext(this TokenContextInstance instance)
+        public static TokenContextInstance PeekNextContext(this TokenContextInstance instance)
         {
             if (instance == null) return null;
             return instance.NextContext;
@@ -523,7 +523,7 @@ namespace PogTree
         /// </summary>
         /// <param name="instance"></param>
         /// <returns></returns>
-        public static TokenContextInstance GetPreviousContext(this TokenContextInstance instance)
+        public static TokenContextInstance PeekPreviousContext(this TokenContextInstance instance)
         {
             if (instance == null) return null;  
             return instance.PreviousContext;
