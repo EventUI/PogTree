@@ -1,4 +1,9 @@
-﻿using PogTree.Core.Tokens;
+﻿/**Copyright (c) 2023 Richard H Stannard
+
+This source code is licensed under the MIT license found in the
+LICENSE file in the root directory of this source tree.*/
+
+using PogTree.Core.Tokens;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,7 +13,8 @@ using System.Threading.Tasks;
 
 namespace PogTreeTest.Examples
 {
-    public class TestQuotedStrings
+
+    public class TestQuotedStrings //A XUnit test class
     {
         [Fact]
         public void TestQuotedString()
@@ -16,9 +22,9 @@ namespace PogTreeTest.Examples
             string code = """
             function HelloWord()
             {
-                var string1 = "A string in quotes";
-                var string2 = `A string in graves`;
-                var string3 = 'A string in single quotes';
+                var string1 = "A \"string\" in quotes";
+                var string2 = `A 'string' in graves`;
+                var string3 = 'A `string` in single quotes';
 
                 console.log("Hello World!");
                 console.log(string1);
@@ -38,9 +44,9 @@ namespace PogTreeTest.Examples
             TokenContextInstance singleQuotedText = reader.GetNextContext<StringContext>();
             TokenContextInstance helloWorld = reader.GetNextContext<StringContext>();
 
-            Assert.Equal("\"A string in quotes\"", quotedText.GetText());
-            Assert.Equal("`A string in graves`", graveText.GetText());
-            Assert.Equal("'A string in single quotes'", singleQuotedText.GetText());
+            Assert.Equal("\"A \\\"string\\\" in quotes\"", quotedText.GetText()); //C#'s multi-line string syntax sugar automatically escapes characters that need escaping, so we have to include the escaped versions of the characters in our normal string
+            Assert.Equal("`A 'string' in graves`", graveText.GetText());
+            Assert.Equal("'A `string` in single quotes'", singleQuotedText.GetText());
             Assert.Equal("\"Hello World!\"", helloWorld.GetText());
         }
 

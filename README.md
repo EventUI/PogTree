@@ -16,14 +16,30 @@ Both tokens and contexts have objects representing their definitions and objects
 3. A context is defined with a type that derives from **TokenContextDefinition**. TokenDefinition-derived types must be added to the TokenContextDefinition-derived type in order for the context to find them: contexts will only search for tokens that they has been instructed to search for. Furthermore, TokenContextDefinitions decide when a TokenInstance of a particular definition should - or should not - start a child context. 
 4. An instance of a context definition that has been created comes in the form of a **TokenContextInstance** that contains the TokenContextDefinition defining its behavior and all the TokenInstances that were found based on the definition's list of applicable tokens. TokenContextInstances can only be created by other TokenContextInstances when they have been instructed to do so based on the occurrence of a particular token or sequence of tokens.
 
-It is because contexts spawn child contexts that the raw text content can be broken down into a hierarchy of context instances and token instances that make it easier to reason about building an object model to represent the contents of the file.
+### Regexes
+
+In PogTree it is best to use short, simple Regex statements rather than huge complicated ones - the reason for this is that PogTree is based around the idea that a context only looks for a subset of all possible Regexes (Tokens) that need to be found in a string, and flags certain Tokens as starters for a new contexts where a **different** subset of all Tokens apply. 
+
+The contextual breakdown makes it much easier to target or isolate specific patterns specifying exactly what Tokens should be found in a context - there is no "token inheritance" and the tokens found in a parent context are not included in a child context unless they are explicitly added to it. Being able to select exactly which tokens to look for in a context effectively eliminates "noise" Regex matches that are not applicable for what the context is trying to encapsulate. 
+
+The caveat to the contextual hierarchy is that a context needs to have an "end" token that signals the end of that context - if this token is never found, the parser will throw an exception when it runs out of content (unless the context is flagged as being 'unbounded').
+
+### How it Works
+
+The way the parser works is that it moves through the string in a single forwards-only sweep, lazily finding the minimum number of Regex results possible to complete the parse operation - this means that when the parser encounters a new context, it has no idea when (or if) that context will end because none of the tokens in that context have been found yet. 
+
+The parser rises back up out of the recursive hierarchy when it finds a token that ends the current context - it then resumes the parse operation in the current context's parent context until it has reached the end of the top-level "root" context (which is implicitly unbounded). 
 
 ### Examples
 
 #### Finding all quoted strings in a block of code.
 In this example the parser is told to only look for the 'start/end string' characters of ", ', and `. - when any of those characters are encountered, the parser will create a new StingContext which continues until it meets an unescaped QuotedStringToken whose value is the same as the token that triggered the creation of the StringContext. This results in 4 string contexts, each containing the quoted strings in order of occurrence. 
 
-    public class TestQuotedStrings
+Note that the parser did not try and make a "sub" StringContext for the quotes/graves around the word "string" within the first three strings - this is because the StringContext has been told to make no new child contexts, so the normal context creation logic didn't apply even if a token would normally start a context.
+
+Also note that the double-quotes within the double-quotes did not trip up the parser - this is because the StringContext is told to ignore a token that would normally end the context, but not if it is adjacent to a BackslashToken.
+
+    public class TestQuotedStrings //A XUnit test class
     {
         [Fact]
         public void TestQuotedString()
@@ -31,9 +47,9 @@ In this example the parser is told to only look for the 'start/end string' chara
             string code = """
             function HelloWord()
             {
-                var string1 = "A string in quotes";
-                var string2 = `A string in graves`;
-                var string3 = 'A string in single quotes';
+                var string1 = "A \"string\" in quotes";
+                var string2 = `A 'string' in graves`;
+                var string3 = 'A `string` in single quotes';
 
                 console.log("Hello World!");
                 console.log(string1);
@@ -53,9 +69,9 @@ In this example the parser is told to only look for the 'start/end string' chara
             TokenContextInstance singleQuotedText = reader.GetNextContext<StringContext>();
             TokenContextInstance helloWorld = reader.GetNextContext<StringContext>();
 
-            Assert.Equal("\"A string in quotes\"", quotedText.GetText());
-            Assert.Equal("`A string in graves`", graveText.GetText());
-            Assert.Equal("'A string in single quotes'", singleQuotedText.GetText());
+            Assert.Equal("\"A \\\"string\\\" in quotes\"", quotedText.GetText()); //C#'s multi-line string syntax sugar automatically escapes characters that need escaping, so we have to include the escaped versions of the characters in our normal string
+            Assert.Equal("`A 'string' in graves`", graveText.GetText());
+            Assert.Equal("'A `string` in single quotes'", singleQuotedText.GetText());
             Assert.Equal("\"Hello World!\"", helloWorld.GetText());
         }
 
@@ -129,22 +145,34 @@ In this example the parser is told to only look for the 'start/end string' chara
 
 #### Parsing YUIDoc information out of multi-line comments.
 
-In this more complicated example, the parser is told to look for only multi-line comment starts at the top level of its hierarchy, then when within a MultiLineCommentContext the parser begins looking for the start tokens for a YUIDoc parameter info comments and for the ending multi-line comment token. The result is a hierarchy of contexts that contains two YUIDocContexts that contain the full text of both YUIDoc parameter directives, which can easily be extracted using a TokenReader to recursively seek through the hierarchy to find them.
+In this more complicated example, the parser is told to look for only multi-line comment starts at the top level of its hierarchy, then when within a MultiLineCommentContext the parser begins looking for the start tokens for a YUIDoc parameter info comments and for the ending multi-line comment token. 
+
+The result is a hierarchy of contexts that contains two YUIDocContexts that contain the full text of both YUIDoc parameter directives, which can easily be extracted using a TokenReader to recursively seek through the hierarchy to find them. 
+
+The other "matching" YUIDoc parameter directives (the one in the single-line comment and the one in the string) are ignored because they are not being looked for outside of a MultiLineCommentContext, so the "noise" matches that would satisfy the YUIDocParamStart's Regex pattern are ignored as they are not being looked for in a PlainTextContext.
 
 
-    public class MultipleContextEnding
+    public class TestYUIDocExample //A XUnit test
     {
         [Fact]
-        public void TestMultipleEnds()
+        public void TestYUIDoc()
         {
             var content = """
-                //a single line comment
+                //@param {SomeType} This won't get picked up by the parser because it's not in a multi-line quote
 
-                /*Multi-line comment.*/
+                var commonFailureCase = "@param {SomeType} This also won't get picked up by the parser."
 
-                /*Summary
-                @param {SomeValue} a The first value.
-                @param {SomeOtherValue} b The second value.*/
+                /*
+                A
+                Multi
+                -line 
+                comment. 
+                This DOES get captured by the parser and becomes its own MultiLineCommentContext
+                */
+
+                /**The actual set of YUIDoc directives we want to capture are the two below.
+                @param {SomeType} a The first value.
+                @param {SomeType} b The second value.*/
                 function Test(a, b)
                 {
                     console.log(a + b);
@@ -152,16 +180,16 @@ In this more complicated example, the parser is told to look for only multi-line
                 """;
 
             var parser = new TokenParser();
-            TokenContextInstance root = parser.Parse<RootContext>(content);
+            TokenContextInstance root = parser.Parse<PlainTextContext>(content);
 
             //get a token reader and dig recursively into the hierarchy of contexts and pull out the two YUIDoc contexts,
-            //which sit next to each other in their parent MultiLineCommentContext, which is the second ChildContext of the RootContext.
+            //which sit next to each other in their parent MultiLineCommentContext, which is the second ChildContext of the PlainTextContext.
             TokenReader reader = root.GetReader();
             TokenContextInstance yui1 = reader.GetNextContext<YUIDocContext>(true);
             TokenContextInstance yui2 = reader.GetNextContext<YUIDocContext>(true);
 
-            Assert.Equal("@param {SomeValue} a The first value.\r\n", yui1.GetText()); //the \r\n is added by C#'s multi-line string syntax-sugar, so even though they don't appear literally in that string it's implicitly there between the end of "." and the beginning of "@param"
-            Assert.Equal("@param {SomeOtherValue} b The second value.", yui2.GetText());
+            Assert.Equal("@param {SomeType} a The first value.\r\n", yui1.GetText()); //the \r\n is added by C#'s multi-line string syntax-sugar, so even though they don't appear literally in that string it's implicitly there between the end of "." and the beginning of "@param"
+            Assert.Equal("@param {SomeType} b The second value.", yui2.GetText());
         }
 
         /// <summary>
@@ -257,9 +285,9 @@ In this more complicated example, the parser is told to look for only multi-line
         /// <summary>
         /// Root context definition that is told to only look for multi-line comment starts.
         /// </summary>
-        public class RootContext : TokenContextDefinition
+        public class PlainTextContext : TokenContextDefinition
         {
-            public RootContext()
+            public PlainTextContext()
                 :base("root")
             {
                 AddToken<MultiLineCommentStart>();

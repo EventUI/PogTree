@@ -1,4 +1,9 @@
-﻿using System;
+﻿/**Copyright (c) 2023 Richard H Stannard
+
+This source code is licensed under the MIT license found in the
+LICENSE file in the root directory of this source tree.*/
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -7,19 +12,27 @@ using System.Threading.Tasks;
 
 namespace PogTreeTest.Examples
 {
-    public class MultipleContextEnding
+    public class TestYUIDocExample //A XUnit test
     {
         [Fact]
-        public void TestMultipleEnds()
+        public void TestYUIDoc()
         {
             var content = """
-                //a single line comment
+                //@param {SomeType} This won't get picked up by the parser because it's not in a multi-line quote
 
-                /*Multi-line comment.*/
+                var commonFailureCase = "@param {SomeType} This also won't get picked up by the parser."
 
-                /*Summary
-                @param {SomeValue} a The first value.
-                @param {SomeOtherValue} b The second value.*/
+                /*
+                A
+                Multi
+                -line 
+                comment. 
+                This DOES get captured by the parser and becomes its own MultiLineCommentContext
+                */
+
+                /**The actual set of YUIDoc directives we want to capture are the two below.
+                @param {SomeType} a The first value.
+                @param {SomeType} b The second value.*/
                 function Test(a, b)
                 {
                     console.log(a + b);
@@ -27,16 +40,16 @@ namespace PogTreeTest.Examples
                 """;
 
             var parser = new TokenParser();
-            TokenContextInstance root = parser.Parse<RootContext>(content);
+            TokenContextInstance root = parser.Parse<PlainTextContext>(content);
 
             //get a token reader and dig recursively into the hierarchy of contexts and pull out the two YUIDoc contexts,
-            //which sit next to each other in their parent MultiLineCommentContext, which is the second ChildContext of the RootContext.
+            //which sit next to each other in their parent MultiLineCommentContext, which is the second ChildContext of the PlainTextContext.
             TokenReader reader = root.GetReader();
             TokenContextInstance yui1 = reader.GetNextContext<YUIDocContext>(true);
             TokenContextInstance yui2 = reader.GetNextContext<YUIDocContext>(true);
 
-            Assert.Equal("@param {SomeValue} a The first value.\r\n", yui1.GetText()); //the \r\n is added by C#'s multi-line string syntax-sugar, so even though they don't appear literally in that string it's implicitly there between the end of "." and the beginning of "@param"
-            Assert.Equal("@param {SomeOtherValue} b The second value.", yui2.GetText());
+            Assert.Equal("@param {SomeType} a The first value.\r\n", yui1.GetText()); //the \r\n is added by C#'s multi-line string syntax-sugar, so even though they don't appear literally in that string it's implicitly there between the end of "." and the beginning of "@param"
+            Assert.Equal("@param {SomeType} b The second value.", yui2.GetText());
         }
 
         /// <summary>
@@ -132,15 +145,13 @@ namespace PogTreeTest.Examples
         /// <summary>
         /// Root context definition that is told to only look for multi-line comment starts.
         /// </summary>
-        public class RootContext : TokenContextDefinition
+        public class PlainTextContext : TokenContextDefinition
         {
-            public RootContext()
+            public PlainTextContext()
                 :base("root")
             {
                 AddToken<MultiLineCommentStart>();
             }
         }
-
-
     }
 }
