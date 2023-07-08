@@ -21,7 +21,7 @@ namespace PogTree.Core.Tokens
         /// Creates a new TagStartToken.
         /// </summary>
         public TagStartToken()
-            :base(TokenRegexStore.LessThan, "TagStart", TokenDefinitionFlags.ContextStarter)
+            :base(TokenRegexStore.LessThan, "<", TokenDefinitionFlags.ContextStarter, "MarkupTag")
         {
 
         }
@@ -36,7 +36,7 @@ namespace PogTree.Core.Tokens
         /// Creates a new TagEndToken.
         /// </summary>
         public TagEndToken()
-            : base(TokenRegexStore.GreaterThan, "TagStart", TokenDefinitionFlags.ContextEnder)
+            : base(TokenRegexStore.GreaterThan, ">", TokenDefinitionFlags.ContextEnder, "MarkupTag")
         {
 
         }

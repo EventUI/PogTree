@@ -340,7 +340,6 @@ namespace PogTree
                         //if we had a previous token, it's new "next" token is the placeholder
                         if (previousToken != null) previousToken.NextToken = contextPlaceholder;
 
-                        //previousToken.NextToken = contextPlaceholder;
                         _tokens.Add(contextPlaceholder);
 
                         _currentIndex = contextPlaceholder.EndIndex;
